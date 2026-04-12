@@ -213,6 +213,7 @@ fun TetrisGame(
             gameState.currentY++
         }
         if (gameState.linesCleared >= 3) {
+            gameState.isPaused = true
             val randomFood = foods.randomOrNull()
             if (randomFood != null) {
                 onResult(randomFood.name)

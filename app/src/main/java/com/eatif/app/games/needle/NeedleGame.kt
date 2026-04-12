@@ -206,13 +206,25 @@ fun NeedleGame(
             )
         }
 
-        if (score.value >= targetScore) {
+        if (score.value >= targetScore && foods.isNotEmpty()) {
             Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = "🎉 成功选择: ${foods.random().name}",
-                style = MaterialTheme.typography.titleMedium,
-                color = Green
-            )
+            Button(
+                onClick = {
+                    val selectedFood = foods.random().name
+                    onResult(selectedFood)
+                },
+                modifier = Modifier.size(width = 200.dp, height = 56.dp),
+                shape = RoundedCornerShape(28.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Green,
+                    contentColor = White
+                )
+            ) {
+                Text(
+                    text = "🎉 领取奖励",
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
         }
     }
 }

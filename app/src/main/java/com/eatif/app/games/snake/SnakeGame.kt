@@ -198,7 +198,10 @@ fun SnakeGame(
                         contentColor = White
                     )
                 ) {
-                    Text("开始游戏", style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        text = if (gameState == GameState.GAME_OVER) "重新开始" else "开始游戏",
+                        style = MaterialTheme.typography.titleMedium
+                    )
                 }
             }
         }
