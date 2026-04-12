@@ -3,6 +3,7 @@ package com.eatif.app.games.runner
 import androidx.compose.animation.core.Animatable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.animation.core.LinearEasing
+import kotlinx.coroutines.launch
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -42,7 +43,8 @@ data class Obstacle(
     val x: Float,
     val width: Float,
     val height: Float,
-    val isHigh: Boolean
+    val isHigh: Boolean,
+    var passed: Boolean = false
 )
 
 @Composable
@@ -65,6 +67,7 @@ fun InfiniteRunnerGame(
     val characterSize = 50f
     val gameWidth = 800f
     val gameHeight = 500f
+    val scope = rememberCoroutineScope()
     
     LaunchedEffect(Unit) {
         characterY.snapTo(groundY - characterSize)
@@ -152,7 +155,8 @@ fun InfiniteRunnerGame(
         obstacles.filter { obstacle ->
             val obsRight = obstacle.x + obstacle.width
             obsRight < characterX.value && !obstacle.passed
-        }.forEach { 
+        }.forEach {
+            it.passed = true
             obstaclesPassed++
         }
     }
@@ -264,7 +268,7 @@ fun InfiniteRunnerGame(
                     elapsedSeconds = 0
                     obstacles = emptyList()
                     isJumping = false
-                    characterY.value = groundY - characterSize
+                    scope.launch { characterY.snapTo(groundY - characterSize) }
                     groundOffset = 0f
                     gameState = "playing"
                 } else if (!isJumping) {

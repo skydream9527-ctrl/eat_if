@@ -262,7 +262,7 @@ fun Climb100Game(
                     onClick = {
                         currentFloor.value = 0
                         platformOffset = 0
-                        playerY.value = 0f
+                        scope.launch { playerY.snapTo(0f) }
                         gameState.value = GameState.PLAYING
                     },
                     modifier = Modifier.size(width = 200.dp, height = 56.dp),

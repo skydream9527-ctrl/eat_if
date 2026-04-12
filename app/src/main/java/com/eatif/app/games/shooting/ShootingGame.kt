@@ -106,8 +106,8 @@ fun ShootingGame(
                 .pointerInput(shotsRemaining, isGameOver) {
                     if (shotsRemaining > 0 && !isGameOver) {
                         detectTapGestures { offset ->
-                            val centerX = size.width / 2
-                            val centerY = size.height / 2
+                            val centerX = size.width / 2f
+                            val centerY = size.height / 2f
                             val center = Offset(centerX, centerY)
 
                             val distance = sqrt(

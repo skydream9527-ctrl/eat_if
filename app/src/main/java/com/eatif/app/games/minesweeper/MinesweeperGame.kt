@@ -104,8 +104,8 @@ fun MinesweeperGame(
                                     board = board.map { row ->
                                         row.map { c ->
                                             if (c.isMine) c.copy(isRevealed = true) else c
-                                        }
-                                    }
+                                        }.toMutableList()
+                                    }.toMutableList()
                                 } else {
                                     val (newBoard, newUncovered) = revealCell(board, cell.row, cell.col, gridSize)
                                     board = newBoard
@@ -134,8 +134,8 @@ fun MinesweeperGame(
                                     if (c.row == cell.row && c.col == cell.col) {
                                         c.copy(isFlagged = !c.isFlagged)
                                     } else c
-                                }
-                            }
+                                }.toMutableList()
+                            }.toMutableList()
                         }
                     }
                 )

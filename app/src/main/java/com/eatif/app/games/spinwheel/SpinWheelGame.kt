@@ -37,6 +37,7 @@ import com.eatif.app.ui.theme.OrangePrimary
 import com.eatif.app.ui.theme.Red
 import com.eatif.app.ui.theme.White
 import kotlinx.coroutines.delay
+import kotlin.random.Random
 import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.sin
@@ -65,7 +66,7 @@ fun SpinWheelGame(
         if (isSpinning.value && foods.isNotEmpty()) {
             val segmentCount = foods.size
             val segmentAngle = 360f / segmentCount
-            val randomOffset = (0 until segmentCount).random() * segmentAngle + (0f..segmentAngle).random()
+            val randomOffset = (0 until segmentCount).random() * segmentAngle + Random.nextFloat() * segmentAngle
             val spins = 5 * 360f
             val targetRotation = spins + randomOffset
 

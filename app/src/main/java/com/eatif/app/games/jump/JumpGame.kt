@@ -22,6 +22,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -53,16 +55,16 @@ fun JumpGame(
     foods: List<Food>,
     onResult: (String) -> Unit
 ) {
-    var score by remember { mutableStateOf(0) }
+    var score by remember { mutableIntStateOf(0) }
     var isCharging by remember { mutableStateOf(false) }
-    var jumpPower by remember { mutableStateOf(0f) }
+    var jumpPower by remember { mutableFloatStateOf(0f) }
     var gameState by remember { mutableStateOf("ready") }
-    var currentBlockIndex by remember { mutableStateOf(0) }
-    var characterY by remember { mutableStateOf(0f) }
-    var characterX by remember { mutableStateOf(0f) }
+    var currentBlockIndex by remember { mutableIntStateOf(0) }
+    var characterY by remember { mutableFloatStateOf(0f) }
+    var characterX by remember { mutableFloatStateOf(0f) }
     var isJumping by remember { mutableStateOf(false) }
     var isFalling by remember { mutableStateOf(false) }
-    var fallingSpeed by remember { mutableStateOf(0f) }
+    var fallingSpeed by remember { mutableFloatStateOf(0f) }
 
     val characterSize = 40f
     val groundY = 400f
@@ -126,9 +128,9 @@ fun JumpGame(
 
     LaunchedEffect(gameState) {
         if (gameState == "falling") {
-            while (characterY.value < 600f) {
+            while (characterY < 600f) {
                 fallingSpeed += 15f
-                characterY.value = characterY.value + fallingSpeed
+                characterY = characterY + fallingSpeed
                 kotlinx.coroutines.delay(16)
             }
             gameState = "gameover"
@@ -159,7 +161,7 @@ fun JumpGame(
 
         if (isCharging) {
             LinearProgressIndicator(
-                progress = jumpPower.value,
+                progress = jumpPower,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(8.dp),
@@ -257,8 +259,8 @@ fun JumpGame(
             onClick = {
                 score = 0
                 currentBlockIndex = 0
-                characterX.value = blocks[0].x + blocks[0].width / 2 - characterSize / 2
-                characterY.value = blocks[0].y - characterSize
+                characterX = blocks[0].x + blocks[0].width / 2 - characterSize / 2
+                characterY = blocks[0].y - characterSize
                 gameState = "ready"
                 isJumping = false
                 isFalling = false
