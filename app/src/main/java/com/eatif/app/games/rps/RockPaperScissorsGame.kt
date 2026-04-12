@@ -17,7 +17,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf<Int>
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -57,8 +56,8 @@ fun RockPaperScissorsGame(
     var gameState by remember { mutableStateOf(GameState.READY) }
     var playerChoice by remember { mutableStateOf<RPSChoice?>(null) }
     var aiChoice by remember { mutableStateOf<RPSChoice?>(null) }
-    var playerScore by remember { mutableStateOf<Int>(0) }
-    var aiScore by remember { mutableStateOf<Int>(0) }
+    var playerScore by remember { mutableStateOf(0) }
+    var aiScore by remember { mutableStateOf(0) }
     var resultText by remember { mutableStateOf("") }
 
     Column(

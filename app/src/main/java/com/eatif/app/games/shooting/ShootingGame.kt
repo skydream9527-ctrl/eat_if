@@ -20,7 +20,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf<Int>
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -42,9 +41,9 @@ fun ShootingGame(
     foods: List<Food>,
     onResult: (String) -> Unit
 ) {
-    var shotsRemaining by remember { mutableStateOf<Int>(5) }
-    var totalScore by remember { mutableStateOf<Int>(0) }
-    var lastShotScore by remember { mutableStateOf<Int>(0) }
+    var shotsRemaining by remember { mutableStateOf(5) }
+    var totalScore by remember { mutableStateOf(0) }
+    var lastShotScore by remember { mutableStateOf(0) }
     var lastHitOffset by remember { mutableStateOf(Offset.Zero) }
     var isGameOver by remember { mutableStateOf(false) }
     var showHitEffect by remember { mutableStateOf(false) }

@@ -51,9 +51,9 @@ fun FlappyEatGame(
     var birdY by remember { mutableStateOf(250f) }
     var birdVelocity by remember { mutableStateOf(0f) }
     var pipes by remember { mutableStateOf(emptyList<Pipe>()) }
-    var score by remember { mutableStateOf<Int>(0) }
+    var score by remember { mutableStateOf(0) }
     var gameState by remember { mutableStateOf("ready") }
-    var passedPipes by remember { mutableStateOf<Int>(0) }
+    var passedPipes by remember { mutableStateOf(0) }
 
     val birdX = 100f
     val birdSize = 30f

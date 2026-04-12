@@ -23,8 +23,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.mutableStateOf<Int>
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -55,11 +53,11 @@ fun JumpGame(
     foods: List<Food>,
     onResult: (String) -> Unit
 ) {
-    var score by remember { mutableStateOf<Int>(0) }
+    var score by remember { mutableStateOf(0) }
     var isCharging by remember { mutableStateOf(false) }
     var jumpPower by remember { mutableStateOf(0f) }
     var gameState by remember { mutableStateOf("ready") }
-    var currentBlockIndex by remember { mutableStateOf<Int>(0) }
+    var currentBlockIndex by remember { mutableStateOf(0) }
     var characterY by remember { mutableStateOf(0f) }
     var characterX by remember { mutableStateOf(0f) }
     var isJumping by remember { mutableStateOf(false) }

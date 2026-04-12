@@ -22,7 +22,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf<Int>
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -55,8 +54,8 @@ fun MinesweeperGame(
 
     var board by remember { mutableStateOf(createBoard(gridSize, mineCount)) }
     var gameState by remember { mutableStateOf(GameState.IDLE) }
-    var uncoveredCount by remember { mutableStateOf<Int>(0) }
-    var cellsRemaining by remember { mutableStateOf<Int>(safeCells) }
+    var uncoveredCount by remember { mutableStateOf(0) }
+    var cellsRemaining by remember { mutableStateOf(safeCells) }
 
     val mineDisplayCount = board.flatten().count { it.isMine && !it.isRevealed }
 

@@ -23,7 +23,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf<Int>
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -46,9 +45,9 @@ fun SlotMachineGame(
     onResult: (String) -> Unit
 ) {
     var isSpinning by remember { mutableStateOf(false) }
-    var reel1Index by remember { mutableStateOf<Int>(0) }
-    var reel2Index by remember { mutableStateOf<Int>(1) }
-    var reel3Index by remember { mutableStateOf<Int>(2) }
+    var reel1Index by remember { mutableStateOf(0) }
+    var reel2Index by remember { mutableStateOf(1) }
+    var reel3Index by remember { mutableStateOf(2) }
     var animationProgress1 by remember { mutableStateOf(0f) }
     var animationProgress2 by remember { mutableStateOf(0f) }
     var animationProgress3 by remember { mutableStateOf(0f) }
