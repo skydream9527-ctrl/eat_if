@@ -436,3 +436,4 @@ fun TetrisGame(
 
 private const val TETRIS_COLS = TetrisGameState.COLS
 private const val TETRIS_ROWS = TetrisGameState.ROWS
+private const val CELL_SIZE = TetrisGameState.CELL_SIZE
