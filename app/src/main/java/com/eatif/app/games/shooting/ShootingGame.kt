@@ -20,7 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf<Int>
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -42,9 +42,9 @@ fun ShootingGame(
     foods: List<Food>,
     onResult: (String) -> Unit
 ) {
-    var shotsRemaining by remember { mutableIntStateOf(5) }
-    var totalScore by remember { mutableIntStateOf(0) }
-    var lastShotScore by remember { mutableIntStateOf(0) }
+    var shotsRemaining by remember { mutableStateOf<Int>(5) }
+    var totalScore by remember { mutableStateOf<Int>(0) }
+    var lastShotScore by remember { mutableStateOf<Int>(0) }
     var lastHitOffset by remember { mutableStateOf(Offset.Zero) }
     var isGameOver by remember { mutableStateOf(false) }
     var showHitEffect by remember { mutableStateOf(false) }
@@ -132,12 +132,6 @@ fun ShootingGame(
                             shotsRemaining--
 
                             showHitEffect = true
-
-                            hitEffectScale.snapTo(0f)
-                            hitEffectScale.animateTo(
-                                targetValue = 1f,
-                                animationSpec = tween(durationMillis = 300)
-                            )
 
                             if (shotsRemaining == 0) {
                                 isGameOver = true

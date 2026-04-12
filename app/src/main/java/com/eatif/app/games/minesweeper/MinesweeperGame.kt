@@ -22,7 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf<Int>
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -55,8 +55,8 @@ fun MinesweeperGame(
 
     var board by remember { mutableStateOf(createBoard(gridSize, mineCount)) }
     var gameState by remember { mutableStateOf(GameState.IDLE) }
-    var uncoveredCount by remember { mutableIntStateOf(0) }
-    var cellsRemaining by remember { mutableIntStateOf(safeCells) }
+    var uncoveredCount by remember { mutableStateOf<Int>(0) }
+    var cellsRemaining by remember { mutableStateOf<Int>(safeCells) }
 
     val mineDisplayCount = board.flatten().count { it.isMine && !it.isRevealed }
 
@@ -244,7 +244,7 @@ private enum class GameState {
     IDLE, PLAYING, WON, LOST
 }
 
-private fun createBoard(gridSize: Int, mineCount: Int): List<List<Cell>> {
+private fun createBoard(gridSize: Int, mineCount: Int): MutableList<MutableList<Cell>> {
     val positions = mutableListOf<Pair<Int, Int>>()
     for (row in 0 until gridSize) {
         for (col in 0 until gridSize) {
@@ -254,7 +254,7 @@ private fun createBoard(gridSize: Int, mineCount: Int): List<List<Cell>> {
     positions.shuffle()
     val minePositions = positions.take(mineCount).toSet()
 
-    val board = mutableListOf<List<Cell>>()
+    val board = mutableListOf<MutableList<Cell>>()
     for (row in 0 until gridSize) {
         val rowCells = mutableListOf<Cell>()
         for (col in 0 until gridSize) {
@@ -268,9 +268,7 @@ private fun createBoard(gridSize: Int, mineCount: Int): List<List<Cell>> {
         for (col in 0 until gridSize) {
             if (!board[row][col].isMine) {
                 val adjacentMines = countAdjacentMines(board, row, col, gridSize)
-                board[row] = board[row].toMutableList().apply {
-                    this[col] = this[col].copy(adjacentMines = adjacentMines)
-                }
+                board[row][col] = board[row][col].copy(adjacentMines = adjacentMines)
             }
         }
     }
@@ -278,7 +276,7 @@ private fun createBoard(gridSize: Int, mineCount: Int): List<List<Cell>> {
     return board
 }
 
-private fun countAdjacentMines(board: List<List<Cell>>, row: Int, col: Int, gridSize: Int): Int {
+private fun countAdjacentMines(board: MutableList<MutableList<Cell>>, row: Int, col: Int, gridSize: Int): Int {
     var count = 0
     for (dr in -1..1) {
         for (dc in -1..1) {
@@ -294,31 +292,27 @@ private fun countAdjacentMines(board: List<List<Cell>>, row: Int, col: Int, grid
 }
 
 private fun revealCell(
-    board: List<List<Cell>>,
+    board: MutableList<MutableList<Cell>>,
     row: Int,
     col: Int,
     gridSize: Int
-): Pair<List<List<Cell>>, Int> {
+): Pair<MutableList<MutableList<Cell>>, Int> {
     if (row !in 0 until gridSize || col !in 0 until gridSize) return Pair(board, 0)
     val cell = board[row][col]
     if (cell.isRevealed || cell.isMine) return Pair(board, 0)
 
-    var newBoard = board.map { it.toMutableList() }
-    newBoard[row] = newBoard[row].toMutableList().apply {
-        this[col] = this[col].copy(isRevealed = true)
-    }
+    board[row][col] = board[row][col].copy(isRevealed = true)
     var uncoveredCount = 1
 
     if (cell.adjacentMines == 0) {
         for (dr in -1..1) {
             for (dc in -1..1) {
                 if (dr == 0 && dc == 0) continue
-                val (resultBoard, resultCount) = revealCell(newBoard, row + dr, col + dc, gridSize)
-                newBoard = resultBoard
+                val (resultBoard, resultCount) = revealCell(board, row + dr, col + dc, gridSize)
                 uncoveredCount += resultCount
             }
         }
     }
 
-    return Pair(newBoard, uncoveredCount)
+    return Pair(board, uncoveredCount)
 }

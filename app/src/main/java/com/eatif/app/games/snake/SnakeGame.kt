@@ -20,7 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf<Int>
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -49,7 +49,7 @@ fun SnakeGame(
     val cellSize = 20.dp
 
     var gameState by remember { mutableStateOf(GameState.IDLE) }
-    var score by remember { mutableIntStateOf(0) }
+    var score by remember { mutableStateOf<Int>(0) }
     var snake by remember { mutableStateOf(listOf(Offset(7f, 7f))) }
     var direction by remember { mutableStateOf(Direction.RIGHT) }
     var nextDirection by remember { mutableStateOf(Direction.RIGHT) }

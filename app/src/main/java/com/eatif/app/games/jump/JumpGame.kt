@@ -23,7 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf<Int>
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -55,11 +55,11 @@ fun JumpGame(
     foods: List<Food>,
     onResult: (String) -> Unit
 ) {
-    var score by remember { mutableIntStateOf(0) }
+    var score by remember { mutableStateOf<Int>(0) }
     var isCharging by remember { mutableStateOf(false) }
     var jumpPower by remember { mutableStateOf(0f) }
     var gameState by remember { mutableStateOf("ready") }
-    var currentBlockIndex by remember { mutableIntStateOf(0) }
+    var currentBlockIndex by remember { mutableStateOf<Int>(0) }
     var characterY by remember { mutableStateOf(0f) }
     var characterX by remember { mutableStateOf(0f) }
     var isJumping by remember { mutableStateOf(false) }
@@ -128,9 +128,10 @@ fun JumpGame(
 
     LaunchedEffect(gameState) {
         if (gameState == "falling") {
-            while (animatableCharY.value < 600f) {
+            while (characterY.value < 600f) {
                 fallingSpeed += 15f
-                animatableCharY.snapTo(animatableCharY.value + fallingSpeed)
+                characterY.value = characterY.value + fallingSpeed
+                kotlinx.coroutines.delay(16)
             }
             gameState = "gameover"
         }
@@ -160,7 +161,7 @@ fun JumpGame(
 
         if (isCharging) {
             LinearProgressIndicator(
-                progress = { jumpPower },
+                progress = jumpPower.value,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(8.dp),
@@ -254,12 +255,12 @@ fun JumpGame(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Button(
+            Button(
             onClick = {
                 score = 0
                 currentBlockIndex = 0
-                characterX = blocks[0].x + blocks[0].width / 2 - characterSize / 2
-                animatableCharY.snapTo(blocks[0].y - characterSize)
+                characterX.value = blocks[0].x + blocks[0].width / 2 - characterSize / 2
+                characterY.value = blocks[0].y - characterSize
                 gameState = "ready"
                 isJumping = false
                 isFalling = false

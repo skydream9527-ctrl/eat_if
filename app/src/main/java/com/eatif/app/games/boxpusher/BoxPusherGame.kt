@@ -22,7 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf<Int>
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -45,7 +45,7 @@ fun BoxPusherGame(
     onResult: (String) -> Unit
 ) {
     var gameState by remember { mutableStateOf(GameState.PLAYING) }
-    var moveCount by remember { mutableIntStateOf(0) }
+    var moveCount by remember { mutableStateOf<Int>(0) }
 
     var playerPos by remember { mutableStateOf(Position(2, 0)) }
     var box1Pos by remember { mutableStateOf(Position(2, 3)) }

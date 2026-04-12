@@ -1,6 +1,7 @@
 package com.eatif.app.games.runner
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
@@ -22,7 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf<Int>
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -51,10 +52,10 @@ fun InfiniteRunnerGame(
     foods: List<Food>,
     onResult: (String) -> Unit
 ) {
-    var score by remember { mutableIntStateOf(0) }
+    var score by remember { mutableStateOf<Int>(0) }
     var gameState by remember { mutableStateOf("playing") }
-    var obstaclesPassed by remember { mutableIntStateOf(0) }
-    var elapsedSeconds by remember { mutableIntStateOf(0) }
+    var obstaclesPassed by remember { mutableStateOf<Int>(0) }
+    var elapsedSeconds by remember { mutableStateOf<Int>(0) }
     
     val characterY = remember { Animatable(0f) }
     val characterX = remember { mutableStateOf(100f) }
@@ -265,7 +266,7 @@ fun InfiniteRunnerGame(
                     elapsedSeconds = 0
                     obstacles = emptyList()
                     isJumping = false
-                    characterY.snapTo(groundY - characterSize)
+                    characterY.value = groundY - characterSize
                     groundOffset = 0f
                     gameState = "playing"
                 } else if (!isJumping) {

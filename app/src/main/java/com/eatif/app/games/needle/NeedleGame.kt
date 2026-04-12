@@ -50,7 +50,7 @@ fun NeedleGame(
     val currentAngle = remember { mutableStateOf(0f) }
     val spinning = remember { mutableStateOf(false) }
     val animatableAngle = remember { Animatable(0f) }
-    val score = remember { mutableIntStateOf(0) }
+    val score = remember { mutableStateOf(0) }
     val gameOver = remember { mutableStateOf(false) }
     val targetScore = 5
 
@@ -75,9 +75,9 @@ fun NeedleGame(
                 gameOver.value = true
             } else {
                 needles.value = needles.value + newNeedleAngle
-                score.intValue++
+                score.value++
 
-                if (score.intValue >= targetScore && foods.isNotEmpty()) {
+                if (score.value >= targetScore && foods.isNotEmpty()) {
                     val selectedFood = foods.random().name
                     onResult(selectedFood)
                 }
@@ -101,7 +101,7 @@ fun NeedleGame(
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = "分数: ${score.intValue} / $targetScore",
+            text = "分数: ${score.value} / $targetScore",
             style = MaterialTheme.typography.titleLarge,
             color = if (gameOver.value) Red else Green
         )
@@ -182,11 +182,11 @@ fun NeedleGame(
 
         Button(
             onClick = {
-                if (!spinning.value && !gameOver.value && score.intValue < targetScore) {
+                if (!spinning.value && !gameOver.value && score.value < targetScore) {
                     spinning.value = true
                 }
             },
-            enabled = !spinning.value && !gameOver.value && score.intValue < targetScore && foods.isNotEmpty(),
+            enabled = !spinning.value && !gameOver.value && score.value < targetScore && foods.isNotEmpty(),
             modifier = Modifier.size(width = 200.dp, height = 56.dp),
             shape = RoundedCornerShape(28.dp),
             colors = ButtonDefaults.buttonColors(
@@ -199,14 +199,14 @@ fun NeedleGame(
             Text(
                 text = when {
                     gameOver.value -> "游戏结束"
-                    score.intValue >= targetScore -> "完成!"
+                    score.value >= targetScore -> "完成!"
                     else -> "插入"
                 },
                 style = MaterialTheme.typography.titleMedium
             )
         }
 
-        if (score.intValue >= targetScore) {
+        if (score.value >= targetScore) {
             Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = "🎉 成功选择: ${foods.random().name}",

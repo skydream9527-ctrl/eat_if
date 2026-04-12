@@ -19,7 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf<Int>
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -44,16 +44,8 @@ fun Game2048(
     onResult: (String) -> Unit
 ) {
     var grid by remember { mutableStateOf(Array(4) { IntArray(4) }) }
-    var score by remember { mutableIntStateOf(0) }
+    var score by remember { mutableStateOf<Int>(0) }
     var gameState by remember { mutableStateOf(GameState.IDLE) }
-
-    fun initGame() {
-        grid = Array(4) { IntArray(4) }
-        score = 0
-        gameState = GameState.PLAYING
-        addRandomTile()
-        addRandomTile()
-    }
 
     fun addRandomTile() {
         val emptyCells = mutableListOf<Pair<Int, Int>>()
@@ -68,6 +60,14 @@ fun Game2048(
             val cell = emptyCells.random()
             grid[cell.first][cell.second] = if (Random.nextFloat() < 0.9f) 2 else 4
         }
+    }
+
+    fun initGame() {
+        grid = Array(4) { IntArray(4) }
+        score = 0
+        gameState = GameState.PLAYING
+        addRandomTile()
+        addRandomTile()
     }
 
     fun canMove(): Boolean {

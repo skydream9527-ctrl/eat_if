@@ -22,7 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf<Int>
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -54,12 +54,12 @@ fun Climb100Game(
 ) {
     val scope = rememberCoroutineScope()
     val gameState = remember { mutableStateOf(GameState.IDLE) }
-    val currentFloor = remember { mutableIntStateOf(0) }
+    val currentFloor = remember { mutableStateOf<Int>(0) }
     val playerY = remember { Animatable(0f) }
     val platforms = remember {
         generatePlatforms(20).toMutableList()
     }
-    var platformOffset by remember { mutableIntStateOf(0) }
+    var platformOffset by remember { mutableStateOf<Int>(0) }
 
     LaunchedEffect(gameState.value) {
         if (gameState.value == GameState.PLAYING) {
@@ -263,7 +263,7 @@ fun Climb100Game(
                     onClick = {
                         currentFloor.value = 0
                         platformOffset = 0
-                        playerY.snapTo(0f)
+                        playerY.value = 0f
                         gameState.value = GameState.PLAYING
                     },
                     modifier = Modifier.size(width = 200.dp, height = 56.dp),
