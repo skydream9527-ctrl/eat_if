@@ -18,7 +18,18 @@ class PlayViewModel @Inject constructor(
     private val repository: FoodRepository
 ) : ViewModel() {
 
-    private val _foods = MutableStateFlow<List<Food>>(emptyList())
+    private val defaultFoods = listOf(
+        Food(name = "火锅", category = "中餐"),
+        Food(name = "寿司", category = "日餐"),
+        Food(name = "汉堡", category = "西餐"),
+        Food(name = "披萨", category = "西餐"),
+        Food(name = "拉面", category = "日餐"),
+        Food(name = "饺子", category = "中餐"),
+        Food(name = "沙拉", category = "西餐"),
+        Food(name = "炸鸡", category = "西餐")
+    )
+
+    private val _foods = MutableStateFlow<List<Food>>(defaultFoods)
     val foods: StateFlow<List<Food>> = _foods.asStateFlow()
 
     init {
@@ -28,19 +39,8 @@ class PlayViewModel @Inject constructor(
     fun loadFoods() {
         viewModelScope.launch {
             val repositoryFoods = repository.getAllFoods().first()
-            _foods.value = if (repositoryFoods.isEmpty()) {
-                listOf(
-                    Food(name = "火锅", category = "中餐"),
-                    Food(name = "寿司", category = "日餐"),
-                    Food(name = "汉堡", category = "西餐"),
-                    Food(name = "披萨", category = "西餐"),
-                    Food(name = "拉面", category = "日餐"),
-                    Food(name = "饺子", category = "中餐"),
-                    Food(name = "沙拉", category = "西餐"),
-                    Food(name = "炸鸡", category = "西餐")
-                )
-            } else {
-                repositoryFoods
+            if (repositoryFoods.isNotEmpty()) {
+                _foods.value = repositoryFoods
             }
         }
     }
