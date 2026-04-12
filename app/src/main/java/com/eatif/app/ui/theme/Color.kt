@@ -8,6 +8,7 @@ val OrangeDark = Color(0xFFE55A2B)
 val White = Color(0xFFFFFFFF)
 val GrayLight = Color(0xFFF5F5F7)
 val GrayMedium = Color(0xFF86868B)
+val Gray = GrayMedium
 val Black = Color(0xFF1D1D1F)
 val Green = Color(0xFF34C759)
 val Red = Color(0xFFFF3B30)

@@ -20,8 +20,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -34,7 +34,7 @@ import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.unit.dp
 import com.eatif.app.domain.model.Food
 import com.eatif.app.ui.theme.Gray
-import com.eatif.app.ui.theme.GreenSuccess
+import com.eatif.app.ui.theme.Green
 import com.eatif.app.ui.theme.OrangePrimary
 import com.eatif.app.ui.theme.Red
 import com.eatif.app.ui.theme.White
@@ -47,7 +47,7 @@ fun NeedleGame(
     onResult: (String) -> Unit
 ) {
     val needles = remember { mutableStateOf<List<Float>>(emptyList()) }
-    val currentAngle = remember { mutableFloatStateOf(0f) }
+    val currentAngle = remember { mutableStateOf(0f) }
     val spinning = remember { mutableStateOf(false) }
     val animatableAngle = remember { Animatable(0f) }
     val score = remember { mutableIntStateOf(0) }
@@ -103,7 +103,7 @@ fun NeedleGame(
         Text(
             text = "分数: ${score.intValue} / $targetScore",
             style = MaterialTheme.typography.titleLarge,
-            color = if (gameOver.value) Red else GreenSuccess
+            color = if (gameOver.value) Red else Green
         )
 
         if (gameOver.value) {
@@ -211,7 +211,7 @@ fun NeedleGame(
             Text(
                 text = "🎉 成功选择: ${foods.random().name}",
                 style = MaterialTheme.typography.titleMedium,
-                color = GreenSuccess
+                color = Green
             )
         }
     }

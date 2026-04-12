@@ -22,7 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,14 +57,14 @@ fun JumpGame(
 ) {
     var score by remember { mutableIntStateOf(0) }
     var isCharging by remember { mutableStateOf(false) }
-    var jumpPower by remember { mutableFloatStateOf(0f) }
+    var jumpPower by remember { mutableStateOf(0f) }
     var gameState by remember { mutableStateOf("ready") }
     var currentBlockIndex by remember { mutableIntStateOf(0) }
-    var characterY by remember { mutableFloatStateOf(0f) }
-    var characterX by remember { mutableFloatStateOf(0f) }
+    var characterY by remember { mutableStateOf(0f) }
+    var characterX by remember { mutableStateOf(0f) }
     var isJumping by remember { mutableStateOf(false) }
     var isFalling by remember { mutableStateOf(false) }
-    var fallingSpeed by remember { mutableFloatStateOf(0f) }
+    var fallingSpeed by remember { mutableStateOf(0f) }
 
     val characterSize = 40f
     val groundY = 400f

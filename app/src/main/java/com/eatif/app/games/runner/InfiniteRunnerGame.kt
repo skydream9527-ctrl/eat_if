@@ -21,7 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,10 +57,10 @@ fun InfiniteRunnerGame(
     var elapsedSeconds by remember { mutableIntStateOf(0) }
     
     val characterY = remember { Animatable(0f) }
-    val characterX = remember { mutableFloatStateOf(100f) }
+    val characterX = remember { mutableStateOf(100f) }
     var isJumping by remember { mutableStateOf(false) }
     var obstacles by remember { mutableStateOf(listOf<Obstacle>()) }
-    var groundOffset by remember { mutableFloatStateOf(0f) }
+    var groundOffset by remember { mutableStateOf(0f) }
     
     val groundY = 400f
     val characterSize = 50f

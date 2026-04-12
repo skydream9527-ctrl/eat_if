@@ -49,9 +49,9 @@ fun SlotMachineGame(
     var reel1Index by remember { mutableIntStateOf(0) }
     var reel2Index by remember { mutableIntStateOf(1) }
     var reel3Index by remember { mutableIntStateOf(2) }
-    var animationProgress1 by remember { mutableFloatStateOf(0f) }
-    var animationProgress2 by remember { mutableFloatStateOf(0f) }
-    var animationProgress3 by remember { mutableFloatStateOf(0f) }
+    var animationProgress1 by remember { mutableStateOf(0f) }
+    var animationProgress2 by remember { mutableStateOf(0f) }
+    var animationProgress3 by remember { mutableStateOf(0f) }
     var resultMessage by remember { mutableStateOf("🎰 拉杆子开始!") }
 
     val animatable1 = remember { Animatable(0f) }

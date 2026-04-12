@@ -18,7 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,8 +50,8 @@ fun FlappyEatGame(
     foods: List<Food>,
     onResult: (String) -> Unit
 ) {
-    var birdY by remember { mutableFloatStateOf(250f) }
-    var birdVelocity by remember { mutableFloatStateOf(0f) }
+    var birdY by remember { mutableStateOf(250f) }
+    var birdVelocity by remember { mutableStateOf(0f) }
     var pipes by remember { mutableStateOf(emptyList<Pipe>()) }
     var score by remember { mutableIntStateOf(0) }
     var gameState by remember { mutableStateOf("ready") }
