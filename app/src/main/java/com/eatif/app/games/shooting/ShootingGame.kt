@@ -39,7 +39,7 @@ import kotlin.math.sqrt
 @Composable
 fun ShootingGame(
     foods: List<Food>,
-    onResult: (String) -> Unit
+    onResult: (String, Int) -> Unit
 ) {
     var shotsRemaining by remember { mutableStateOf(5) }
     var totalScore by remember { mutableStateOf(0) }
@@ -200,7 +200,9 @@ fun ShootingGame(
                 Button(
                     onClick = {
                         val selectedFood = foods.random().name
-                        onResult(selectedFood)
+                        // 满分 500 分，转换为 0-100 百分比
+                        val scorePercent = (totalScore * 100 / 500).coerceIn(0, 100)
+                        onResult(selectedFood, scorePercent)
                     },
                     modifier = Modifier.size(width = 200.dp, height = 56.dp),
                     shape = RoundedCornerShape(28.dp),

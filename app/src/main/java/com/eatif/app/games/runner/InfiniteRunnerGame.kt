@@ -26,6 +26,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -76,20 +77,81 @@ fun InfiniteRunnerGame(
     LaunchedEffect(gameState) {
         if (gameState == "playing") {
             val startTime = System.currentTimeMillis()
+            var lastFrameTime = -1L
+            var obstacleTimer = 0f         // 障碍物生成计时器（毫秒）
+            val obstacleInterval = 1800f   // 每1.8秒生成一个障碍
+
             while (gameState == "playing") {
-                kotlinx.coroutines.delay(100)
-                groundOffset = (groundOffset + 8f) % 40f
-                
-                val currentTime = ((System.currentTimeMillis() - startTime) / 1000).toInt()
-                if (currentTime > elapsedSeconds) {
-                    elapsedSeconds = currentTime
-                }
-                
-                if (elapsedSeconds >= 30 || obstaclesPassed >= 10) {
-                    gameState = "won"
-                    val randomFood = foods.randomOrNull()
-                    if (randomFood != null) {
-                        onResult(randomFood.name)
+                withFrameMillis { frameTimeMs ->
+                    if (lastFrameTime < 0L) {
+                        lastFrameTime = frameTimeMs
+                        return@withFrameMillis
+                    }
+                    val rawDt = (frameTimeMs - lastFrameTime).coerceIn(1L, 48L).toFloat()
+                    val dt = rawDt / 16f   // 归一化到 16ms 基准
+                    lastFrameTime = frameTimeMs
+                    obstacleTimer += rawDt
+
+                    // 更新地面滚动
+                    groundOffset = (groundOffset + 8f * dt) % 40f
+
+                    // 更新计时
+                    val currentSec = ((frameTimeMs - startTime) / 1000).toInt()
+                    if (currentSec > elapsedSeconds) elapsedSeconds = currentSec
+
+                    // 更新障碍物位置 + 计分（单次遍历）
+                    val updatedObstacles = ArrayList<Obstacle>(obstacles.size)
+                    var passed = obstaclesPassed
+                    for (obs in obstacles) {
+                        val newX = obs.x - 12f * dt   // 速度归一化
+                        if (newX + obs.width < -100f) continue
+                        val obsRight = newX + obs.width
+                        if (obsRight < characterX.value && !obs.passed) {
+                            obs.passed = true
+                            passed++
+                        }
+                        updatedObstacles.add(obs.copy(x = newX))
+                    }
+                    obstacles = updatedObstacles
+                    obstaclesPassed = passed
+
+                    // 碰撞检测（每帧执行）
+                    val charLeft = characterX.value
+                    val charRight = characterX.value + characterSize
+                    val charTop = characterY.value
+                    val charBottom = characterY.value + characterSize
+                    for (obs in obstacles) {
+                        val obsLeft = obs.x
+                        val obsRight2 = obs.x + obs.width
+                        val obsTop = if (obs.isHigh) groundY - obs.height - 20 else groundY - obs.height
+                        if (charRight > obsLeft && charLeft < obsRight2 && charBottom > obsTop && charTop < groundY) {
+                            gameState = "gameover"
+                            return@withFrameMillis
+                        }
+                    }
+
+                    // 生成新障碍物
+                    if (obstacleTimer >= obstacleInterval) {
+                        obstacleTimer = 0f
+                        val lastObs = obstacles.lastOrNull()
+                        val spawnX = if (lastObs != null) {
+                            (lastObs.x + Random.nextFloat() * 200 + 200).coerceAtLeast(gameWidth)
+                        } else {
+                            gameWidth
+                        }
+                        obstacles = obstacles + Obstacle(
+                            x = spawnX,
+                            width = Random.nextFloat() * 30 + 40,
+                            height = Random.nextFloat() * 40 + 50,
+                            isHigh = Random.nextBoolean()
+                        )
+                    }
+
+                    // 胜利条件
+                    if (elapsedSeconds >= 30 || obstaclesPassed >= 10) {
+                        gameState = "won"
+                        val randomFood = foods.randomOrNull()
+                        if (randomFood != null) onResult(randomFood.name)
                     }
                 }
             }
@@ -110,56 +172,7 @@ fun InfiniteRunnerGame(
         }
     }
     
-    LaunchedEffect(gameState) {
-        if (gameState == "playing") {
-            var lastObstacleX = gameWidth
-            while (gameState == "playing") {
-                kotlinx.coroutines.delay(1500)
-                
-                if (gameState != "playing") break
-                
-                val newObstacle = Obstacle(
-                    x = lastObstacleX + Random.nextFloat() * 200 + 300,
-                    width = Random.nextFloat() * 30 + 40,
-                    height = Random.nextFloat() * 40 + 50,
-                    isHigh = Random.nextBoolean()
-                )
-                obstacles = obstacles + newObstacle
-                lastObstacleX = newObstacle.x
-                
-                obstacles = obstacles.map { it.copy(x = it.x - 50f) }
-                    .filter { it.x > -100f }
-            }
-        }
-    }
-    
-    LaunchedEffect(obstacles, characterY.value) {
-        if (gameState != "playing") return@LaunchedEffect
-        
-        val charLeft = characterX.value
-        val charRight = characterX.value + characterSize
-        val charTop = characterY.value
-        val charBottom = characterY.value + characterSize
-        
-        obstacles.forEach { obstacle ->
-            val obsLeft = obstacle.x
-            val obsRight = obstacle.x + obstacle.width
-            val obsTop = if (obstacle.isHigh) groundY - obstacle.height - 20 else groundY - obstacle.height
-            val obsBottom = groundY
-            
-            if (charRight > obsLeft && charLeft < obsRight && charBottom > obsTop && charTop < obsBottom) {
-                gameState = "gameover"
-            }
-        }
-        
-        obstacles.filter { obstacle ->
-            val obsRight = obstacle.x + obstacle.width
-            obsRight < characterX.value && !obstacle.passed
-        }.forEach {
-            it.passed = true
-            obstaclesPassed++
-        }
-    }
+
 
     Column(
         modifier = Modifier

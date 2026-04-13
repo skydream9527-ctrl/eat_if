@@ -28,6 +28,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.withFrameMillis
 import com.eatif.app.domain.model.Food
 import com.eatif.app.ui.theme.Green
 import com.eatif.app.ui.theme.OrangePrimary
@@ -77,70 +78,82 @@ fun FlappyEatGame(
             )
             pipes = listOf(initialPipe)
 
-            var lastTime = System.currentTimeMillis()
+            var lastFrameTime = -1L
+
             while (gameState == "playing") {
-                val currentTime = System.currentTimeMillis()
-                val deltaTime = currentTime - lastTime
-                lastTime = currentTime
+                withFrameMillis { frameTimeMs ->
+                    if (lastFrameTime < 0L) {
+                        lastFrameTime = frameTimeMs
+                        return@withFrameMillis
+                    }
+                    val dt = (frameTimeMs - lastFrameTime).coerceIn(1L, 48L).toFloat() / 16f
+                    lastFrameTime = frameTimeMs
 
-                birdVelocity += gravity
-                birdY += birdVelocity
+                    // 物理更新（delta-time 归一化到 16ms 基准）
+                    birdVelocity += gravity * dt
+                    birdY += birdVelocity * dt
 
-                pipes = pipes.map { pipe ->
-                    pipe.copy(x = pipe.x - pipeSpeed)
-                }.filter { mappedPipe -> mappedPipe.x > -70f }
+                    // 更新管道位置（单次 map，无额外 filter）
+                    val updatedPipes = ArrayList<Pipe>(pipes.size + 1)
+                    var needNewPipe = true
+                    var passedCount = passedPipes
 
-                val newestPipe = pipes.lastOrNull()
-                if (newestPipe == null || newestPipe.x < 300f) {
-                    val lastGapY = newestPipe?.gapY ?: (gameHeight - groundHeight - pipeGapHeight) / 2
-                    val newGapY = Random.nextFloat() * (gameHeight - groundHeight - pipeGapHeight - 100) + 50
-                    pipes = pipes + Pipe(
-                        x = 450f,
-                        gapY = newGapY,
-                        gapHeight = pipeGapHeight
-                    )
-                }
+                    for (pipe in pipes) {
+                        val newX = pipe.x - pipeSpeed * dt
+                        if (newX <= -70f) continue  // 过滤掉出界管道
 
-                val birdLeft = birdX
-                val birdRight = birdX + birdSize
-                val birdTop = birdY
-                val birdBottom = birdY + birdSize
-
-                pipes = pipes.map { pipe ->
-                    val pipeLeft = pipe.x
-                    val pipeRight = pipe.x + pipe.width
-
-                    if (birdRight > pipeLeft && birdLeft < pipeRight) {
-                        val gapTop = pipe.gapY
-                        val gapBottom = pipe.gapY + pipe.gapHeight
-
-                        if (birdTop < gapTop || birdBottom > gapBottom) {
-                            gameState = "gameover"
+                        // 碰撞检测
+                        val pipeLeft = newX
+                        val pipeRight = newX + pipe.width
+                        if (birdX + birdSize > pipeLeft && birdX < pipeRight) {
+                            val gapTop = pipe.gapY
+                            val gapBottom = pipe.gapY + pipe.gapHeight
+                            if (birdY < gapTop || birdY + birdSize > gapBottom) {
+                                gameState = "gameover"
+                                return@withFrameMillis
+                            }
                         }
+
+                        // 计分
+                        val hasPassed = !pipe.hasPassed && newX + pipe.width < birdX
+                        if (hasPassed) passedCount++
+
+                        // 新管道生成判断（最后一根管道 x < 300 时生成）
+                        if (newX >= 300f) needNewPipe = false
+
+                        updatedPipes.add(pipe.copy(x = newX, hasPassed = pipe.hasPassed || hasPassed))
                     }
 
-                    if (!pipe.hasPassed && pipe.x + pipe.width < birdX) {
-                        passedPipes++
-                        score = passedPipes
-                        pipe.copy(hasPassed = true)
-                    } else {
-                        pipe
+                    if (needNewPipe) {
+                        val lastX = updatedPipes.lastOrNull()?.x ?: 400f
+                        updatedPipes.add(
+                            Pipe(
+                                x = (lastX + 250f).coerceAtLeast(450f),
+                                gapY = Random.nextFloat() * (gameHeight - groundHeight - pipeGapHeight - 100) + 50,
+                                gapHeight = pipeGapHeight
+                            )
+                        )
+                    }
+
+                    pipes = updatedPipes
+                    passedPipes = passedCount
+                    score = passedCount
+
+                    // 边界检测
+                    if (birdY + birdSize > gameHeight - groundHeight || birdY < 0) {
+                        gameState = "gameover"
+                        return@withFrameMillis
+                    }
+
+                    // 胜利条件
+                    if (passedPipes >= 3 && gameState == "playing") {
+                        val randomFood = foods.randomOrNull()
+                        if (randomFood != null) {
+                            onResult(randomFood.name)
+                        }
+                        gameState = "gameover"
                     }
                 }
-
-                if (passedPipes >= 3 && gameState == "playing") {
-                    val randomFood = foods.randomOrNull()
-                    if (randomFood != null) {
-                        onResult(randomFood.name)
-                    }
-                    gameState = "gameover"
-                }
-
-                if (birdY + birdSize > gameHeight - groundHeight || birdY < 0) {
-                    gameState = "gameover"
-                }
-
-                kotlinx.coroutines.delay(16)
             }
         }
     }

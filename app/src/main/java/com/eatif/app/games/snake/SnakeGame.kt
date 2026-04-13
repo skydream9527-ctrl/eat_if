@@ -49,14 +49,16 @@ fun SnakeGame(
 
     var gameState by remember { mutableStateOf(GameState.IDLE) }
     var score by remember { mutableStateOf(0) }
-    var snake by remember { mutableStateOf(listOf(Offset(7f, 7f))) }
+    // ArrayDeque: addFirst O(1), removeLast O(1) — 避免每帧重建列表
+    val snake = remember { ArrayDeque<Offset>().also { it.addFirst(Offset(7f, 7f)) } }
+    var snakeVersion by remember { mutableStateOf(0) }  // 驱动 Canvas 重绘
     var direction by remember { mutableStateOf(Direction.RIGHT) }
     var nextDirection by remember { mutableStateOf(Direction.RIGHT) }
     var food by remember { mutableStateOf(Offset(5f, 5f)) }
     var isGameOver by remember { mutableStateOf(false) }
 
     fun generateFood(): Offset {
-        val occupied = snake.toSet()
+        val occupied = snake.toHashSet()
         var newFood: Offset
         do {
             newFood = Offset(
@@ -68,12 +70,14 @@ fun SnakeGame(
     }
 
     fun resetGame() {
-        snake = listOf(Offset(7f, 7f))
+        snake.clear()
+        snake.addFirst(Offset(7f, 7f))
         direction = Direction.RIGHT
         nextDirection = Direction.RIGHT
         food = generateFood()
         score = 0
         isGameOver = false
+        snakeVersion++
         gameState = GameState.PLAYING
     }
 
@@ -102,23 +106,22 @@ fun SnakeGame(
                     break
                 }
 
-                val newSnake = mutableListOf(newHead)
-                newSnake.addAll(snake)
+                snake.addFirst(newHead)
 
                 if (newHead == food) {
                     score++
                     food = generateFood()
                     if (score >= 5) {
                         gameState = GameState.WON
+                        snakeVersion++
                         delay(300)
                         val randomFood = foods.random().name
                         onResult(randomFood)
                     }
                 } else {
-                    newSnake.removeAt(newSnake.lastIndex)
+                    snake.removeLast()
                 }
-
-                snake = newSnake
+                snakeVersion++  // 通知 Canvas 重绘
             }
         }
     }
@@ -156,8 +159,13 @@ fun SnakeGame(
                 val cellWidth = size.width / gridWidth
                 val cellHeight = size.height / gridHeight
 
+                // 引用 snakeVersion 使 Compose 在蛇体变化时重绘此 Canvas
+                @Suppress("UNUSED_EXPRESSION")
+                snakeVersion
+
                 snake.forEachIndexed { index, segment ->
-                    val color = if (index == 0) Green else Green.copy(alpha = 0.7f - index * 0.05f)
+                    val alpha = (0.7f - index * 0.04f).coerceAtLeast(0.2f)
+                    val color = if (index == 0) Green else Green.copy(alpha = alpha)
                     drawRoundRect(
                         color = color,
                         topLeft = Offset(segment.x * cellWidth, segment.y * cellHeight),

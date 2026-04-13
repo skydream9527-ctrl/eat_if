@@ -40,7 +40,7 @@ import com.eatif.app.games.shooting.ShootingGame
 @Composable
 fun PlayScreen(
     gameId: String,
-    onGameEnd: (String) -> Unit,
+    onGameEnd: (String, Int) -> Unit,
     onBackClick: () -> Unit,
     viewModel: PlayViewModel = hiltViewModel()
 ) {
@@ -77,66 +77,69 @@ fun PlayScreen(
                 .padding(paddingValues),
             contentAlignment = Alignment.Center
         ) {
+            // 将游戏的 onResult(foodName) 适配为 onGameEnd(foodName, scorePercent)
+            // 对于运气/随机类游戏 scorePercent = -1（不区分得分高低，随机推荐）
+            // 对于技巧/得分类游戏，传入实际得分百分比(0-100)
             when (gameId) {
                 "spinwheel" -> SpinWheelGame(
                     foods = foods,
-                    onResult = onGameEnd
+                    onResult = { name -> onGameEnd(name, -1) }
                 )
                 "rps" -> RockPaperScissorsGame(
                     foods = foods,
-                    onResult = onGameEnd
+                    onResult = { name -> onGameEnd(name, -1) }
                 )
                 "slot" -> SlotMachineGame(
                     foods = foods,
-                    onResult = onGameEnd
+                    onResult = { name -> onGameEnd(name, -1) }
                 )
                 "needle" -> NeedleGame(
                     foods = foods,
-                    onResult = onGameEnd
+                    onResult = { name -> onGameEnd(name, -1) }
                 )
                 "jump" -> JumpGame(
                     foods = foods,
-                    onResult = onGameEnd
+                    onResult = { name -> onGameEnd(name, -1) }
                 )
                 "climb100" -> Climb100Game(
                     foods = foods,
-                    onResult = onGameEnd
+                    onResult = { name -> onGameEnd(name, -1) }
                 )
                 "2048" -> Game2048(
                     foods = foods,
-                    onResult = onGameEnd
+                    onResult = { name -> onGameEnd(name, -1) }
                 )
                 "snake" -> SnakeGame(
                     foods = foods,
-                    onResult = onGameEnd
+                    onResult = { name -> onGameEnd(name, -1) }
                 )
                 "tetris" -> TetrisGame(
                     foods = foods,
-                    onResult = onGameEnd
+                    onResult = { name -> onGameEnd(name, -1) }
                 )
                 "minesweeper" -> MinesweeperGame(
                     foods = foods,
-                    onResult = onGameEnd
+                    onResult = { name -> onGameEnd(name, -1) }
                 )
                 "onetstroke" -> OneStrokeGame(
                     foods = foods,
-                    onResult = onGameEnd
+                    onResult = { name -> onGameEnd(name, -1) }
                 )
                 "flappy" -> FlappyEatGame(
                     foods = foods,
-                    onResult = onGameEnd
+                    onResult = { name -> onGameEnd(name, -1) }
                 )
                 "boxpusher" -> BoxPusherGame(
                     foods = foods,
-                    onResult = onGameEnd
+                    onResult = { name -> onGameEnd(name, -1) }
                 )
                 "runner" -> InfiniteRunnerGame(
                     foods = foods,
-                    onResult = onGameEnd
+                    onResult = { name -> onGameEnd(name, -1) }
                 )
                 "shooting" -> ShootingGame(
                     foods = foods,
-                    onResult = onGameEnd
+                    onResult = { name, score -> onGameEnd(name, score) }
                 )
                 else -> Text(
                     text = "游戏 $gameName 开发中...",
