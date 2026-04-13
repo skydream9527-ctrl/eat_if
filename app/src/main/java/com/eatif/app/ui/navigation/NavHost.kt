@@ -10,6 +10,7 @@ import androidx.navigation.navArgument
 import com.eatif.app.ui.screens.HomeScreen
 import com.eatif.app.ui.screens.GameSelectScreen
 import com.eatif.app.ui.screens.PlayScreen
+import com.eatif.app.ui.screens.FoodSelectScreen
 import com.eatif.app.ui.screens.ResultScreen
 import com.eatif.app.ui.screens.SettingsScreen
 import com.eatif.app.ui.screens.FoodLibraryScreen
@@ -59,7 +60,20 @@ fun EatIfNavHost(
             val gameId = backStackEntry.arguments?.getString("gameId") ?: ""
             PlayScreen(
                 gameId = gameId,
-                onGameEnd = { foodName ->
+                onGameEnd = {
+                    navController.navigate(Screen.FoodSelect.route) {
+                        popUpTo(Screen.Home.route)
+                    }
+                },
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable(Screen.FoodSelect.route) {
+            FoodSelectScreen(
+                onFoodSelected = { foodName ->
                     navController.navigate(Screen.Result.createRoute(foodName)) {
                         popUpTo(Screen.Home.route)
                     }
