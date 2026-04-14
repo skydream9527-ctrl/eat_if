@@ -314,7 +314,10 @@ fun TetrisGame(
                         .size(gridWidth.dp, gridHeight.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(8.dp)
+                    ) {
                         Text(
                             text = "游戏结束",
                             style = MaterialTheme.typography.headlineSmall,
@@ -325,6 +328,24 @@ fun TetrisGame(
                             style = MaterialTheme.typography.titleMedium,
                             color = White
                         )
+                        if (foods.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            foods.take(3).forEach { food ->
+                                Button(
+                                    onClick = { onResult(food.name) },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 2.dp),
+                                    shape = RoundedCornerShape(8.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = OrangePrimary,
+                                        contentColor = White
+                                    )
+                                ) {
+                                    Text(text = food.name, style = MaterialTheme.typography.bodyMedium)
+                                }
+                            }
+                        }
                     }
                 }
             }

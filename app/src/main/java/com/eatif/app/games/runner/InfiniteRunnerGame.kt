@@ -240,7 +240,10 @@ fun InfiniteRunnerGame(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(16.dp)
+                    ) {
                         Text(
                             text = "游戏结束",
                             style = MaterialTheme.typography.headlineLarge,
@@ -251,6 +254,30 @@ fun InfiniteRunnerGame(
                             style = MaterialTheme.typography.titleLarge,
                             color = White
                         )
+                        if (foods.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = "选择一顿美食安慰自己吧:",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = White
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            foods.take(3).forEach { food ->
+                                Button(
+                                    onClick = { onResult(food.name) },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 4.dp),
+                                    shape = RoundedCornerShape(16.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = OrangePrimary,
+                                        contentColor = White
+                                    )
+                                ) {
+                                    Text(text = food.name, style = MaterialTheme.typography.titleMedium)
+                                }
+                            }
+                        }
                     }
                 }
             }

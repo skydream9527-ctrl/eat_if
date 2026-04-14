@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -226,6 +227,30 @@ fun Climb100Game(
                         style = MaterialTheme.typography.headlineSmall,
                         color = Red
                     )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    if (foods.isNotEmpty()) {
+                        Text(
+                            text = "选择一顿美食安慰自己吧:",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        foods.take(3).forEach { food ->
+                            Button(
+                                onClick = { onResult(food.name) },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 32.dp, vertical = 4.dp),
+                                shape = RoundedCornerShape(16.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = OrangePrimary,
+                                    contentColor = White
+                                )
+                            ) {
+                                Text(text = food.name, style = MaterialTheme.typography.titleMedium)
+                            }
+                        }
+                    }
                 }
             }
         }

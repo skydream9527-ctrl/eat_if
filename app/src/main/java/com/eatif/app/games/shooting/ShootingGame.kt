@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -30,6 +31,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import com.eatif.app.domain.model.Food
+import com.eatif.app.ui.theme.Green
 import com.eatif.app.ui.theme.OrangePrimary
 import com.eatif.app.ui.theme.Red
 import com.eatif.app.ui.theme.White
@@ -195,26 +197,40 @@ fun ShootingGame(
                 )
             }
 
-            if (passed && foods.isNotEmpty()) {
+            if (foods.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(16.dp))
-                Button(
-                    onClick = {
-                        val selectedFood = foods.random().name
-                        // 满分 500 分，转换为 0-100 百分比
-                        val scorePercent = (totalScore * 100 / 500).coerceIn(0, 100)
-                        onResult(selectedFood, scorePercent)
-                    },
-                    modifier = Modifier.size(width = 200.dp, height = 56.dp),
-                    shape = RoundedCornerShape(28.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Red,
-                        contentColor = White
-                    )
-                ) {
+                if (passed) {
                     Text(
-                        text = "领取食物",
-                        style = MaterialTheme.typography.titleMedium
+                        text = "🎉 恭喜通关! 选择美食庆祝吧:",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onBackground
                     )
+                } else {
+                    Text(
+                        text = "选择一顿美食安慰自己吧:",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                foods.take(3).forEach { food ->
+                    Button(
+                        onClick = {
+                            val selectedFood = food.name
+                            val scorePercent = if (passed) (totalScore * 100 / 500).coerceIn(0, 100) else 0
+                            onResult(selectedFood, scorePercent)
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (passed) Green else OrangePrimary,
+                            contentColor = White
+                        )
+                    ) {
+                        Text(text = food.name, style = MaterialTheme.typography.titleMedium)
+                    }
                 }
             }
         } else {

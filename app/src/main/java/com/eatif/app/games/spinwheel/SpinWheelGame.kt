@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -31,6 +32,7 @@ import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.unit.dp
 import com.eatif.app.domain.model.Food
+import com.eatif.app.ui.theme.GrayMedium
 import com.eatif.app.ui.theme.OrangeDark
 import com.eatif.app.ui.theme.OrangeLight
 import com.eatif.app.ui.theme.OrangePrimary
@@ -50,6 +52,7 @@ fun SpinWheelGame(
     val isSpinning = remember { mutableStateOf(false) }
     val rotation = remember { mutableStateOf(0f) }
     val animatableRotation = remember { Animatable(0f) }
+    var hasSpun by remember { mutableStateOf(false) }
 
     val segmentColors = listOf(
         OrangePrimary,
@@ -76,13 +79,7 @@ fun SpinWheelGame(
             )
             rotation.value = animatableRotation.value
             isSpinning.value = false
-
-            val normalizedRotation = (rotation.value % 360f + 360f) % 360f
-            val adjustedRotation = (360f - normalizedRotation + 90f) % 360f
-            val segmentIndex = ((adjustedRotation / 360f) * segmentCount).toInt() % segmentCount
-            val selectedFood = foods[segmentIndex].name
-            delay(100)
-            onResult(selectedFood)
+            hasSpun = true
         }
     }
 
@@ -167,27 +164,71 @@ fun SpinWheelGame(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        Button(
-            onClick = {
-                if (!isSpinning.value && foods.isNotEmpty()) {
-                    isSpinning.value = true
-                }
-            },
-            enabled = !isSpinning.value && foods.isNotEmpty(),
-            modifier = Modifier
-                .size(width = 200.dp, height = 56.dp),
-            shape = RoundedCornerShape(28.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = OrangePrimary,
-                contentColor = White,
-                disabledContainerColor = OrangeLight.copy(alpha = 0.5f),
-                disabledContentColor = White.copy(alpha = 0.5f)
-            )
-        ) {
+        if (hasSpun && foods.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "开始转动",
-                style = MaterialTheme.typography.titleMedium
+                text = "🍽️ 转到了! 选择美食吧:",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onBackground
             )
+            Spacer(modifier = Modifier.height(8.dp))
+            foods.take(3).forEach { food ->
+                Button(
+                    onClick = { onResult(food.name) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 32.dp, vertical = 4.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = OrangePrimary,
+                        contentColor = White
+                    )
+                ) {
+                    Text(text = food.name, style = MaterialTheme.typography.titleMedium)
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Button(
+                onClick = {
+                    hasSpun = false
+                    isSpinning.value = true
+                },
+                modifier = Modifier
+                    .size(width = 200.dp, height = 56.dp),
+                shape = RoundedCornerShape(28.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = GrayMedium,
+                    contentColor = White
+                )
+            ) {
+                Text(
+                    text = "再转一次",
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
+        } else {
+            Button(
+                onClick = {
+                    if (!isSpinning.value && foods.isNotEmpty()) {
+                        isSpinning.value = true
+                    }
+                },
+                enabled = !isSpinning.value && foods.isNotEmpty(),
+                modifier = Modifier
+                    .size(width = 200.dp, height = 56.dp),
+                shape = RoundedCornerShape(28.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = OrangePrimary,
+                    contentColor = White,
+                    disabledContainerColor = OrangeLight.copy(alpha = 0.5f),
+                    disabledContentColor = White.copy(alpha = 0.5f)
+                )
+            ) {
+                Text(
+                    text = if (isSpinning.value) "旋转中..." else "开始转动",
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
         }
     }
 }

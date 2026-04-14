@@ -36,6 +36,7 @@ import com.eatif.app.ui.theme.Gray
 import com.eatif.app.ui.theme.GrayMedium
 import com.eatif.app.ui.theme.Green
 import com.eatif.app.ui.theme.OrangePrimary
+import com.eatif.app.ui.theme.Red
 import com.eatif.app.ui.theme.White
 
 @Composable
@@ -54,6 +55,7 @@ fun BoxPusherGame(
     val target2 = Position(4, 3)
 
     val gridSize = 5
+    val maxMoves = 30
 
     fun move(dr: Int, dc: Int) {
         if (gameState != GameState.PLAYING) return
@@ -92,6 +94,8 @@ fun BoxPusherGame(
             if (foods.isNotEmpty()) {
                 onResult(foods.random().name)
             }
+        } else if (moveCount >= maxMoves) {
+            gameState = GameState.LOST
         }
     }
 
@@ -211,6 +215,37 @@ fun BoxPusherGame(
                 color = Green
             )
             Spacer(modifier = Modifier.height(8.dp))
+        } else if (gameState == GameState.LOST) {
+            Text(
+                text = "😵 超过移动次数限制!",
+                style = MaterialTheme.typography.titleLarge,
+                color = Red
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            if (foods.isNotEmpty()) {
+                Text(
+                    text = "选择一顿美食安慰自己吧:",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                foods.take(3).forEach { food ->
+                    Button(
+                        onClick = { onResult(food.name) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = OrangePrimary,
+                            contentColor = White
+                        )
+                    ) {
+                        Text(text = food.name, style = MaterialTheme.typography.titleMedium)
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+            }
         }
 
         Button(
@@ -237,5 +272,5 @@ private enum class CellType {
 }
 
 private enum class GameState {
-    PLAYING, WON
+    PLAYING, WON, LOST
 }

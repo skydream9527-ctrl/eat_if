@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -330,6 +331,31 @@ fun Game2048(
                     style = MaterialTheme.typography.headlineSmall,
                     color = Color.Red
                 )
+                Spacer(modifier = Modifier.height(8.dp))
+                if (foods.isNotEmpty()) {
+                    Text(
+                        text = "选择一顿美食安慰自己吧:",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    foods.take(3).forEach { food ->
+                        Button(
+                            onClick = { onResult(food.name) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = OrangePrimary,
+                                contentColor = White
+                            )
+                        ) {
+                            Text(text = food.name, style = MaterialTheme.typography.titleMedium)
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
             }
         }
 

@@ -24,8 +24,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.eatif.app.domain.model.Food
+import com.eatif.app.ui.theme.Green
 import com.eatif.app.ui.theme.OrangePrimary
 import com.eatif.app.ui.theme.OrangeLight
+import com.eatif.app.ui.theme.Red
 import com.eatif.app.ui.theme.White
 
 enum class RPSChoice(val emoji: String) {
@@ -59,6 +61,9 @@ fun RockPaperScissorsGame(
     var playerScore by remember { mutableStateOf(0) }
     var aiScore by remember { mutableStateOf(0) }
     var resultText by remember { mutableStateOf("") }
+    var isFinalResult by remember { mutableStateOf(false) }
+    
+    val winTarget = 3
 
     Column(
         modifier = Modifier
@@ -164,56 +169,113 @@ fun RockPaperScissorsGame(
             }
 
             GameState.RESULT -> {
-                Text(
-                    text = resultText,
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Button(
-                    onClick = {
-                        playerChoice = null
-                        aiChoice = null
-                        resultText = ""
-                        gameState = GameState.READY
-                    },
-                    modifier = Modifier
-                        .size(width = 200.dp, height = 56.dp),
-                    shape = RoundedCornerShape(28.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = OrangePrimary,
-                        contentColor = White
-                    )
-                ) {
+                if (isFinalResult) {
+                    val playerWon = playerScore >= winTarget
                     Text(
-                        text = "\u518D\u6765\u4E00\u5C40",
-                        style = MaterialTheme.typography.titleMedium
+                        text = if (playerWon) "\uD83C\uDF89 \u4F60\u8D62\u4E86\u5168\u573A!" else "\uD83D\uDE1E \u4F60\u8F93\u4E86\u5168\u573A!",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = if (playerWon) Green else Red
                     )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Button(
-                    onClick = {
-                        if (foods.isNotEmpty()) {
-                            val randomFood = foods.random().name
-                            onResult(randomFood)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    if (foods.isNotEmpty()) {
+                        Text(
+                            text = if (playerWon) "\u9009\u62E9\u7F8E\u98DF\u5E86\u795D\u5427:" else "\u9009\u62E9\u4E00\u987F\u7F8E\u98DF\u5B89\u6177\u81EA\u5DF1\u5427:",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        foods.take(3).forEach { food ->
+                            Button(
+                                onClick = { onResult(food.name) },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp),
+                                shape = RoundedCornerShape(16.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = if (playerWon) Green else OrangePrimary,
+                                    contentColor = White
+                                )
+                            ) {
+                                Text(text = food.name, style = MaterialTheme.typography.titleMedium)
+                            }
                         }
-                    },
-                    modifier = Modifier
-                        .size(width = 200.dp, height = 56.dp),
-                    shape = RoundedCornerShape(28.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = OrangeLight,
-                        contentColor = White
-                    )
-                ) {
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(
+                        onClick = {
+                            playerScore = 0
+                            aiScore = 0
+                            playerChoice = null
+                            aiChoice = null
+                            resultText = ""
+                            isFinalResult = false
+                            gameState = GameState.READY
+                        },
+                        modifier = Modifier
+                            .size(width = 200.dp, height = 56.dp),
+                        shape = RoundedCornerShape(28.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = OrangePrimary,
+                            contentColor = White
+                        )
+                    ) {
+                        Text(
+                            text = "\u91CD\u65B0\u5F00\u59CB",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                } else {
                     Text(
-                        text = "\u7ED3\u675F\u5E76\u9009\u62E9\u7F8E\u98DF",
-                        style = MaterialTheme.typography.titleMedium
+                        text = resultText,
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onBackground
                     )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Button(
+                        onClick = {
+                            playerChoice = null
+                            aiChoice = null
+                            resultText = ""
+                            gameState = GameState.READY
+                        },
+                        modifier = Modifier
+                            .size(width = 200.dp, height = 56.dp),
+                        shape = RoundedCornerShape(28.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = OrangePrimary,
+                            contentColor = White
+                        )
+                    ) {
+                        Text(
+                            text = "\u518D\u6765\u4E00\u5C40",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Button(
+                        onClick = {
+                            if (foods.isNotEmpty()) {
+                                val randomFood = foods.random().name
+                                onResult(randomFood)
+                            }
+                        },
+                        modifier = Modifier
+                            .size(width = 200.dp, height = 56.dp),
+                        shape = RoundedCornerShape(28.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = OrangeLight,
+                            contentColor = White
+                        )
+                    ) {
+                        Text(
+                            text = "\u7ED3\u675F\u5E76\u9009\u62E9\u7F8E\u98DF",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
                 }
             }
         }
@@ -233,6 +295,9 @@ fun RockPaperScissorsGame(
                     else -> "\uD83D\uDE4B \u5E73\u5C40!"
                 }
                 if (winner == 1) playerScore++ else if (winner == -1) aiScore++
+                if (playerScore >= winTarget || aiScore >= winTarget) {
+                    isFinalResult = true
+                }
                 gameState = GameState.RESULT
             }, 500)
         }, 1000)

@@ -111,7 +111,7 @@ fun ResultScreen(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             LinearProgressIndicator(
-                                progress = { scorePercent / 100f },
+                                progress = scorePercent / 100f,
                                 modifier = Modifier
                                     .weight(1f)
                                     .height(8.dp)

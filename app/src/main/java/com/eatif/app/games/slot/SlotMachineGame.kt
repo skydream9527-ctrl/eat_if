@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.sp
 import com.eatif.app.domain.model.Food
 import com.eatif.app.ui.theme.Gold
 import com.eatif.app.ui.theme.OrangePrimary
+import com.eatif.app.ui.theme.Red
 import com.eatif.app.ui.theme.White
 import kotlinx.coroutines.delay
 
@@ -52,6 +53,7 @@ fun SlotMachineGame(
     var animationProgress2 by remember { mutableStateOf(0f) }
     var animationProgress3 by remember { mutableStateOf(0f) }
     var resultMessage by remember { mutableStateOf("🎰 拉杆子开始!") }
+    var isFailure by remember { mutableStateOf(false) }
 
     val animatable1 = remember { Animatable(0f) }
     val animatable2 = remember { Animatable(0f) }
@@ -107,25 +109,30 @@ fun SlotMachineGame(
             val result = when {
                 food1 == food2 && food2 == food3 -> {
                     resultMessage = "🎉 超级大奖! $food1"
+                    isFailure = false
                     food1
                 }
                 food1 == food2 || food1 == food3 -> {
                     resultMessage = "✨ 赢了! $food1"
+                    isFailure = false
                     food1
                 }
                 food2 == food3 -> {
                     resultMessage = "✨ 赢了! $food2"
+                    isFailure = false
                     food2
                 }
                 else -> {
-                    val randomFood = reelSymbols.random()
-                    resultMessage = "🍽️ 选择: $randomFood"
-                    randomFood
+                    resultMessage = "😢 没有匹配..."
+                    isFailure = true
+                    null
                 }
             }
 
             delay(500)
-            onResult(result)
+            if (!isFailure && result != null) {
+                onResult(result)
+            }
             isSpinning = false
         }
     }
@@ -189,6 +196,7 @@ fun SlotMachineGame(
                     animationProgress2 = 0f
                     animationProgress3 = 0f
                     isSpinning = true
+                    isFailure = false
                 }
             },
             enabled = !isSpinning && foods.isNotEmpty(),
@@ -206,6 +214,31 @@ fun SlotMachineGame(
                 text = if (isSpinning) "转动中..." else "拉动杆子",
                 style = MaterialTheme.typography.titleMedium
             )
+        }
+
+        if (isFailure && foods.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "选择一顿美食安慰自己吧:",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            foods.take(3).forEach { food ->
+                Button(
+                    onClick = { onResult(food.name) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 32.dp, vertical = 4.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = OrangePrimary,
+                        contentColor = White
+                    )
+                ) {
+                    Text(text = food.name, style = MaterialTheme.typography.titleMedium)
+                }
+            }
         }
     }
 }

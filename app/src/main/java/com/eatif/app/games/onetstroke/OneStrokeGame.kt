@@ -233,6 +233,30 @@ fun OneStrokeGame(
                     color = Red
                 )
                 Spacer(modifier = Modifier.height(8.dp))
+                if (foods.isNotEmpty()) {
+                    Text(
+                        text = "选择一顿美食安慰自己吧:",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    foods.take(3).forEach { food ->
+                        Button(
+                            onClick = { onResult(food.name) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = OrangePrimary,
+                                contentColor = White
+                            )
+                        ) {
+                            Text(text = food.name, style = MaterialTheme.typography.titleMedium)
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
             }
             else -> {}
         }
