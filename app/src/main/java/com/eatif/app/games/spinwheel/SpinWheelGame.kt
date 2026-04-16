@@ -6,6 +6,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,8 +14,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -47,12 +53,15 @@ import kotlin.math.sin
 @Composable
 fun SpinWheelGame(
     foods: List<Food>,
+    isPaused: Boolean = false,
     onResult: (String) -> Unit
 ) {
     val isSpinning = remember { mutableStateOf(false) }
     val rotation = remember { mutableStateOf(0f) }
     val animatableRotation = remember { Animatable(0f) }
     var hasSpun by remember { mutableStateOf(false) }
+    var internalPaused by remember { mutableStateOf(false) }
+    val actualPaused = isPaused || internalPaused
 
     val segmentColors = listOf(
         OrangePrimary,
@@ -207,27 +216,43 @@ fun SpinWheelGame(
                 )
             }
         } else {
-            Button(
-                onClick = {
-                    if (!isSpinning.value && foods.isNotEmpty()) {
-                        isSpinning.value = true
-                    }
-                },
-                enabled = !isSpinning.value && foods.isNotEmpty(),
-                modifier = Modifier
-                    .size(width = 200.dp, height = 56.dp),
-                shape = RoundedCornerShape(28.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = OrangePrimary,
-                    contentColor = White,
-                    disabledContainerColor = OrangeLight.copy(alpha = 0.5f),
-                    disabledContentColor = White.copy(alpha = 0.5f)
-                )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Text(
-                    text = if (isSpinning.value) "旋转中..." else "开始转动",
-                    style = MaterialTheme.typography.titleMedium
-                )
+                IconButton(
+                    onClick = { internalPaused = !internalPaused },
+                    modifier = Modifier.size(56.dp)
+                ) {
+                    Icon(
+                        imageVector = if (actualPaused) Icons.Filled.PlayArrow else Icons.Filled.Pause,
+                        contentDescription = if (actualPaused) "继续" else "暂停",
+                        tint = OrangePrimary,
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
+
+                Button(
+                    onClick = {
+                        if (!isSpinning.value && foods.isNotEmpty()) {
+                            isSpinning.value = true
+                        }
+                    },
+                    enabled = !isSpinning.value && foods.isNotEmpty(),
+                    modifier = Modifier
+                        .size(width = 160.dp, height = 56.dp),
+                    shape = RoundedCornerShape(28.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = OrangePrimary,
+                        contentColor = White,
+                        disabledContainerColor = OrangeLight.copy(alpha = 0.5f),
+                        disabledContentColor = White.copy(alpha = 0.5f)
+                    )
+                ) {
+                    Text(
+                        text = if (isSpinning.value) "旋转中..." else "开始转动",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
             }
         }
     }

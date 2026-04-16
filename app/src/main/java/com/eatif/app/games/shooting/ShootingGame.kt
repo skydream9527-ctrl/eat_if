@@ -41,6 +41,8 @@ import kotlin.math.sqrt
 @Composable
 fun ShootingGame(
     foods: List<Food>,
+    isPaused: Boolean = false,
+    onPauseToggle: ((Boolean) -> Unit)? = null,
     onResult: (String, Int) -> Unit
 ) {
     var shotsRemaining by remember { mutableStateOf(5) }
@@ -49,6 +51,7 @@ fun ShootingGame(
     var lastHitOffset by remember { mutableStateOf(Offset.Zero) }
     var isGameOver by remember { mutableStateOf(false) }
     var showHitEffect by remember { mutableStateOf(false) }
+    var internalPaused by remember { mutableStateOf(false) }
     val hitEffectScale = remember { Animatable(0f) }
 
     val targetRadius = 120f
@@ -105,8 +108,8 @@ fun ShootingGame(
             contentAlignment = Alignment.Center,
             modifier = Modifier
                 .size(280.dp)
-                .pointerInput(shotsRemaining, isGameOver) {
-                    if (shotsRemaining > 0 && !isGameOver) {
+                .pointerInput(shotsRemaining, isGameOver, isPaused, internalPaused) {
+                    if (shotsRemaining > 0 && !isGameOver && !isPaused && !internalPaused) {
                         detectTapGestures { offset ->
                             val centerX = size.width / 2f
                             val centerY = size.height / 2f
@@ -163,6 +166,29 @@ fun ShootingGame(
         }
 
         Spacer(modifier = Modifier.height(24.dp))
+
+        if (!isGameOver) {
+            Button(
+                onClick = {
+                    internalPaused = !internalPaused
+                    onPauseToggle?.invoke(internalPaused)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                shape = RoundedCornerShape(24.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF86868B),
+                    contentColor = White
+                )
+            ) {
+                Text(
+                    text = if (internalPaused) "继续游戏" else "暂停",
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+        }
 
         if (isGameOver) {
             val passThreshold = 250

@@ -4,8 +4,12 @@ import android.content.Context
 import androidx.room.Room
 import com.eatif.app.data.local.FoodDao
 import com.eatif.app.data.local.FoodDatabase
+import com.eatif.app.data.local.FoodDataSeeder
+import com.eatif.app.data.local.HistoryDao
 import com.eatif.app.data.repository.FoodRepositoryImpl
+import com.eatif.app.data.repository.HistoryRepositoryImpl
 import com.eatif.app.domain.repository.FoodRepository
+import com.eatif.app.domain.repository.HistoryRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -26,7 +30,9 @@ object DatabaseModule {
             context,
             FoodDatabase::class.java,
             "food_database"
-        ).build()
+        )
+            .addCallback(FoodDataSeeder.getCallback())
+            .build()
     }
 
     @Provides
@@ -37,7 +43,19 @@ object DatabaseModule {
 
     @Provides
     @Singleton
+    fun provideHistoryDao(database: FoodDatabase): HistoryDao {
+        return database.historyDao()
+    }
+
+    @Provides
+    @Singleton
     fun provideFoodRepository(foodDao: FoodDao): FoodRepository {
         return FoodRepositoryImpl(foodDao)
+    }
+
+    @Provides
+    @Singleton
+    fun provideHistoryRepository(historyDao: HistoryDao): HistoryRepository {
+        return HistoryRepositoryImpl(historyDao)
     }
 }

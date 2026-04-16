@@ -9,6 +9,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,8 +17,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -50,6 +56,7 @@ import kotlin.random.Random
 @Composable
 fun Climb100Game(
     foods: List<Food>,
+    isPaused: Boolean = false,
     onResult: (String) -> Unit
 ) {
     val scope = rememberCoroutineScope()
@@ -60,10 +67,17 @@ fun Climb100Game(
         generatePlatforms(20).toMutableList()
     }
     var platformOffset by remember { mutableStateOf(0) }
+    var internalPaused by remember { mutableStateOf(false) }
 
-    LaunchedEffect(gameState.value) {
+    val actualPaused = isPaused || internalPaused
+
+    LaunchedEffect(gameState.value, actualPaused) {
         if (gameState.value == GameState.PLAYING) {
             while (gameState.value == GameState.PLAYING && currentFloor.value < 10) {
+                if (actualPaused) {
+                    delay(100)
+                    continue
+                }
                 delay(1500)
                 val targetPlatform = platforms.getOrNull(currentFloor.value + 1) ?: return@LaunchedEffect
                 val success = Random.nextFloat() > 0.2f
@@ -259,45 +273,94 @@ fun Climb100Game(
 
         when (gameState.value) {
             GameState.IDLE -> {
-                Button(
-                    onClick = {
-                        currentFloor.value = 0
-                        platformOffset = 0
-                        gameState.value = GameState.PLAYING
-                    },
-                    modifier = Modifier.size(width = 200.dp, height = 56.dp),
-                    shape = RoundedCornerShape(28.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = OrangePrimary,
-                        contentColor = White
-                    )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Text("开始攀登", style = MaterialTheme.typography.titleMedium)
+                    IconButton(
+                        onClick = { internalPaused = !internalPaused },
+                        modifier = Modifier.size(56.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (actualPaused) Icons.Filled.PlayArrow else Icons.Filled.Pause,
+                            contentDescription = if (actualPaused) "继续" else "暂停",
+                            tint = OrangePrimary,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+
+                    Button(
+                        onClick = {
+                            currentFloor.value = 0
+                            platformOffset = 0
+                            gameState.value = GameState.PLAYING
+                        },
+                        modifier = Modifier.size(width = 160.dp, height = 56.dp),
+                        shape = RoundedCornerShape(28.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = OrangePrimary,
+                            contentColor = White
+                        )
+                    ) {
+                        Text("开始攀登", style = MaterialTheme.typography.titleMedium)
+                    }
                 }
             }
             GameState.PLAYING -> {
-                Text(
-                    text = "👆 点击屏幕跳跃!",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = GrayMedium
-                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    IconButton(
+                        onClick = { internalPaused = !internalPaused },
+                        modifier = Modifier.size(56.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (actualPaused) Icons.Filled.PlayArrow else Icons.Filled.Pause,
+                            contentDescription = if (actualPaused) "继续" else "暂停",
+                            tint = OrangePrimary,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+
+                    Text(
+                        text = "👆 点击屏幕跳跃!",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = GrayMedium,
+                        modifier = Modifier.padding(top = 16.dp)
+                    )
+                }
             }
             GameState.WON, GameState.LOST -> {
-                Button(
-                    onClick = {
-                        currentFloor.value = 0
-                        platformOffset = 0
-                        scope.launch { playerY.snapTo(0f) }
-                        gameState.value = GameState.PLAYING
-                    },
-                    modifier = Modifier.size(width = 200.dp, height = 56.dp),
-                    shape = RoundedCornerShape(28.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = OrangePrimary,
-                        contentColor = White
-                    )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Text("再来一次", style = MaterialTheme.typography.titleMedium)
+                    IconButton(
+                        onClick = { internalPaused = !internalPaused },
+                        modifier = Modifier.size(56.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (actualPaused) Icons.Filled.PlayArrow else Icons.Filled.Pause,
+                            contentDescription = if (actualPaused) "继续" else "暂停",
+                            tint = OrangePrimary,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+
+                    Button(
+                        onClick = {
+                            currentFloor.value = 0
+                            platformOffset = 0
+                            scope.launch { playerY.snapTo(0f) }
+                            gameState.value = GameState.PLAYING
+                        },
+                        modifier = Modifier.size(width = 160.dp, height = 56.dp),
+                        shape = RoundedCornerShape(28.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = OrangePrimary,
+                            contentColor = White
+                        )
+                    ) {
+                        Text("再来一次", style = MaterialTheme.typography.titleMedium)
+                    }
                 }
             }
         }

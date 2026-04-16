@@ -51,59 +51,68 @@ data class Obstacle(
 @Composable
 fun InfiniteRunnerGame(
     foods: List<Food>,
+    isPaused: Boolean = false,
+    onPauseToggle: ((Boolean) -> Unit)? = null,
     onResult: (String) -> Unit
 ) {
     var score by remember { mutableStateOf(0) }
-    var gameState by remember { mutableStateOf("playing") }
+    var gameState by remember { mutableStateOf("ready") }
     var obstaclesPassed by remember { mutableStateOf(0) }
     var elapsedSeconds by remember { mutableStateOf(0) }
-    
+    var internalPaused by remember { mutableStateOf(false) }
+
     val characterY = remember { Animatable(0f) }
     val characterX = remember { mutableStateOf(100f) }
     var isJumping by remember { mutableStateOf(false) }
     var obstacles by remember { mutableStateOf(listOf<Obstacle>()) }
     var groundOffset by remember { mutableStateOf(0f) }
-    
+
     val groundY = 400f
     val characterSize = 50f
     val gameWidth = 800f
-    val gameHeight = 500f
     val scope = rememberCoroutineScope()
-    
+
+    val actualPaused = isPaused || internalPaused
+
     LaunchedEffect(Unit) {
         characterY.snapTo(groundY - characterSize)
     }
-    
-    LaunchedEffect(gameState) {
+
+    LaunchedEffect(gameState, actualPaused) {
         if (gameState == "playing") {
             val startTime = System.currentTimeMillis()
             var lastFrameTime = -1L
-            var obstacleTimer = 0f         // 障碍物生成计时器（毫秒）
-            val obstacleInterval = 1800f   // 每1.8秒生成一个障碍
+            var obstacleTimer = 0f
+            val obstacleInterval = 1800f
 
             while (gameState == "playing") {
+                if (actualPaused) {
+                    kotlinx.coroutines.delay(100)
+                    continue
+                }
                 withFrameMillis { frameTimeMs ->
+                    if (actualPaused) {
+                        lastFrameTime = -1L
+                        return@withFrameMillis
+                    }
                     if (lastFrameTime < 0L) {
                         lastFrameTime = frameTimeMs
                         return@withFrameMillis
                     }
                     val rawDt = (frameTimeMs - lastFrameTime).coerceIn(1L, 48L).toFloat()
-                    val dt = rawDt / 16f   // 归一化到 16ms 基准
+                    val dt = rawDt / 16f
                     lastFrameTime = frameTimeMs
                     obstacleTimer += rawDt
 
-                    // 更新地面滚动
                     groundOffset = (groundOffset + 8f * dt) % 40f
 
-                    // 更新计时
                     val currentSec = ((frameTimeMs - startTime) / 1000).toInt()
                     if (currentSec > elapsedSeconds) elapsedSeconds = currentSec
 
-                    // 更新障碍物位置 + 计分（单次遍历）
                     val updatedObstacles = ArrayList<Obstacle>(obstacles.size)
                     var passed = obstaclesPassed
                     for (obs in obstacles) {
-                        val newX = obs.x - 12f * dt   // 速度归一化
+                        val newX = obs.x - 12f * dt
                         if (newX + obs.width < -100f) continue
                         val obsRight = newX + obs.width
                         if (obsRight < characterX.value && !obs.passed) {
@@ -115,7 +124,6 @@ fun InfiniteRunnerGame(
                     obstacles = updatedObstacles
                     obstaclesPassed = passed
 
-                    // 碰撞检测（每帧执行）
                     val charLeft = characterX.value
                     val charRight = characterX.value + characterSize
                     val charTop = characterY.value
@@ -130,7 +138,6 @@ fun InfiniteRunnerGame(
                         }
                     }
 
-                    // 生成新障碍物
                     if (obstacleTimer >= obstacleInterval) {
                         obstacleTimer = 0f
                         val lastObs = obstacles.lastOrNull()
@@ -147,7 +154,6 @@ fun InfiniteRunnerGame(
                         )
                     }
 
-                    // 胜利条件
                     if (elapsedSeconds >= 30 || obstaclesPassed >= 10) {
                         gameState = "won"
                         val randomFood = foods.randomOrNull()
@@ -300,9 +306,32 @@ fun InfiniteRunnerGame(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        if (gameState == "playing") {
+            Button(
+                onClick = {
+                    internalPaused = !internalPaused
+                    onPauseToggle?.invoke(internalPaused)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(28.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF86868B),
+                    contentColor = White
+                )
+            ) {
+                Text(
+                    text = if (internalPaused) "继续游戏" else "暂停",
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
         Button(
             onClick = {
-                if (gameState == "gameover" || gameState == "won") {
+                if (gameState == "ready" || gameState == "gameover" || gameState == "won") {
                     score = 0
                     obstaclesPassed = 0
                     elapsedSeconds = 0
@@ -310,6 +339,7 @@ fun InfiniteRunnerGame(
                     isJumping = false
                     scope.launch { characterY.snapTo(groundY - characterSize) }
                     groundOffset = 0f
+                    internalPaused = false
                     gameState = "playing"
                 } else if (!isJumping) {
                     isJumping = true
@@ -326,9 +356,10 @@ fun InfiniteRunnerGame(
         ) {
             Text(
                 text = when (gameState) {
+                    "ready" -> "开始游戏"
                     "gameover" -> "重新开始"
                     "won" -> "再玩一次"
-                    else -> "跳跃"
+                    else -> if (internalPaused) "继续" else "跳跃"
                 },
                 style = MaterialTheme.typography.titleMedium
             )

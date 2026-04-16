@@ -4,18 +4,17 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eatif.app.domain.model.Food
 import com.eatif.app.domain.model.GameList
-import com.eatif.app.domain.repository.FoodRepository
+import com.eatif.app.domain.usecase.GetAllFoodsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class PlayViewModel @Inject constructor(
-    private val repository: FoodRepository
+    private val getAllFoodsUseCase: GetAllFoodsUseCase
 ) : ViewModel() {
 
     private val defaultFoods = listOf(
@@ -38,9 +37,10 @@ class PlayViewModel @Inject constructor(
 
     fun loadFoods() {
         viewModelScope.launch {
-            val repositoryFoods = repository.getAllFoods().first()
-            if (repositoryFoods.isNotEmpty()) {
-                _foods.value = repositoryFoods
+            getAllFoodsUseCase().collect { repositoryFoods ->
+                if (repositoryFoods.isNotEmpty()) {
+                    _foods.value = repositoryFoods
+                }
             }
         }
     }

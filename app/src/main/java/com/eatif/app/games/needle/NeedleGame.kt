@@ -7,6 +7,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,8 +15,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -43,6 +49,7 @@ import kotlin.math.sin
 @Composable
 fun NeedleGame(
     foods: List<Food>,
+    isPaused: Boolean = false,
     onResult: (String) -> Unit
 ) {
     val needles = remember { mutableStateOf<List<Float>>(emptyList()) }
@@ -51,6 +58,8 @@ fun NeedleGame(
     val animatableAngle = remember { Animatable(0f) }
     val score = remember { mutableStateOf(0) }
     val gameOver = remember { mutableStateOf(false) }
+    var internalPaused by remember { mutableStateOf(false) }
+    val actualPaused = isPaused || internalPaused
     val targetScore = 5
 
     LaunchedEffect(spinning.value) {
@@ -203,30 +212,46 @@ fun NeedleGame(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        Button(
-            onClick = {
-                if (!spinning.value && !gameOver.value && score.value < targetScore) {
-                    spinning.value = true
-                }
-            },
-            enabled = !spinning.value && !gameOver.value && score.value < targetScore && foods.isNotEmpty(),
-            modifier = Modifier.size(width = 200.dp, height = 56.dp),
-            shape = RoundedCornerShape(28.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = OrangePrimary,
-                contentColor = White,
-                disabledContainerColor = Gray.copy(alpha = 0.5f),
-                disabledContentColor = White.copy(alpha = 0.5f)
-            )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text(
-                text = when {
-                    gameOver.value -> "游戏结束"
-                    score.value >= targetScore -> "完成!"
-                    else -> "插入"
+            IconButton(
+                onClick = { internalPaused = !internalPaused },
+                modifier = Modifier.size(56.dp)
+            ) {
+                Icon(
+                    imageVector = if (actualPaused) Icons.Filled.PlayArrow else Icons.Filled.Pause,
+                    contentDescription = if (actualPaused) "继续" else "暂停",
+                    tint = OrangePrimary,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+
+            Button(
+                onClick = {
+                    if (!spinning.value && !gameOver.value && score.value < targetScore) {
+                        spinning.value = true
+                    }
                 },
-                style = MaterialTheme.typography.titleMedium
-            )
+                enabled = !spinning.value && !gameOver.value && score.value < targetScore && foods.isNotEmpty(),
+                modifier = Modifier.size(width = 160.dp, height = 56.dp),
+                shape = RoundedCornerShape(28.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = OrangePrimary,
+                    contentColor = White,
+                    disabledContainerColor = Gray.copy(alpha = 0.5f),
+                    disabledContentColor = White.copy(alpha = 0.5f)
+                )
+            ) {
+                Text(
+                    text = when {
+                        gameOver.value -> "游戏结束"
+                        score.value >= targetScore -> "完成!"
+                        else -> "插入"
+                    },
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
         }
 
         if (score.value >= targetScore && foods.isNotEmpty()) {

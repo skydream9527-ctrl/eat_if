@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,8 +17,13 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -45,6 +51,7 @@ import com.eatif.app.ui.theme.White
 @Composable
 fun MinesweeperGame(
     foods: List<Food>,
+    isPaused: Boolean = false,
     onResult: (String) -> Unit
 ) {
     val gridSize = 8
@@ -56,6 +63,8 @@ fun MinesweeperGame(
     var gameState by remember { mutableStateOf(GameState.IDLE) }
     var uncoveredCount by remember { mutableStateOf(0) }
     var cellsRemaining by remember { mutableStateOf(safeCells) }
+    var internalPaused by remember { mutableStateOf(false) }
+    val actualPaused = isPaused || internalPaused
 
     val mineDisplayCount = board.flatten().count { it.isMine && !it.isRevealed }
 
@@ -184,24 +193,40 @@ fun MinesweeperGame(
             Spacer(modifier = Modifier.height(8.dp))
         }
 
-        Button(
-            onClick = {
-                board = createBoard(gridSize, mineCount)
-                gameState = GameState.IDLE
-                uncoveredCount = 0
-                cellsRemaining = safeCells
-            },
-            modifier = Modifier.size(width = 200.dp, height = 56.dp),
-            shape = RoundedCornerShape(28.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = OrangePrimary,
-                contentColor = White
-            )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text(
-                text = "重新开始",
-                style = MaterialTheme.typography.titleMedium
-            )
+            IconButton(
+                onClick = { internalPaused = !internalPaused },
+                modifier = Modifier.size(56.dp)
+            ) {
+                Icon(
+                    imageVector = if (actualPaused) Icons.Filled.PlayArrow else Icons.Filled.Pause,
+                    contentDescription = if (actualPaused) "继续" else "暂停",
+                    tint = OrangePrimary,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+
+            Button(
+                onClick = {
+                    board = createBoard(gridSize, mineCount)
+                    gameState = GameState.IDLE
+                    uncoveredCount = 0
+                    cellsRemaining = safeCells
+                },
+                modifier = Modifier.size(width = 160.dp, height = 56.dp),
+                shape = RoundedCornerShape(28.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = OrangePrimary,
+                    contentColor = White
+                )
+            ) {
+                Text(
+                    text = "重新开始",
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
         }
     }
 }

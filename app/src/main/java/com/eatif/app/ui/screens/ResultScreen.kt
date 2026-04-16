@@ -1,5 +1,7 @@
 package com.eatif.app.ui.screens
 
+import android.content.Context
+import android.content.Intent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -19,10 +21,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -36,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -51,13 +58,12 @@ fun ResultScreen(
 ) {
     var showContent by remember { mutableStateOf(false) }
     var showRecommendation by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
-    // 尝试从 SessionManager 获取推荐（需要用户已配置店铺 + 有合法得分）
     val recommendation = remember {
         if (SessionManager.isConfigured && scorePercent >= 0) {
             SessionManager.getRecommendation(scorePercent / 100f)
         } else if (SessionManager.isConfigured) {
-            // 运气类游戏（scorePercent = -1）：随机选一家
             SessionManager.getRecommendation(0.5f)?.copy(
                 reason = "随机为你挑选",
                 emoji = "🎲"
@@ -87,7 +93,22 @@ fun ResultScreen(
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
 
-                // ── 顶部 emoji ──
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(
+                        onClick = { shareResult(context, recommendation, foodName, scorePercent) }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Share,
+                            contentDescription = "分享结果",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+
                 Text(
                     text = if (recommendation != null) recommendation.emoji else "🎉",
                     style = MaterialTheme.typography.displayLarge
@@ -96,9 +117,6 @@ fun ResultScreen(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 if (recommendation != null) {
-                    // ══ 有推荐：展示店铺推荐卡片 ══
-
-                    // 得分进度条（只在有实际得分时显示）
                     if (scorePercent >= 0) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -171,7 +189,6 @@ fun ResultScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // 候选选项提示：其他店铺
                     val otherShops = SessionManager.shopOptions.filter {
                         it != recommendation.shopName
                     }.take(3)
@@ -205,7 +222,6 @@ fun ResultScreen(
                     }
 
                 } else {
-                    // ══ 无推荐：旧逻辑，只显示菜名 ══
                     Text(
                         text = "今天的晚餐是",
                         style = MaterialTheme.typography.headlineMedium,
@@ -253,5 +269,42 @@ fun ResultScreen(
             }
         }
     }
+}
+
+private fun shareResult(
+    context: Context,
+    recommendation: com.eatif.app.domain.model.RecommendationResult?,
+    foodName: String,
+    scorePercent: Int
+) {
+    val shareText = if (recommendation != null) {
+        buildString {
+            appendLine("🎉 今天吃什么？")
+            appendLine()
+            appendLine("${recommendation.emoji} ${recommendation.reason}")
+            appendLine()
+            appendLine("🏠 决定去吃：${recommendation.shopName}")
+            if (scorePercent >= 0) {
+                appendLine()
+                appendLine("🎮 游戏得分：$scorePercent%")
+            }
+            appendLine()
+            appendLine("—— 来自「今天吃什么？」App")
+        }
+    } else {
+        buildString {
+            appendLine("🎉 今天吃什么？")
+            appendLine()
+            appendLine("🍽️ 决定吃：$foodName")
+            appendLine()
+            appendLine("—— 来自「今天吃什么？」App")
+        }
+    }
+
+    val intent = Intent(Intent.ACTION_SEND).apply {
+        type = "text/plain"
+        putExtra(Intent.EXTRA_TEXT, shareText)
+    }
+    context.startActivity(Intent.createChooser(intent, "分享结果"))
 }
 

@@ -53,6 +53,7 @@ data class Block(
 @Composable
 fun JumpGame(
     foods: List<Food>,
+    isPaused: Boolean = false,
     onResult: (String) -> Unit
 ) {
     var score by remember { mutableIntStateOf(0) }
@@ -65,9 +66,12 @@ fun JumpGame(
     var isJumping by remember { mutableStateOf(false) }
     var isFalling by remember { mutableStateOf(false) }
     var fallingSpeed by remember { mutableFloatStateOf(0f) }
+    var internalPaused by remember { mutableStateOf(false) }
 
     val characterSize = 40f
     val groundY = 400f
+
+    val actualPaused = isPaused || internalPaused
 
     val blocks = remember {
         mutableListOf<Block>().apply {
@@ -89,8 +93,8 @@ fun JumpGame(
 
     val animatableCharY = remember { Animatable(groundY - characterSize) }
 
-    LaunchedEffect(gameState) {
-        if (gameState == "jumping") {
+    LaunchedEffect(gameState, actualPaused) {
+        if (gameState == "jumping" && !actualPaused) {
             val targetBlock = blocks.getOrNull(currentBlockIndex + 1)
             if (targetBlock != null) {
                 val jumpHeight = 200f * jumpPower
@@ -126,8 +130,8 @@ fun JumpGame(
         }
     }
 
-    LaunchedEffect(gameState) {
-        if (gameState == "falling") {
+    LaunchedEffect(gameState, actualPaused) {
+        if (gameState == "falling" && !actualPaused) {
             while (characterY < 600f) {
                 fallingSpeed += 15f
                 characterY = characterY + fallingSpeed
@@ -282,7 +286,27 @@ fun JumpGame(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        if (gameState == "playing" || gameState == "ready") {
             Button(
+                onClick = { internalPaused = !internalPaused },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                shape = RoundedCornerShape(24.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = GrayMedium,
+                    contentColor = White
+                )
+            ) {
+                Text(
+                    text = if (internalPaused) "继续游戏" else "暂停",
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        Button(
             onClick = {
                 score = 0
                 currentBlockIndex = 0
@@ -292,6 +316,7 @@ fun JumpGame(
                 isJumping = false
                 isFalling = false
                 fallingSpeed = 0f
+                internalPaused = false
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -301,10 +326,14 @@ fun JumpGame(
                 containerColor = OrangePrimary,
                 contentColor = White
             ),
-            enabled = gameState == "gameover" || gameState == "ready"
+            enabled = gameState == "gameover" || gameState == "ready" || internalPaused
         ) {
             Text(
-                text = if (gameState == "gameover") "重新开始" else "跳跃",
+                text = when {
+                    internalPaused -> "继续"
+                    gameState == "gameover" -> "重新开始"
+                    else -> "跳跃"
+                },
                 style = MaterialTheme.typography.titleMedium
             )
         }

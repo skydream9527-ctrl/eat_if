@@ -6,6 +6,7 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,8 +15,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -43,6 +49,7 @@ import kotlin.math.sqrt
 @Composable
 fun OneStrokeGame(
     foods: List<Food>,
+    isPaused: Boolean = false,
     onResult: (String) -> Unit
 ) {
     val gridSize = 4
@@ -54,6 +61,8 @@ fun OneStrokeGame(
     var pathDots by remember { mutableStateOf(listOf<Int>()) }
     var currentDragPos by remember { mutableStateOf<Offset?>(null) }
     var gameState by remember { mutableStateOf(GameState2.PLAYING) }
+    var internalPaused by remember { mutableStateOf(false) }
+    val actualPaused = isPaused || internalPaused
 
     fun getDotCenter(index: Int, canvasSize: Float): Offset {
         val row = index / gridSize
@@ -261,19 +270,35 @@ fun OneStrokeGame(
             else -> {}
         }
 
-        Button(
-            onClick = { resetGame() },
-            modifier = Modifier.size(width = 200.dp, height = 56.dp),
-            shape = RoundedCornerShape(28.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = OrangePrimary,
-                contentColor = White
-            )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text(
-                text = "重新开始",
-                style = MaterialTheme.typography.titleMedium
-            )
+            IconButton(
+                onClick = { internalPaused = !internalPaused },
+                modifier = Modifier.size(56.dp)
+            ) {
+                Icon(
+                    imageVector = if (actualPaused) Icons.Filled.PlayArrow else Icons.Filled.Pause,
+                    contentDescription = if (actualPaused) "继续" else "暂停",
+                    tint = OrangePrimary,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+
+            Button(
+                onClick = { resetGame() },
+                modifier = Modifier.size(width = 160.dp, height = 56.dp),
+                shape = RoundedCornerShape(28.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = OrangePrimary,
+                    contentColor = White
+                )
+            ) {
+                Text(
+                    text = "重新开始",
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
         }
     }
 }

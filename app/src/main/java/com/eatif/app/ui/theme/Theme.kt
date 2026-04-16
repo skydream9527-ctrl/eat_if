@@ -3,6 +3,7 @@ package com.eatif.app.ui.theme
 import android.app.Activity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
@@ -23,6 +24,27 @@ private val LightColorScheme = lightColorScheme(
     onBackground = Black,
     surface = White,
     onSurface = Black,
+    surfaceVariant = GrayLight,
+    onSurfaceVariant = GrayMedium,
+    error = Red,
+    onError = White
+)
+
+private val DarkColorScheme = darkColorScheme(
+    primary = OrangePrimary,
+    onPrimary = White,
+    primaryContainer = OrangeDark,
+    onPrimaryContainer = White,
+    secondary = GrayMedium,
+    onSecondary = Black,
+    secondaryContainer = GrayMedium,
+    onSecondaryContainer = White,
+    background = Black,
+    onBackground = White,
+    surface = Black,
+    onSurface = White,
+    surfaceVariant = GrayMedium,
+    onSurfaceVariant = GrayLight,
     error = Red,
     onError = White
 )
@@ -32,13 +54,13 @@ fun EatIfTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
-    val colorScheme = LightColorScheme
+    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = White.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = true
+            window.statusBarColor = colorScheme.background.toArgb()
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }
     }
 

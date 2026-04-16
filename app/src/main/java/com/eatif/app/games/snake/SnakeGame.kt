@@ -42,6 +42,8 @@ import kotlin.random.Random
 @Composable
 fun SnakeGame(
     foods: List<Food>,
+    isPaused: Boolean = false,
+    onPauseToggle: ((Boolean) -> Unit)? = null,
     onResult: (String) -> Unit
 ) {
     val gridWidth = 15
@@ -50,13 +52,14 @@ fun SnakeGame(
 
     var gameState by remember { mutableStateOf(GameState.IDLE) }
     var score by remember { mutableStateOf(0) }
-    // ArrayDeque: addFirst O(1), removeLast O(1) — 避免每帧重建列表
     val snake = remember { ArrayDeque<Offset>().also { it.addFirst(Offset(7f, 7f)) } }
-    var snakeVersion by remember { mutableStateOf(0) }  // 驱动 Canvas 重绘
+    var snakeVersion by remember { mutableStateOf(0) }
     var direction by remember { mutableStateOf(Direction.RIGHT) }
     var nextDirection by remember { mutableStateOf(Direction.RIGHT) }
     var food by remember { mutableStateOf(Offset(5f, 5f)) }
-    var isGameOver by remember { mutableStateOf(false) }
+    var internalPaused by remember { mutableStateOf(false) }
+
+    val actualPaused = isPaused || internalPaused
 
     fun generateFood(): Offset {
         val occupied = snake.toHashSet()
@@ -77,14 +80,17 @@ fun SnakeGame(
         nextDirection = Direction.RIGHT
         food = generateFood()
         score = 0
-        isGameOver = false
         snakeVersion++
         gameState = GameState.PLAYING
     }
 
-    LaunchedEffect(gameState) {
+    LaunchedEffect(gameState, actualPaused) {
         if (gameState == GameState.PLAYING) {
             while (gameState == GameState.PLAYING) {
+                if (actualPaused) {
+                    delay(100)
+                    continue
+                }
                 delay(150)
                 direction = nextDirection
                 val head = snake.first()
@@ -96,13 +102,11 @@ fun SnakeGame(
                 }
 
                 if (newHead.x < 0 || newHead.x >= gridWidth || newHead.y < 0 || newHead.y >= gridHeight) {
-                    isGameOver = true
                     gameState = GameState.GAME_OVER
                     break
                 }
 
                 if (newHead in snake) {
-                    isGameOver = true
                     gameState = GameState.GAME_OVER
                     break
                 }
@@ -122,7 +126,7 @@ fun SnakeGame(
                 } else {
                     snake.removeLast()
                 }
-                snakeVersion++  // 通知 Canvas 重绘
+                snakeVersion++
             }
         }
     }
@@ -160,7 +164,6 @@ fun SnakeGame(
                 val cellWidth = size.width / gridWidth
                 val cellHeight = size.height / gridHeight
 
-                // 引用 snakeVersion 使 Compose 在蛇体变化时重绘此 Canvas
                 @Suppress("UNUSED_EXPRESSION")
                 snakeVersion
 
@@ -299,16 +302,38 @@ fun SnakeGame(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Button(
-                    onClick = { resetGame() },
-                    modifier = Modifier.size(width = 200.dp, height = 48.dp),
-                    shape = RoundedCornerShape(24.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = GrayMedium,
-                        contentColor = White
-                    )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text("重新开始", style = MaterialTheme.typography.bodyMedium)
+                    Button(
+                        onClick = {
+                            internalPaused = !internalPaused
+                            onPauseToggle?.invoke(internalPaused)
+                        },
+                        modifier = Modifier.size(width = 120.dp, height = 48.dp),
+                        shape = RoundedCornerShape(24.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = GrayMedium,
+                            contentColor = White
+                        )
+                    ) {
+                        Text(
+                            text = if (internalPaused) "继续" else "暂停",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+
+                    Button(
+                        onClick = { resetGame() },
+                        modifier = Modifier.size(width = 120.dp, height = 48.dp),
+                        shape = RoundedCornerShape(24.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = GrayMedium,
+                            contentColor = White
+                        )
+                    ) {
+                        Text("重新开始", style = MaterialTheme.typography.bodyMedium)
+                    }
                 }
             }
         }

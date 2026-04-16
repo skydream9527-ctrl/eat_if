@@ -1,12 +1,19 @@
 package com.eatif.app.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.eatif.app.ui.onboarding.OnboardingManager
+import com.eatif.app.ui.onboarding.OnboardingScreen
+import com.eatif.app.ui.onboarding.WhatsNewDialog
 import com.eatif.app.ui.screens.HomeScreen
 import com.eatif.app.ui.screens.SetupScreen
 import com.eatif.app.ui.screens.GameSelectScreen
@@ -15,15 +22,57 @@ import com.eatif.app.ui.screens.FoodSelectScreen
 import com.eatif.app.ui.screens.ResultScreen
 import com.eatif.app.ui.screens.SettingsScreen
 import com.eatif.app.ui.screens.FoodLibraryScreen
+import com.eatif.app.ui.screens.HistoryScreen
+import com.eatif.app.ui.screens.SplashScreen
+import com.eatif.app.ui.theme.ThemeManager
 
 @Composable
 fun EatIfNavHost(
-    navController: NavHostController = rememberNavController()
+    navController: NavHostController = rememberNavController(),
+    onThemeChanged: (darkMode: Boolean, followSystem: Boolean) -> Unit = { _, _ -> }
 ) {
+    var isDarkMode by remember { mutableStateOf(ThemeManager.isDarkMode) }
+    var followSystem by remember { mutableStateOf(ThemeManager.followSystem) }
+    var showOnboarding by remember { mutableStateOf(!OnboardingManager.hasSeenOnboarding) }
+    var showWhatsNew by remember { mutableStateOf(OnboardingManager.shouldShowWhatsNew()) }
+
+    if (showOnboarding) {
+        OnboardingScreen(
+            onComplete = {
+                OnboardingManager.setOnboardingComplete()
+                showOnboarding = false
+                if (OnboardingManager.shouldShowWhatsNew()) {
+                    showWhatsNew = true
+                }
+            }
+        )
+        return
+    }
+
+    if (showWhatsNew) {
+        WhatsNewDialog(
+            onDismiss = {
+                OnboardingManager.setWhatsNewShown()
+                OnboardingManager.setShowWhatsNew(false)
+                showWhatsNew = false
+            }
+        )
+    }
+
     NavHost(
         navController = navController,
-        startDestination = Screen.Home.route
+        startDestination = Screen.Splash.route
     ) {
+        composable(Screen.Splash.route) {
+            SplashScreen(
+                onNavigateToHome = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Splash.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+
         composable(Screen.Home.route) {
             HomeScreen(
                 onSinglePlayerClick = {
@@ -38,7 +87,6 @@ fun EatIfNavHost(
             )
         }
 
-        // 新增：配置店铺选项界面
         composable(
             route = Screen.Setup.route,
             arguments = listOf(navArgument("mode") { type = NavType.StringType })
@@ -134,12 +182,30 @@ fun EatIfNavHost(
                 },
                 onFoodLibraryClick = {
                     navController.navigate(Screen.FoodLibrary.route)
+                },
+                onHistoryClick = {
+                    navController.navigate(Screen.History.route)
+                },
+                isDarkMode = isDarkMode,
+                followSystem = followSystem,
+                onThemeChanged = { darkMode, followSystemTheme ->
+                    isDarkMode = darkMode
+                    followSystem = followSystemTheme
+                    onThemeChanged(darkMode, followSystemTheme)
                 }
             )
         }
 
         composable(Screen.FoodLibrary.route) {
             FoodLibraryScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable(Screen.History.route) {
+            HistoryScreen(
                 onBackClick = {
                     navController.popBackStack()
                 }

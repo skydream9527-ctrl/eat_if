@@ -16,8 +16,13 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -42,10 +47,13 @@ import com.eatif.app.ui.theme.White
 @Composable
 fun BoxPusherGame(
     foods: List<Food>,
+    isPaused: Boolean = false,
     onResult: (String) -> Unit
 ) {
     var gameState by remember { mutableStateOf(GameState.PLAYING) }
     var moveCount by remember { mutableStateOf(0) }
+    var internalPaused by remember { mutableStateOf(false) }
+    val actualPaused = isPaused || internalPaused
 
     var playerPos by remember { mutableStateOf(Position(2, 0)) }
     var box1Pos by remember { mutableStateOf(Position(2, 3)) }
@@ -58,7 +66,7 @@ fun BoxPusherGame(
     val maxMoves = 30
 
     fun move(dr: Int, dc: Int) {
-        if (gameState != GameState.PLAYING) return
+        if (gameState != GameState.PLAYING || actualPaused) return
 
         val newPlayerRow = playerPos.row + dr
         val newPlayerCol = playerPos.col + dc
@@ -248,19 +256,35 @@ fun BoxPusherGame(
             }
         }
 
-        Button(
-            onClick = { restart() },
-            modifier = Modifier.size(width = 200.dp, height = 56.dp),
-            shape = RoundedCornerShape(28.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = OrangePrimary,
-                contentColor = White
-            )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text(
-                text = "重新开始",
-                style = MaterialTheme.typography.titleMedium
-            )
+            IconButton(
+                onClick = { internalPaused = !internalPaused },
+                modifier = Modifier.size(56.dp)
+            ) {
+                Icon(
+                    imageVector = if (actualPaused) Icons.Filled.PlayArrow else Icons.Filled.Pause,
+                    contentDescription = if (actualPaused) "继续" else "暂停",
+                    tint = OrangePrimary,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+
+            Button(
+                onClick = { restart() },
+                modifier = Modifier.size(width = 160.dp, height = 56.dp),
+                shape = RoundedCornerShape(28.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = OrangePrimary,
+                    contentColor = White
+                )
+            ) {
+                Text(
+                    text = "重新开始",
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
         }
     }
 }

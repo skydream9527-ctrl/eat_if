@@ -11,8 +11,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -53,6 +58,7 @@ fun determineWinner(player: RPSChoice, ai: RPSChoice): Int {
 @Composable
 fun RockPaperScissorsGame(
     foods: List<Food>,
+    isPaused: Boolean = false,
     onResult: (String) -> Unit
 ) {
     var gameState by remember { mutableStateOf(GameState.READY) }
@@ -62,7 +68,9 @@ fun RockPaperScissorsGame(
     var aiScore by remember { mutableStateOf(0) }
     var resultText by remember { mutableStateOf("") }
     var isFinalResult by remember { mutableStateOf(false) }
-    
+    var internalPaused by remember { mutableStateOf(false) }
+    val actualPaused = isPaused || internalPaused
+
     val winTarget = 3
 
     Column(
@@ -277,6 +285,24 @@ fun RockPaperScissorsGame(
                         )
                     }
                 }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            IconButton(
+                onClick = { internalPaused = !internalPaused },
+                modifier = Modifier.size(56.dp)
+            ) {
+                Icon(
+                    imageVector = if (actualPaused) Icons.Filled.PlayArrow else Icons.Filled.Pause,
+                    contentDescription = if (actualPaused) "继续" else "暂停",
+                    tint = OrangePrimary,
+                    modifier = Modifier.size(32.dp)
+                )
             }
         }
     }

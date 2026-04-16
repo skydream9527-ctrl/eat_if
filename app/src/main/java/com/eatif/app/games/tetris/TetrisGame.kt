@@ -193,17 +193,32 @@ class TetrisGameState {
 @Composable
 fun TetrisGame(
     foods: List<Food>,
+    isPaused: Boolean = false,
+    onPauseToggle: ((Boolean) -> Unit)? = null,
     onResult: (String) -> Unit
 ) {
     val gameState = remember { TetrisGameState() }
     var gameStateVersion by remember { mutableStateOf(0) }
+    var internalPaused by remember { mutableStateOf(false) }
+
+    val actualPaused = isPaused || internalPaused
 
     LaunchedEffect(Unit) {
         gameState.spawnPiece()
     }
 
-    LaunchedEffect(gameStateVersion) {
-        if (gameState.isGameOver || gameState.isPaused) return@LaunchedEffect
+    LaunchedEffect(isPaused) {
+        if (isPaused) {
+            gameState.isPaused = true
+        } else if (internalPaused) {
+            gameState.isPaused = true
+        } else {
+            gameState.isPaused = false
+        }
+    }
+
+    LaunchedEffect(gameStateVersion, actualPaused) {
+        if (gameState.isGameOver || actualPaused) return@LaunchedEffect
         kotlinx.coroutines.delay(500)
         val piece = gameState.currentPiece
         if (piece != null && !gameState.isValidPosition(gameState.currentX, gameState.currentY + 1, piece)) {
@@ -213,7 +228,8 @@ fun TetrisGame(
             gameState.currentY++
         }
         if (gameState.linesCleared >= 3) {
-            gameState.isPaused = true
+            internalPaused = true
+            onPauseToggle?.invoke(true)
             val randomFood = foods.randomOrNull()
             if (randomFood != null) {
                 onResult(randomFood.name)
@@ -427,31 +443,59 @@ fun TetrisGame(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        Button(
-            onClick = {
-                for (y in 0 until TETRIS_ROWS) {
-                    for (x in 0 until TETRIS_COLS) {
-                        gameState.board[y][x] = 0
-                    }
-                }
-                gameState.score = 0
-                gameState.linesCleared = 0
-                gameState.isGameOver = false
-                gameState.currentPiece = null
-                gameState.spawnPiece()
-                gameStateVersion++
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
-            shape = RoundedCornerShape(28.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = OrangePrimary,
-                contentColor = White
-            ),
-            enabled = gameState.isGameOver
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text(text = "重新开始", style = MaterialTheme.typography.titleMedium)
+            Button(
+                onClick = {
+                    internalPaused = !internalPaused
+                    onPauseToggle?.invoke(internalPaused)
+                },
+                modifier = Modifier
+                    .weight(1f)
+                    .height(56.dp),
+                shape = RoundedCornerShape(28.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = OrangePrimary,
+                    contentColor = White
+                ),
+                enabled = !gameState.isGameOver
+            ) {
+                Text(
+                    text = if (internalPaused) "继续" else "暂停",
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
+
+            Button(
+                onClick = {
+                    for (y in 0 until TETRIS_ROWS) {
+                        for (x in 0 until TETRIS_COLS) {
+                            gameState.board[y][x] = 0
+                        }
+                    }
+                    gameState.score = 0
+                    gameState.linesCleared = 0
+                    gameState.isGameOver = false
+                    gameState.currentPiece = null
+                    gameState.isPaused = false
+                    internalPaused = false
+                    gameState.spawnPiece()
+                    gameStateVersion++
+                },
+                modifier = Modifier
+                    .weight(1f)
+                    .height(56.dp),
+                shape = RoundedCornerShape(28.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = OrangePrimary,
+                    contentColor = White
+                ),
+                enabled = gameState.isGameOver
+            ) {
+                Text(text = "重新开始", style = MaterialTheme.typography.titleMedium)
+            }
         }
     }
 }

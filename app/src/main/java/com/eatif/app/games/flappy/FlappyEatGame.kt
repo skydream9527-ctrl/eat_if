@@ -47,6 +47,8 @@ data class Pipe(
 @Composable
 fun FlappyEatGame(
     foods: List<Food>,
+    isPaused: Boolean = false,
+    onPauseToggle: ((Boolean) -> Unit)? = null,
     onResult: (String) -> Unit
 ) {
     var birdY by remember { mutableStateOf(250f) }
@@ -55,13 +57,15 @@ fun FlappyEatGame(
     var score by remember { mutableStateOf(0) }
     var gameState by remember { mutableStateOf("ready") }
     var passedPipes by remember { mutableStateOf(0) }
+    var internalPaused by remember { mutableStateOf(false) }
+
+    val actualPaused = isPaused || internalPaused
 
     val birdX = 100f
     val birdSize = 30f
     val gravity = 0.6f
     val flapStrength = -10f
     val pipeSpeed = 4f
-    val pipeSpawnInterval = 2000L
     val gameHeight = 500f
     val groundHeight = 60f
 
@@ -69,7 +73,7 @@ fun FlappyEatGame(
 
     val GrayLight = Color(0xFFF5F5F7)
 
-    LaunchedEffect(gameState) {
+    LaunchedEffect(gameState, actualPaused) {
         if (gameState == "playing") {
             val initialPipe = Pipe(
                 x = 400f,
@@ -81,7 +85,15 @@ fun FlappyEatGame(
             var lastFrameTime = -1L
 
             while (gameState == "playing") {
+                if (actualPaused) {
+                    kotlinx.coroutines.delay(100)
+                    continue
+                }
                 withFrameMillis { frameTimeMs ->
+                    if (actualPaused) {
+                        lastFrameTime = -1L
+                        return@withFrameMillis
+                    }
                     if (lastFrameTime < 0L) {
                         lastFrameTime = frameTimeMs
                         return@withFrameMillis
@@ -89,20 +101,17 @@ fun FlappyEatGame(
                     val dt = (frameTimeMs - lastFrameTime).coerceIn(1L, 48L).toFloat() / 16f
                     lastFrameTime = frameTimeMs
 
-                    // 物理更新（delta-time 归一化到 16ms 基准）
                     birdVelocity += gravity * dt
                     birdY += birdVelocity * dt
 
-                    // 更新管道位置（单次 map，无额外 filter）
                     val updatedPipes = ArrayList<Pipe>(pipes.size + 1)
                     var needNewPipe = true
                     var passedCount = passedPipes
 
                     for (pipe in pipes) {
                         val newX = pipe.x - pipeSpeed * dt
-                        if (newX <= -70f) continue  // 过滤掉出界管道
+                        if (newX <= -70f) continue
 
-                        // 碰撞检测
                         val pipeLeft = newX
                         val pipeRight = newX + pipe.width
                         if (birdX + birdSize > pipeLeft && birdX < pipeRight) {
@@ -114,11 +123,9 @@ fun FlappyEatGame(
                             }
                         }
 
-                        // 计分
                         val hasPassed = !pipe.hasPassed && newX + pipe.width < birdX
                         if (hasPassed) passedCount++
 
-                        // 新管道生成判断（最后一根管道 x < 300 时生成）
                         if (newX >= 300f) needNewPipe = false
 
                         updatedPipes.add(pipe.copy(x = newX, hasPassed = pipe.hasPassed || hasPassed))
@@ -139,13 +146,11 @@ fun FlappyEatGame(
                     passedPipes = passedCount
                     score = passedCount
 
-                    // 边界检测
                     if (birdY + birdSize > gameHeight - groundHeight || birdY < 0) {
                         gameState = "gameover"
                         return@withFrameMillis
                     }
 
-                    // 胜利条件
                     if (passedPipes >= 3 && gameState == "playing") {
                         val randomFood = foods.randomOrNull()
                         if (randomFood != null) {
@@ -305,6 +310,29 @@ fun FlappyEatGame(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        if (gameState == "playing") {
+            Button(
+                onClick = {
+                    internalPaused = !internalPaused
+                    onPauseToggle?.invoke(internalPaused)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(28.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF86868B),
+                    contentColor = White
+                )
+            ) {
+                Text(
+                    text = if (internalPaused) "继续游戏" else "暂停",
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
         Button(
             onClick = {
                 if (gameState == "ready") {
@@ -320,6 +348,7 @@ fun FlappyEatGame(
                     pipes = emptyList()
                     passedPipes = 0
                     score = 0
+                    internalPaused = false
                 } else if (gameState == "playing") {
                     birdVelocity = flapStrength
                 }
@@ -336,7 +365,7 @@ fun FlappyEatGame(
             Text(
                 text = when (gameState) {
                     "ready" -> "开始游戏"
-                    "playing" -> "继续游戏"
+                    "playing" -> if (internalPaused) "继续" else "继续游戏"
                     else -> "重新开始"
                 },
                 style = MaterialTheme.typography.titleMedium
