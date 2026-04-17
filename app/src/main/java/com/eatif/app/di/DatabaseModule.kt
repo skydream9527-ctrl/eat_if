@@ -10,8 +10,10 @@ import com.eatif.app.data.local.FoodDataSeeder
 import com.eatif.app.data.local.HistoryDao
 import com.eatif.app.data.repository.FoodRepositoryImpl
 import com.eatif.app.data.repository.HistoryRepositoryImpl
+import com.eatif.app.data.repository.RecommendRepositoryImpl
 import com.eatif.app.domain.repository.FoodRepository
 import com.eatif.app.domain.repository.HistoryRepository
+import com.eatif.app.domain.repository.RecommendRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -67,5 +69,14 @@ object DatabaseModule {
     @Singleton
     fun provideHistoryRepository(historyDao: HistoryDao): HistoryRepository {
         return HistoryRepositoryImpl(historyDao)
+    }
+
+    @Provides
+    @Singleton
+    fun provideRecommendRepository(
+        historyRepository: HistoryRepository,
+        foodRepository: FoodRepository
+    ): RecommendRepository {
+        return RecommendRepositoryImpl(historyRepository, foodRepository)
     }
 }

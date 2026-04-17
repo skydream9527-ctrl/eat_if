@@ -22,4 +22,12 @@ interface HistoryDao {
 
     @Query("DELETE FROM history")
     suspend fun clearHistory()
+
+    data class FoodFrequencyEntity(val foodName: String, val count: Int)
+
+    @Query("SELECT foodName, COUNT(*) as count FROM history WHERE timestamp >= :fromTimestamp GROUP BY foodName ORDER BY count DESC")
+    fun getFoodFrequencySinceRaw(fromTimestamp: Long): Flow<List<FoodFrequencyEntity>>
+
+    @Query("SELECT foodName, COUNT(*) as count FROM history WHERE timestamp >= :fromTimestamp AND timestamp <= :toTimestamp GROUP BY foodName ORDER BY count DESC")
+    fun getFoodFrequencyBetweenRaw(fromTimestamp: Long, toTimestamp: Long): Flow<List<FoodFrequencyEntity>>
 }

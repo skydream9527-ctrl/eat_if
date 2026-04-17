@@ -2,6 +2,7 @@ package com.eatif.app.data.repository
 
 import com.eatif.app.data.local.HistoryDao
 import com.eatif.app.data.local.HistoryEntity
+import com.eatif.app.domain.model.FoodFrequency
 import com.eatif.app.domain.model.History
 import com.eatif.app.domain.repository.HistoryRepository
 import kotlinx.coroutines.flow.Flow
@@ -32,6 +33,18 @@ class HistoryRepositoryImpl @Inject constructor(
 
     override suspend fun clearHistory() {
         historyDao.clearHistory()
+    }
+
+    override fun getFoodFrequencySince(fromTimestamp: Long): Flow<List<FoodFrequency>> {
+        return historyDao.getFoodFrequencySinceRaw(fromTimestamp).map { list ->
+            list.map { FoodFrequency(it.foodName, it.count) }
+        }
+    }
+
+    override fun getFoodFrequencyBetween(fromTimestamp: Long, toTimestamp: Long): Flow<List<FoodFrequency>> {
+        return historyDao.getFoodFrequencyBetweenRaw(fromTimestamp, toTimestamp).map { list ->
+            list.map { FoodFrequency(it.foodName, it.count) }
+        }
     }
 
     private fun HistoryEntity.toDomain(): History {
