@@ -24,12 +24,14 @@ import com.eatif.app.ui.screens.SettingsScreen
 import com.eatif.app.ui.screens.FoodLibraryScreen
 import com.eatif.app.ui.screens.HistoryScreen
 import com.eatif.app.ui.screens.SplashScreen
+import com.eatif.app.ui.screens.GameRuleScreen
 import com.eatif.app.ui.theme.ThemeManager
 
 @Composable
 fun EatIfNavHost(
     navController: NavHostController = rememberNavController(),
-    onThemeChanged: (darkMode: Boolean, followSystem: Boolean) -> Unit = { _, _ -> }
+    onThemeChanged: (darkMode: Boolean, followSystem: Boolean) -> Unit = { _, _ -> },
+    onSeedColorChanged: (String) -> Unit = {}
 ) {
     var isDarkMode by remember { mutableStateOf(ThemeManager.isDarkMode) }
     var followSystem by remember { mutableStateOf(ThemeManager.followSystem) }
@@ -115,6 +117,9 @@ fun EatIfNavHost(
                 },
                 onBackClick = {
                     navController.popBackStack()
+                },
+                onGameRuleClick = { gameId ->
+                    navController.navigate(Screen.GameRule.createRoute(gameId))
                 }
             )
         }
@@ -140,6 +145,17 @@ fun EatIfNavHost(
                 onBackClick = {
                     navController.popBackStack()
                 }
+            )
+        }
+
+        composable(
+            route = Screen.GameRule.route,
+            arguments = listOf(navArgument("gameId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val gameId = backStackEntry.arguments?.getString("gameId") ?: ""
+            GameRuleScreen(
+                gameId = gameId,
+                onBackClick = { navController.popBackStack() }
             )
         }
 
@@ -196,7 +212,8 @@ fun EatIfNavHost(
                     isDarkMode = darkMode
                     followSystem = followSystemTheme
                     onThemeChanged(darkMode, followSystemTheme)
-                }
+                },
+                onSeedColorChanged = onSeedColorChanged
             )
         }
 

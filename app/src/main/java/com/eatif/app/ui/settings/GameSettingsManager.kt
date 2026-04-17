@@ -3,6 +3,7 @@ package com.eatif.app.ui.settings
 import android.content.Context
 import android.content.SharedPreferences
 import com.eatif.app.domain.model.GameDifficulty
+import com.eatif.app.domain.model.GameRuleConfig
 
 object GameSettingsManager {
     private const val PREFS_NAME = "eat_if_game_settings"
@@ -10,6 +11,7 @@ object GameSettingsManager {
     private const val KEY_SOUND_ENABLED = "sound_enabled"
     private const val KEY_FAVORITE_GAMES = "favorite_games"
     private const val KEY_TUTORIAL_SHOWN = "tutorial_shown_"
+    private const val KEY_GAME_RULE_PREFIX = "game_rule_"
 
     private lateinit var prefs: SharedPreferences
 
@@ -59,6 +61,20 @@ object GameSettingsManager {
 
     fun setTutorialShown(gameId: String) {
         prefs.edit().putBoolean(KEY_TUTORIAL_SHOWN + gameId, true).apply()
+    }
+
+    fun getGameRuleConfig(gameId: String): GameRuleConfig {
+        val json = prefs.getString(KEY_GAME_RULE_PREFIX + gameId, null)
+        return if (json != null) {
+            com.google.gson.Gson().fromJson(json, GameRuleConfig::class.java)
+        } else {
+            GameRuleConfig(gameId = gameId)
+        }
+    }
+
+    fun setGameRuleConfig(config: GameRuleConfig) {
+        val json = com.google.gson.Gson().toJson(config)
+        prefs.edit().putString(KEY_GAME_RULE_PREFIX + config.gameId, json).apply()
     }
 
     fun getDifficultyThresholds(): DifficultyThresholds {

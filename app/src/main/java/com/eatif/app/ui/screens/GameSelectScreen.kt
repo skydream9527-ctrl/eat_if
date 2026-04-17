@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.HelpOutline
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -48,7 +49,8 @@ import com.eatif.app.ui.settings.GameSettingsManager
 fun GameSelectScreen(
     mode: String,
     onGameSelected: (String) -> Unit,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onGameRuleClick: (String) -> Unit = {}
 ) {
     val title = if (mode == "double") "双人竞技 - 选择游戏" else "单人模式 - 选择游戏"
     var selectedCategory by remember { mutableStateOf<GameCategory?>(null) }
@@ -157,7 +159,8 @@ fun GameSelectScreen(
                             onFavoriteClick = {
                                 GameSettingsManager.toggleFavorite(game.id)
                             },
-                            onClick = { onGameSelected(game.id) }
+                            onClick = { onGameSelected(game.id) },
+                            onSettingsClick = { onGameRuleClick(game.id) }
                         )
                     }
                 }

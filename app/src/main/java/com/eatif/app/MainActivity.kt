@@ -24,6 +24,7 @@ class MainActivity : ComponentActivity() {
 
     private val _darkModeFlow = MutableStateFlow(ThemeManager.isDarkMode)
     private val _followSystemFlow = MutableStateFlow(ThemeManager.followSystem)
+    private val _seedColorFlow = MutableStateFlow(ThemeManager.seedColor)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,13 +32,15 @@ class MainActivity : ComponentActivity() {
         setContent {
             val isDarkMode by _darkModeFlow.collectAsState()
             val followSystem by _followSystemFlow.collectAsState()
+            val seedColorKey by _seedColorFlow.collectAsState()
 
             EatIfTheme(
                 darkTheme = if (followSystem) {
                     androidx.compose.foundation.isSystemInDarkTheme()
                 } else {
                     isDarkMode
-                }
+                },
+                seedColorKey = seedColorKey
             ) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
@@ -49,6 +52,10 @@ class MainActivity : ComponentActivity() {
                             ThemeManager.followSystem = followSystemTheme
                             _darkModeFlow.value = darkMode
                             _followSystemFlow.value = followSystemTheme
+                        },
+                        onSeedColorChanged = { seedColor ->
+                            ThemeManager.seedColor = seedColor
+                            _seedColorFlow.value = seedColor
                         }
                     )
                 }

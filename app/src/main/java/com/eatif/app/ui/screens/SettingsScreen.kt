@@ -1,7 +1,9 @@
 package com.eatif.app.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -9,12 +11,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -35,7 +40,9 @@ import com.eatif.app.domain.model.GameDifficulty
 import com.eatif.app.domain.model.getDisplayName
 import com.eatif.app.domain.model.getEmoji
 import com.eatif.app.ui.settings.GameSettingsManager
+import com.eatif.app.ui.theme.ThemeColorOptions
 import com.eatif.app.ui.theme.ThemeManager
+import com.eatif.app.ui.theme.White
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,7 +52,8 @@ fun SettingsScreen(
     onHistoryClick: () -> Unit = {},
     isDarkMode: Boolean = ThemeManager.isDarkMode,
     followSystem: Boolean = ThemeManager.followSystem,
-    onThemeChanged: (darkMode: Boolean, followSystem: Boolean) -> Unit = { _, _ -> }
+    onThemeChanged: (darkMode: Boolean, followSystem: Boolean) -> Unit = { _, _ -> },
+    onSeedColorChanged: (String) -> Unit = {}
 ) {
     Scaffold(
         topBar = {
@@ -219,6 +227,40 @@ fun SettingsScreen(
                                     onThemeChanged(checked, followSystem)
                                 }
                             )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Text(
+                        text = "主题色",
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        ThemeColorOptions.forEach { option ->
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .background(option.color, CircleShape)
+                                    .clickable {
+                                        onSeedColorChanged(option.key)
+                                    },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                if (ThemeManager.seedColor == option.key) {
+                                    Icon(
+                                        imageVector = Icons.Default.Check,
+                                        contentDescription = null,
+                                        tint = White,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                            }
                         }
                     }
                 }

@@ -7,6 +7,7 @@ object ThemeManager {
     private const val PREFS_NAME = "eat_if_settings"
     private const val KEY_DARK_MODE = "dark_mode"
     private const val KEY_FOLLOW_SYSTEM = "follow_system"
+    private const val KEY_SEED_COLOR = "seed_color"
 
     private lateinit var prefs: SharedPreferences
 
@@ -24,5 +25,11 @@ object ThemeManager {
         get() = prefs.getBoolean(KEY_FOLLOW_SYSTEM, true)
         set(value) {
             prefs.edit().putBoolean(KEY_FOLLOW_SYSTEM, value).apply()
+        }
+
+    var seedColor: String
+        get() = prefs.getString(KEY_SEED_COLOR, "orange") ?: "orange"
+        set(value) {
+            prefs.edit().putString(KEY_SEED_COLOR, value).apply()
         }
 }

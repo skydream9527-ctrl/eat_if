@@ -23,6 +23,10 @@ sealed class Screen(val route: String) {
             "result/$foodName/$scorePercent"
     }
 
+    data object GameRule : Screen("game_rule/{gameId}") {
+        fun createRoute(gameId: String) = "game_rule/$gameId"
+    }
+
     data object Settings : Screen("settings")
 
     data object FoodLibrary : Screen("food_library")
