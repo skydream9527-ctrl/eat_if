@@ -16,7 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.Undo
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -50,7 +50,8 @@ import kotlin.math.sqrt
 fun OneStrokeGame(
     foods: List<Food>,
     isPaused: Boolean = false,
-    onResult: (String) -> Unit
+    onResult: (String, Int) -> Unit,
+    mode: String = "single"
 ) {
     val gridSize = 4
     val dotCount = gridSize * gridSize
@@ -60,7 +61,7 @@ fun OneStrokeGame(
     var visitedDots by remember { mutableStateOf(setOf<Int>()) }
     var pathDots by remember { mutableStateOf(listOf<Int>()) }
     var currentDragPos by remember { mutableStateOf<Offset?>(null) }
-    var gameState by remember { mutableStateOf(GameState2.PLAYING) }
+    var gameState by remember { mutableStateOf(GameState.PLAYING) }
     var internalPaused by remember { mutableStateOf(false) }
     val actualPaused = isPaused || internalPaused
 
@@ -87,7 +88,7 @@ fun OneStrokeGame(
         visitedDots = emptySet()
         pathDots = emptyList()
         currentDragPos = null
-        gameState = GameState2.PLAYING
+        gameState = GameState.PLAYING
     }
 
     Column(
@@ -128,17 +129,34 @@ fun OneStrokeGame(
                     .pointerInput(Unit) {
                         detectDragGestures(
                             onDragStart = { offset ->
-                                if (gameState == GameState2.PLAYING) {
+                                if (gameState == GameState.PLAYING) {
                                     val dotIndex = findDotAtPosition(offset, canvasSize)
                                     if (dotIndex != null && dotIndex !in visitedDots) {
-                                        visitedDots = visitedDots + dotIndex
-                                        pathDots = listOf(dotIndex)
+                                        if (pathDots.isEmpty()) {
+                                            visitedDots = visitedDots + dotIndex
+                                            pathDots = listOf(dotIndex)
+                                        } else {
+                                            val lastDot = pathDots.lastOrNull()
+                                            if (lastDot != null) {
+                                                val lastCenter = getDotCenter(lastDot, canvasSize)
+                                                val newCenter = getDotCenter(dotIndex, canvasSize)
+                                                val dist = sqrt(
+                                                    (newCenter.x - lastCenter.x) * (newCenter.x - lastCenter.x) +
+                                                            (newCenter.y - lastCenter.y) * (newCenter.y - lastCenter.y)
+                                                )
+                                                val step = canvasSize / gridSize
+                                                if (dist <= step * 1.5) {
+                                                    visitedDots = visitedDots + dotIndex
+                                                    pathDots = pathDots + dotIndex
+                                                }
+                                            }
+                                        }
                                         currentDragPos = offset
                                     }
                                 }
                             },
                             onDrag = { change, _ ->
-                                if (gameState == GameState2.PLAYING) {
+                                if (gameState == GameState.PLAYING) {
                                     currentDragPos = change.position
                                     val dotIndex = findDotAtPosition(change.position, canvasSize)
                                     if (dotIndex != null && dotIndex !in visitedDots) {
@@ -157,19 +175,17 @@ fun OneStrokeGame(
                                             }
                                         }
                                     } else if (dotIndex != null && dotIndex in visitedDots && pathDots.size > 1) {
-                                        gameState = GameState2.FAILED
+                                        gameState = GameState.FAILED
                                     }
                                 }
                             },
                             onDragEnd = {
-                                if (gameState == GameState2.PLAYING) {
+                                if (gameState == GameState.PLAYING) {
                                     if (pathDots.size == dotCount) {
-                                        gameState = GameState2.WON
+                                        gameState = GameState.WON
                                         if (foods.isNotEmpty()) {
-                                            onResult(foods.random().name)
+                                            onResult(foods.random().name, 100)
                                         }
-                                    } else if (pathDots.size < dotCount) {
-                                        gameState = GameState2.FAILED
                                     }
                                 }
                                 currentDragPos = null
@@ -227,7 +243,7 @@ fun OneStrokeGame(
         Spacer(modifier = Modifier.height(16.dp))
 
         when (gameState) {
-            GameState2.WON -> {
+            GameState.WON -> {
                 Text(
                     text = "🎉 恭喜通关!",
                     style = MaterialTheme.typography.titleLarge,
@@ -235,7 +251,7 @@ fun OneStrokeGame(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
             }
-            GameState2.FAILED -> {
+            GameState.FAILED -> {
                 Text(
                     text = "❌ 连接失败!",
                     style = MaterialTheme.typography.titleLarge,
@@ -251,7 +267,7 @@ fun OneStrokeGame(
                     Spacer(modifier = Modifier.height(8.dp))
                     foods.take(3).forEach { food ->
                         Button(
-                            onClick = { onResult(food.name) },
+                            onClick = { onResult(food.name, 0) },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 4.dp),
@@ -271,16 +287,26 @@ fun OneStrokeGame(
         }
 
         Row(
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             IconButton(
-                onClick = { internalPaused = !internalPaused },
-                modifier = Modifier.size(56.dp)
+                onClick = {
+                    if (pathDots.isNotEmpty()) {
+                        val lastDot = pathDots.last()
+                        pathDots = pathDots.dropLast(1)
+                        visitedDots = visitedDots - lastDot
+                        if (gameState == GameState.FAILED) {
+                            gameState = GameState.PLAYING
+                        }
+                    }
+                },
+                modifier = Modifier.size(56.dp),
+                enabled = pathDots.isNotEmpty()
             ) {
                 Icon(
-                    imageVector = if (actualPaused) Icons.Filled.PlayArrow else Icons.Filled.Pause,
-                    contentDescription = if (actualPaused) "继续" else "暂停",
-                    tint = OrangePrimary,
+                    imageVector = Icons.Filled.Undo,
+                    contentDescription = "撤销",
+                    tint = if (pathDots.isNotEmpty()) OrangePrimary else GrayMedium,
                     modifier = Modifier.size(32.dp)
                 )
             }
@@ -303,6 +329,6 @@ fun OneStrokeGame(
     }
 }
 
-private enum class GameState2 {
+private enum class GameState {
     PLAYING, WON, FAILED
 }

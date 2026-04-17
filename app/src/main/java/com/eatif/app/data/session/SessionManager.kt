@@ -1,28 +1,32 @@
 package com.eatif.app.data.session
 
+import android.content.Context
+import android.content.SharedPreferences
 import com.eatif.app.domain.model.RecommendationResult
 
-/**
- * 会话级单例，存储用户本次游戏选择的店铺列表，并根据游戏得分给出推荐建议。
- * 生命周期与 App 进程一致，无需持久化。
- */
 object SessionManager {
 
-    /** 用户在 SetupScreen 配置的候选店铺名列表（3–10个） */
-    var shopOptions: List<String> = emptyList()
+    private const val PREFS_NAME = "eat_if_session"
+    private const val KEY_SHOP_OPTIONS = "shop_options"
+    private const val DELIMITER = "||"
 
-    /** 是否已完成店铺配置 */
+    private var prefs: SharedPreferences? = null
+
+    fun init(context: Context) {
+        prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    }
+
+    var shopOptions: List<String>
+        get() {
+            val raw = prefs?.getString(KEY_SHOP_OPTIONS, null) ?: return emptyList()
+            return raw.split(DELIMITER).filter { it.isNotBlank() }
+        }
+        set(value) {
+            prefs?.edit()?.putString(KEY_SHOP_OPTIONS, value.joinToString(DELIMITER))?.apply()
+        }
+
     val isConfigured: Boolean get() = shopOptions.isNotEmpty()
 
-    /**
-     * 根据游戏得分百分比（0.0 – 1.0）从候选店铺中推荐一家，并附带理由。
-     * 映射规则：
-     *   - 得分 ≥ 80% → 排名第一的店铺（奖励自己）
-     *   - 得分 40–79% → 随机中间选项
-     *   - 得分 < 40% → 最后一个选项（安慰奖）
-     *
-     * 若未配置店铺，返回 null（由调用方回退旧逻辑）。
-     */
     fun getRecommendation(scorePercent: Float): RecommendationResult? {
         if (shopOptions.isEmpty()) return null
 
@@ -58,8 +62,7 @@ object SessionManager {
         )
     }
 
-    /** 重置配置（可选，用于下次游戏重新配置） */
     fun reset() {
-        shopOptions = emptyList()
+        prefs?.edit()?.remove(KEY_SHOP_OPTIONS)?.apply()
     }
 }

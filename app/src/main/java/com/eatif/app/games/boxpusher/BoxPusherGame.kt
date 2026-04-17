@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -48,7 +49,8 @@ import com.eatif.app.ui.theme.White
 fun BoxPusherGame(
     foods: List<Food>,
     isPaused: Boolean = false,
-    onResult: (String) -> Unit
+    onResult: (String, Int) -> Unit,
+    mode: String = "single"
 ) {
     var gameState by remember { mutableStateOf(GameState.PLAYING) }
     var moveCount by remember { mutableStateOf(0) }
@@ -64,6 +66,9 @@ fun BoxPusherGame(
 
     val gridSize = 5
     val maxMoves = 30
+
+    data class HistoryEntry(val playerPos: Position, val box1Pos: Position, val box2Pos: Position)
+    var history by remember { mutableStateOf(listOf<HistoryEntry>()) }
 
     fun move(dr: Int, dc: Int) {
         if (gameState != GameState.PLAYING || actualPaused) return
@@ -86,9 +91,11 @@ fun BoxPusherGame(
             val newBoxPos = Position(newBoxRow, newBoxCol)
             if (newBoxPos == box1Pos || newBoxPos == box2Pos) return
 
+            history = (history + HistoryEntry(playerPos, box1Pos, box2Pos)).takeLast(20)
             if (isBox1) box1Pos = newBoxPos else box2Pos = newBoxPos
             playerPos = newPlayerPos
         } else {
+            history = (history + HistoryEntry(playerPos, box1Pos, box2Pos)).takeLast(20)
             playerPos = newPlayerPos
         }
 
@@ -99,12 +106,19 @@ fun BoxPusherGame(
 
         if (box1OnTarget && box2OnTarget) {
             gameState = GameState.WON
-            if (foods.isNotEmpty()) {
-                onResult(foods.random().name)
-            }
         } else if (moveCount >= maxMoves) {
             gameState = GameState.LOST
         }
+    }
+
+    fun undo() {
+        if (history.isEmpty() || gameState != GameState.PLAYING) return
+        val prev = history.last()
+        history = history.dropLast(1)
+        playerPos = prev.playerPos
+        box1Pos = prev.box1Pos
+        box2Pos = prev.box2Pos
+        moveCount--
     }
 
     fun restart() {
@@ -113,6 +127,7 @@ fun BoxPusherGame(
         box2Pos = Position(3, 3)
         gameState = GameState.PLAYING
         moveCount = 0
+        history = emptyList()
     }
 
     Column(
@@ -130,7 +145,7 @@ fun BoxPusherGame(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = "移动次数: $moveCount",
+            text = "移动次数: $moveCount / $maxMoves",
             style = MaterialTheme.typography.titleMedium,
             color = GrayMedium
         )
@@ -144,8 +159,8 @@ fun BoxPusherGame(
                         val pos = Position(row, col)
                         when {
                             pos == playerPos -> add(CellType.PLAYER)
-                            pos == box1Pos -> add(CellType.BOX)
-                            pos == box2Pos -> add(CellType.BOX)
+                            pos == box1Pos -> if (box1Pos == target1 || box1Pos == target2) add(CellType.BOX_ON_TARGET) else add(CellType.BOX)
+                            pos == box2Pos -> if (box2Pos == target1 || box2Pos == target2) add(CellType.BOX_ON_TARGET) else add(CellType.BOX)
                             pos == target1 || pos == target2 -> add(CellType.TARGET)
                             else -> add(CellType.EMPTY)
                         }
@@ -176,6 +191,7 @@ fun BoxPusherGame(
                         text = when (cellType) {
                             CellType.PLAYER -> "😀"
                             CellType.BOX -> "📦"
+                            CellType.BOX_ON_TARGET -> "✅"
                             CellType.TARGET -> "🎯"
                             CellType.EMPTY -> ""
                         },
@@ -187,17 +203,13 @@ fun BoxPusherGame(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            listOf(
-                Triple("↑", -1, 0),
-                Triple("↓", 1, 0),
-                Triple("←", 0, -1),
-                Triple("→", 0, 1)
-            ).forEach { (label, dr, dc) ->
+            Row(horizontalArrangement = Arrangement.Center) {
                 Button(
-                    onClick = { move(dc, dr) },
+                    onClick = { move(-1, 0) },
                     modifier = Modifier.size(60.dp),
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
@@ -205,11 +217,46 @@ fun BoxPusherGame(
                         contentColor = White
                     )
                 ) {
-                    Text(
-                        text = label,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold
+                    Text(text = "↑", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(60.dp)
+            ) {
+                Button(
+                    onClick = { move(0, -1) },
+                    modifier = Modifier.size(60.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = OrangePrimary,
+                        contentColor = White
                     )
+                ) {
+                    Text(text = "←", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                }
+                Button(
+                    onClick = { move(0, 1) },
+                    modifier = Modifier.size(60.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = OrangePrimary,
+                        contentColor = White
+                    )
+                ) {
+                    Text(text = "→", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+            Row(horizontalArrangement = Arrangement.Center) {
+                Button(
+                    onClick = { move(1, 0) },
+                    modifier = Modifier.size(60.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = OrangePrimary,
+                        contentColor = White
+                    )
+                ) {
+                    Text(text = "↓", fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -223,6 +270,30 @@ fun BoxPusherGame(
                 color = Green
             )
             Spacer(modifier = Modifier.height(8.dp))
+            if (foods.isNotEmpty()) {
+                Text(
+                    text = "选择一顿美食奖励自己吧:",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                foods.take(3).forEach { food ->
+                    Button(
+                        onClick = { onResult(food.name, 100) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = OrangePrimary,
+                            contentColor = White
+                        )
+                    ) {
+                        Text(text = food.name, style = MaterialTheme.typography.titleMedium)
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+            }
         } else if (gameState == GameState.LOST) {
             Text(
                 text = "😵 超过移动次数限制!",
@@ -239,7 +310,7 @@ fun BoxPusherGame(
                 Spacer(modifier = Modifier.height(8.dp))
                 foods.take(3).forEach { food ->
                     Button(
-                        onClick = { onResult(food.name) },
+                        onClick = { onResult(food.name, 0) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 4.dp),
@@ -272,8 +343,26 @@ fun BoxPusherGame(
             }
 
             Button(
+                onClick = { undo() },
+                enabled = history.isNotEmpty() && gameState == GameState.PLAYING,
+                modifier = Modifier.size(width = 80.dp, height = 56.dp),
+                shape = RoundedCornerShape(28.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = OrangePrimary,
+                    contentColor = White,
+                    disabledContainerColor = GrayMedium,
+                    disabledContentColor = White
+                )
+            ) {
+                Text(
+                    text = "撤销",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+
+            Button(
                 onClick = { restart() },
-                modifier = Modifier.size(width = 160.dp, height = 56.dp),
+                modifier = Modifier.size(width = 120.dp, height = 56.dp),
                 shape = RoundedCornerShape(28.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = OrangePrimary,
@@ -292,7 +381,7 @@ fun BoxPusherGame(
 private data class Position(val row: Int, val col: Int)
 
 private enum class CellType {
-    EMPTY, PLAYER, BOX, TARGET
+    EMPTY, PLAYER, BOX, BOX_ON_TARGET, TARGET
 }
 
 private enum class GameState {

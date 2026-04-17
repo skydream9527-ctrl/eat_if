@@ -10,5 +10,6 @@ data class FoodEntity(
     val name: String,
     val category: String,
     val imageUrl: String?,
-    val weight: Int
+    val weight: Int,
+    val tags: String = "[]"
 )

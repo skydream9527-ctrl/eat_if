@@ -45,8 +45,11 @@ val TETROMINO_I = Tetromino(listOf(listOf(1, 1, 1, 1)), Color.Cyan)
 val TETROMINO_O = Tetromino(listOf(listOf(1, 1), listOf(1, 1)), Color.Yellow)
 val TETROMINO_T = Tetromino(listOf(listOf(0, 1, 0), listOf(1, 1, 1)), Color.Magenta)
 val TETROMINO_L = Tetromino(listOf(listOf(1, 0), listOf(1, 0), listOf(1, 1)), Color(0xFFFF8800))
+val TETROMINO_J = Tetromino(listOf(listOf(0, 1), listOf(0, 1), listOf(1, 1)), Color.Blue)
+val TETROMINO_S = Tetromino(listOf(listOf(0, 1, 1), listOf(1, 1, 0)), Color.Green)
+val TETROMINO_Z = Tetromino(listOf(listOf(1, 1, 0), listOf(0, 1, 1)), Color.Red)
 
-val TETROMINOES = listOf(TETROMINO_I, TETROMINO_O, TETROMINO_T, TETROMINO_L)
+val TETROMINOES = listOf(TETROMINO_I, TETROMINO_O, TETROMINO_T, TETROMINO_L, TETROMINO_J, TETROMINO_S, TETROMINO_Z)
 
 class TetrisGameState {
     companion object {
@@ -57,12 +60,14 @@ class TetrisGameState {
 
     val board: Array<IntArray> = Array(ROWS) { IntArray(COLS) { 0 } }
     var currentPiece: Tetromino? = null
+    var nextPiece: Tetromino = TETROMINOES.random()
     var currentX: Int = 0
     var currentY: Int = 0
     var score: Int = 0
     var linesCleared: Int = 0
     var isGameOver: Boolean = false
     var isPaused: Boolean = false
+    var isWon: Boolean = false
 
     val colors = listOf(
         Color(0xFF00BCD4),
@@ -75,7 +80,8 @@ class TetrisGameState {
     )
 
     fun spawnPiece() {
-        currentPiece = TETROMINOES.random()
+        currentPiece = nextPiece
+        nextPiece = TETROMINOES.random()
         currentX = COLS / 2 - 1
         currentY = 0
 
@@ -195,7 +201,8 @@ fun TetrisGame(
     foods: List<Food>,
     isPaused: Boolean = false,
     onPauseToggle: ((Boolean) -> Unit)? = null,
-    onResult: (String) -> Unit
+    onResult: (String, Int) -> Unit,
+    mode: String = "single"
 ) {
     val gameState = remember { TetrisGameState() }
     var gameStateVersion by remember { mutableStateOf(0) }
@@ -227,14 +234,11 @@ fun TetrisGame(
         } else if (piece != null) {
             gameState.currentY++
         }
-        if (gameState.linesCleared >= 3) {
+        if (gameState.linesCleared >= 10) {
+            gameState.isWon = true
+            gameState.isPaused = true
             internalPaused = true
             onPauseToggle?.invoke(true)
-            val randomFood = foods.randomOrNull()
-            if (randomFood != null) {
-                onResult(randomFood.name)
-            }
-            gameState.linesCleared = 0
         }
     }
 
@@ -275,7 +279,7 @@ fun TetrisGame(
                     color = MaterialTheme.colorScheme.onBackground
                 )
                 Text(
-                    text = "${gameState.linesCleared}/3",
+                    text = "${gameState.linesCleared}/10",
                     style = MaterialTheme.typography.titleLarge,
                     color = Green
                 )
@@ -286,79 +290,163 @@ fun TetrisGame(
 
         val gridWidth = TETRIS_COLS * CELL_SIZE
         val gridHeight = TETRIS_ROWS * CELL_SIZE
+        val previewCellSize = 16f
 
-        Box(
-            modifier = Modifier
-                .background(Color.DarkGray, RoundedCornerShape(8.dp))
-                .padding(4.dp)
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.Top
         ) {
-            Canvas(
-                modifier = Modifier.size(gridWidth.dp, gridHeight.dp)
+            Box(
+                modifier = Modifier
+                    .background(Color.DarkGray, RoundedCornerShape(8.dp))
+                    .padding(4.dp)
             ) {
-                for (y in 0 until TETRIS_ROWS) {
-                    for (x in 0 until TETRIS_COLS) {
-                        val cell = gameState.board[y][x]
-                        val color = if (cell > 0) gameState.colors[cell - 1] else Color.White.copy(alpha = 0.3f)
-                        drawRect(
-                            color = color,
-                            topLeft = Offset(x * CELL_SIZE + 1, y * CELL_SIZE + 1),
-                            size = Size(CELL_SIZE - 2, CELL_SIZE - 2)
-                        )
+                Canvas(
+                    modifier = Modifier.size(gridWidth.dp, gridHeight.dp)
+                ) {
+                    for (y in 0 until TETRIS_ROWS) {
+                        for (x in 0 until TETRIS_COLS) {
+                            val cell = gameState.board[y][x]
+                            val color = if (cell > 0) gameState.colors[cell - 1] else Color.White.copy(alpha = 0.3f)
+                            drawRect(
+                                color = color,
+                                topLeft = Offset(x * CELL_SIZE + 1, y * CELL_SIZE + 1),
+                                size = Size(CELL_SIZE - 2, CELL_SIZE - 2)
+                            )
+                        }
+                    }
+
+                    gameState.currentPiece?.let { piece ->
+                        for (dy in piece.shape.indices) {
+                            for (dx in piece.shape[dy].indices) {
+                                if (piece.shape[dy][dx] == 1) {
+                                    val x = (gameState.currentX + dx) * CELL_SIZE
+                                    val y = (gameState.currentY + dy) * CELL_SIZE
+                                    drawRect(
+                                        color = piece.color,
+                                        topLeft = Offset(x + 1, y + 1),
+                                        size = Size(CELL_SIZE - 2, CELL_SIZE - 2)
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
 
-                gameState.currentPiece?.let { piece ->
-                    for (dy in piece.shape.indices) {
-                        for (dx in piece.shape[dy].indices) {
-                            if (piece.shape[dy][dx] == 1) {
-                                val x = (gameState.currentX + dx) * CELL_SIZE
-                                val y = (gameState.currentY + dy) * CELL_SIZE
-                                drawRect(
-                                    color = piece.color,
-                                    topLeft = Offset(x + 1, y + 1),
-                                    size = Size(CELL_SIZE - 2, CELL_SIZE - 2)
-                                )
+                if (gameState.isGameOver) {
+                    Box(
+                        modifier = Modifier
+                            .size(gridWidth.dp, gridHeight.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.padding(8.dp)
+                        ) {
+                            Text(
+                                text = "游戏结束",
+                                style = MaterialTheme.typography.headlineSmall,
+                                color = Red
+                            )
+                            Text(
+                                text = "得分: ${gameState.score}",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = White
+                            )
+                            if (foods.isNotEmpty()) {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                foods.take(3).forEach { food ->
+                                    Button(
+                                        onClick = { onResult(food.name, (gameState.linesCleared * 100 / 10).coerceIn(0, 100)) },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 2.dp),
+                                        shape = RoundedCornerShape(8.dp),
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = OrangePrimary,
+                                            contentColor = White
+                                        )
+                                    ) {
+                                        Text(text = food.name, style = MaterialTheme.typography.bodyMedium)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (gameState.isWon) {
+                    Box(
+                        modifier = Modifier
+                            .size(gridWidth.dp, gridHeight.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.padding(8.dp)
+                        ) {
+                            Text(
+                                text = "🎉 恭喜通关!",
+                                style = MaterialTheme.typography.headlineSmall,
+                                color = Green
+                            )
+                            Text(
+                                text = "得分: ${gameState.score}",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = White
+                            )
+                            if (foods.isNotEmpty()) {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                foods.take(3).forEach { food ->
+                                    Button(
+                                        onClick = { onResult(food.name, 100) },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 2.dp),
+                                        shape = RoundedCornerShape(8.dp),
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = OrangePrimary,
+                                            contentColor = White
+                                        )
+                                    ) {
+                                        Text(text = food.name, style = MaterialTheme.typography.bodyMedium)
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
 
-            if (gameState.isGameOver) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Top
+            ) {
+                Text(
+                    text = "下一个",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Spacer(modifier = Modifier.height(4.dp))
                 Box(
                     modifier = Modifier
-                        .size(gridWidth.dp, gridHeight.dp),
-                    contentAlignment = Alignment.Center
+                        .background(Color.DarkGray, RoundedCornerShape(8.dp))
+                        .padding(4.dp)
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.padding(8.dp)
+                    Canvas(
+                        modifier = Modifier.size((4 * previewCellSize).dp, (4 * previewCellSize).dp)
                     ) {
-                        Text(
-                            text = "游戏结束",
-                            style = MaterialTheme.typography.headlineSmall,
-                            color = Red
-                        )
-                        Text(
-                            text = "得分: ${gameState.score}",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = White
-                        )
-                        if (foods.isNotEmpty()) {
-                            Spacer(modifier = Modifier.height(8.dp))
-                            foods.take(3).forEach { food ->
-                                Button(
-                                    onClick = { onResult(food.name) },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 2.dp),
-                                    shape = RoundedCornerShape(8.dp),
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = OrangePrimary,
-                                        contentColor = White
+                        val piece = gameState.nextPiece
+                        val offsetX = (4 - piece.shape[0].size) / 2f
+                        val offsetY = (4 - piece.shape.size) / 2f
+                        for (dy in piece.shape.indices) {
+                            for (dx in piece.shape[dy].indices) {
+                                if (piece.shape[dy][dx] == 1) {
+                                    drawRect(
+                                        color = piece.color,
+                                        topLeft = Offset((offsetX + dx) * previewCellSize, (offsetY + dy) * previewCellSize),
+                                        size = Size(previewCellSize - 1, previewCellSize - 1)
                                     )
-                                ) {
-                                    Text(text = food.name, style = MaterialTheme.typography.bodyMedium)
                                 }
                             }
                         }
@@ -478,6 +566,7 @@ fun TetrisGame(
                     gameState.score = 0
                     gameState.linesCleared = 0
                     gameState.isGameOver = false
+                    gameState.isWon = false
                     gameState.currentPiece = null
                     gameState.isPaused = false
                     internalPaused = false

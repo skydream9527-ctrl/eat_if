@@ -2,7 +2,9 @@ package com.eatif.app.data.repository
 
 import com.eatif.app.data.local.FoodDao
 import com.eatif.app.data.local.FoodEntity
+import com.eatif.app.data.local.FoodTagTypeConverter
 import com.eatif.app.domain.model.Food
+import com.eatif.app.domain.model.FoodTag
 import com.eatif.app.domain.repository.FoodRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -14,6 +16,12 @@ class FoodRepositoryImpl @Inject constructor(
 
     override fun getAllFoods(): Flow<List<Food>> {
         return foodDao.getAllFoods().map { entities ->
+            entities.map { it.toDomain() }
+        }
+    }
+
+    override fun getFoodsByTag(tag: FoodTag): Flow<List<Food>> {
+        return foodDao.getFoodsByTag(tag.name).map { entities ->
             entities.map { it.toDomain() }
         }
     }
@@ -35,22 +43,26 @@ class FoodRepositoryImpl @Inject constructor(
     }
 
     private fun FoodEntity.toDomain(): Food {
+        val converter = FoodTagTypeConverter()
         return Food(
             id = id,
             name = name,
             category = category,
             imageUrl = imageUrl,
-            weight = weight
+            weight = weight,
+            tags = converter.toFoodTags(tags)
         )
     }
 
     private fun Food.toEntity(): FoodEntity {
+        val converter = FoodTagTypeConverter()
         return FoodEntity(
             id = id,
             name = name,
             category = category,
             imageUrl = imageUrl,
-            weight = weight
+            weight = weight,
+            tags = converter.fromFoodTags(tags)
         )
     }
 }

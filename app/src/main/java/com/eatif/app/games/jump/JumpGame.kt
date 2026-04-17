@@ -1,6 +1,7 @@
 package com.eatif.app.games.jump
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -26,6 +27,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,7 +42,7 @@ import com.eatif.app.ui.theme.Green
 import com.eatif.app.ui.theme.OrangePrimary
 import com.eatif.app.ui.theme.Red
 import com.eatif.app.ui.theme.White
-import kotlin.math.abs
+import kotlinx.coroutines.launch
 import kotlin.random.Random
 
 data class Block(
@@ -54,7 +56,8 @@ data class Block(
 fun JumpGame(
     foods: List<Food>,
     isPaused: Boolean = false,
-    onResult: (String) -> Unit
+    onResult: (String, Int) -> Unit,
+    mode: String = "single"
 ) {
     var score by remember { mutableIntStateOf(0) }
     var isCharging by remember { mutableStateOf(false) }
@@ -65,8 +68,8 @@ fun JumpGame(
     var characterX by remember { mutableFloatStateOf(0f) }
     var isJumping by remember { mutableStateOf(false) }
     var isFalling by remember { mutableStateOf(false) }
-    var fallingSpeed by remember { mutableFloatStateOf(0f) }
     var internalPaused by remember { mutableStateOf(false) }
+    var isPressed by remember { mutableStateOf(false) }
 
     val characterSize = 40f
     val groundY = 400f
@@ -93,6 +96,20 @@ fun JumpGame(
 
     val animatableCharY = remember { Animatable(groundY - characterSize) }
 
+    LaunchedEffect(isPressed) {
+        if (isPressed && gameState == "ready" && !isJumping && !actualPaused) {
+            isCharging = true
+            jumpPower = 0f
+            val startTime = System.currentTimeMillis()
+            val chargeDuration = 1500L
+            while (isPressed && jumpPower < 1f) {
+                val elapsed = System.currentTimeMillis() - startTime
+                jumpPower = (elapsed.toFloat() / chargeDuration).coerceAtMost(1f)
+                kotlinx.coroutines.delay(16)
+            }
+        }
+    }
+
     LaunchedEffect(gameState, actualPaused) {
         if (gameState == "jumping" && !actualPaused) {
             val targetBlock = blocks.getOrNull(currentBlockIndex + 1)
@@ -114,28 +131,32 @@ fun JumpGame(
                 currentBlockIndex++
                 score++
                 isJumping = false
-                gameState = "ready"
+                jumpPower = 0f
+                isCharging = false
 
                 if (score >= 3) {
-                    val randomFood = foods.randomOrNull()
-                    if (randomFood != null) {
-                        onResult(randomFood.name)
-                    }
+                    gameState = "win"
+                } else {
+                    gameState = "ready"
                 }
             } else {
                 gameState = "falling"
                 isFalling = true
-                fallingSpeed = 0f
             }
         }
     }
 
     LaunchedEffect(gameState, actualPaused) {
         if (gameState == "falling" && !actualPaused) {
-            while (characterY < 600f) {
-                fallingSpeed += 15f
-                characterY = characterY + fallingSpeed
-                kotlinx.coroutines.delay(16)
+            val startValue = animatableCharY.value
+            val endValue = 600f
+            animate(
+                initialValue = startValue,
+                targetValue = endValue,
+                animationSpec = tween(durationMillis = 800)
+            ) { value, _ ->
+                characterY = value
+                animatableCharY.snapTo(value)
             }
             gameState = "gameover"
         }
@@ -156,7 +177,7 @@ fun JumpGame(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = "分数: $score",
+            text = "分数: $score / 3",
             style = MaterialTheme.typography.titleLarge,
             color = OrangePrimary
         )
@@ -165,7 +186,7 @@ fun JumpGame(
 
         if (isCharging) {
             LinearProgressIndicator(
-                progress = jumpPower,
+                progress = { jumpPower },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(8.dp),
@@ -189,24 +210,17 @@ fun JumpGame(
                 .pointerInput(Unit) {
                     detectTapGestures(
                         onPress = {
-                            if (gameState == "ready" && !isJumping) {
-                                isCharging = true
-                                jumpPower = 0f
-                                while (true) {
-                                    jumpPower = (jumpPower + 0.02f).coerceAtMost(1f)
-                                    if (jumpPower >= 1f) {
-                                        jumpPower = 0f
-                                    }
-                                    kotlinx.coroutines.delay(30)
-                                    try {
-                                        awaitRelease()
-                                        break
-                                    } catch (_: Exception) {
-                                        return@detectTapGestures
-                                    }
+                            if (gameState == "ready" && !isJumping && !actualPaused) {
+                                isPressed = true
+                                try {
+                                    awaitRelease()
+                                } catch (_: Exception) {
+                                    isPressed = false
+                                    return@detectTapGestures
                                 }
+                                isPressed = false
                                 isCharging = false
-                                if (gameState == "ready") {
+                                if (gameState == "ready" && jumpPower > 0f) {
                                     isJumping = true
                                     gameState = "jumping"
                                 }
@@ -251,7 +265,7 @@ fun JumpGame(
                             color = Red
                         )
                         Text(
-                            text = "得分: $score",
+                            text = "得分: $score / 3",
                             style = MaterialTheme.typography.titleLarge,
                             color = MaterialTheme.colorScheme.onBackground
                         )
@@ -265,7 +279,54 @@ fun JumpGame(
                             Spacer(modifier = Modifier.height(8.dp))
                             foods.take(3).forEach { food ->
                                 Button(
-                                    onClick = { onResult(food.name) },
+                                    onClick = { onResult(food.name, (score * 100 / 3).coerceIn(0, 100)) },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 4.dp),
+                                    shape = RoundedCornerShape(16.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = OrangePrimary,
+                                        contentColor = White
+                                    )
+                                ) {
+                                    Text(text = food.name, style = MaterialTheme.typography.titleMedium)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (gameState == "win") {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Text(
+                            text = "🎉 恭喜通关！",
+                            style = MaterialTheme.typography.headlineLarge,
+                            color = Green
+                        )
+                        Text(
+                            text = "得分: $score / 3",
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                        if (foods.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = "选择一顿美食奖励自己吧:",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onBackground
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            foods.take(3).forEach { food ->
+                                Button(
+                                    onClick = { onResult(food.name, (score * 100 / 3).coerceIn(0, 100)) },
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(vertical = 4.dp),
@@ -315,7 +376,9 @@ fun JumpGame(
                 gameState = "ready"
                 isJumping = false
                 isFalling = false
-                fallingSpeed = 0f
+                isCharging = false
+                isPressed = false
+                jumpPower = 0f
                 internalPaused = false
             },
             modifier = Modifier
@@ -326,12 +389,13 @@ fun JumpGame(
                 containerColor = OrangePrimary,
                 contentColor = White
             ),
-            enabled = gameState == "gameover" || gameState == "ready" || internalPaused
+            enabled = gameState == "gameover" || gameState == "win" || gameState == "ready" || internalPaused
         ) {
             Text(
                 text = when {
                     internalPaused -> "继续"
                     gameState == "gameover" -> "重新开始"
+                    gameState == "win" -> "重新开始"
                     else -> "跳跃"
                 },
                 style = MaterialTheme.typography.titleMedium

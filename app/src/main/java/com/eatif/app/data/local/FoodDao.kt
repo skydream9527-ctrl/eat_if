@@ -16,6 +16,9 @@ interface FoodDao {
     @Query("SELECT * FROM foods WHERE category = :category ORDER BY id DESC")
     fun getFoodsByCategory(category: String): Flow<List<FoodEntity>>
 
+    @Query("SELECT * FROM foods WHERE tags LIKE '%' || :tagName || '%' ORDER BY id DESC")
+    fun getFoodsByTag(tagName: String): Flow<List<FoodEntity>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertFood(food: FoodEntity): Long
 

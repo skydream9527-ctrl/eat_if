@@ -101,6 +101,83 @@ object GameTutorials {
                 "📊 5发子弹，总分250分以上通过",
                 "🔄 可以重新开始挑战"
             )
+        ),
+        "spinwheel" to GameTutorial(
+            gameId = "spinwheel",
+            title = "🎡 大转盘教程",
+            description = "转动转盘，让命运决定今天吃什么！",
+            tips = listOf(
+                "👆 点击中间按钮开始转动",
+                "🎰 转盘会随机停在某个美食上",
+                "🍽️ 停在哪里就选哪里",
+                "🔄 不满意可以再转一次"
+            )
+        ),
+        "rps" to GameTutorial(
+            gameId = "rps",
+            title = "✊ 石头剪刀布教程",
+            description = "和AI对决石头剪刀布，三局两胜定胜负！",
+            tips = listOf(
+                "✊✋✌️ 选择石头、剪刀或布",
+                "🤖 AI会随机出招",
+                "🏆 先赢3局者获胜",
+                "🍽️ 赢了选美食庆祝，输了选美食安慰"
+            )
+        ),
+        "slot" to GameTutorial(
+            gameId = "slot",
+            title = "🎰 老虎机教程",
+            description = "拉动拉杆，看运气能否三连中！",
+            tips = listOf(
+                "👆 点击拉杆按钮开始",
+                "🎰 三个转轮依次停下",
+                "🔥 三个相同=大奖，两个相同=小奖",
+                "🍽️ 根据结果选择对应的美食"
+            )
+        ),
+        "needle" to GameTutorial(
+            gameId = "needle",
+            title = "🎯 见缝插针教程",
+            description = "把针插入旋转圆盘，不要碰到已有的针！",
+            tips = listOf(
+                "👆 点击屏幕发射一根针",
+                "🔄 圆盘在不停旋转",
+                "⚠️ 新针不能碰到已有的针",
+                "🎯 插完所有针即可过关"
+            )
+        ),
+        "jump" to GameTutorial(
+            gameId = "jump",
+            title = "🏃 跳一跳教程",
+            description = "按住蓄力，跳到下一个平台！",
+            tips = listOf(
+                "👆 按住屏幕蓄力，松开跳跃",
+                "📏 按得越久跳得越远",
+                "🎯 精准落在平台中心加分",
+                "💀 落空则游戏结束"
+            )
+        ),
+        "climb100" to GameTutorial(
+            gameId = "climb100",
+            title = "🧗 勇闯100层教程",
+            description = "左右移动躲避障碍，攀登100层！",
+            tips = listOf(
+                "⬅️➡️ 左右滑动或点击屏幕两侧移动",
+                "⬆️ 角色会自动向上攀爬",
+                "⚠️ 躲避左右移动的障碍物",
+                "🏆 成功到达100层即为通关"
+            )
+        ),
+        "runner" to GameTutorial(
+            gameId = "runner",
+            title = "🏃 无限跑酷教程",
+            description = "跳跃躲避障碍，看你能跑多远！",
+            tips = listOf(
+                "👆 点击屏幕跳跃",
+                "🚧 躲避前方的障碍物",
+                "🏃 角色会自动向前跑",
+                "📏 跑得越远分数越高"
+            )
         )
     )
 }

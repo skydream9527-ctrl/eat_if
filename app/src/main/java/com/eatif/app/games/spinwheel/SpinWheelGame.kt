@@ -35,6 +35,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.unit.dp
 import com.eatif.app.domain.model.Food
@@ -54,12 +55,14 @@ import kotlin.math.sin
 fun SpinWheelGame(
     foods: List<Food>,
     isPaused: Boolean = false,
-    onResult: (String) -> Unit
+    onResult: (String, Int) -> Unit,
+    mode: String = "single"
 ) {
     val isSpinning = remember { mutableStateOf(false) }
     val rotation = remember { mutableStateOf(0f) }
     val animatableRotation = remember { Animatable(0f) }
     var hasSpun by remember { mutableStateOf(false) }
+    var winningIndex by remember { mutableStateOf(-1) }
     var internalPaused by remember { mutableStateOf(false) }
     val actualPaused = isPaused || internalPaused
 
@@ -76,6 +79,7 @@ fun SpinWheelGame(
 
     LaunchedEffect(isSpinning.value) {
         if (isSpinning.value && foods.isNotEmpty()) {
+            winningIndex = -1
             val segmentCount = foods.size
             val segmentAngle = 360f / segmentCount
             val randomOffset = (0 until segmentCount).random() * segmentAngle + Random.nextFloat() * segmentAngle
@@ -89,6 +93,9 @@ fun SpinWheelGame(
             rotation.value = animatableRotation.value
             isSpinning.value = false
             hasSpun = true
+
+            val normalizedAngle = ((360f - (rotation.value % 360f)) % 360f)
+            winningIndex = (normalizedAngle / segmentAngle).toInt() % segmentCount
         }
     }
 
@@ -122,15 +129,28 @@ fun SpinWheelGame(
                     foods.forEachIndexed { index, _ ->
                         val startAngle = index * sweepAngle - 90f
                         val color = segmentColors[index % segmentColors.size]
+                        val isWinning = index == winningIndex && hasSpun && !isSpinning.value
 
                         drawArc(
-                            color = color,
+                            color = if (isWinning) Color.White.copy(alpha = 0.4f) else color,
                             startAngle = startAngle,
                             sweepAngle = sweepAngle,
                             useCenter = true,
                             topLeft = Offset(centerX - radius, centerY - radius),
                             size = Size(radius * 2, radius * 2)
                         )
+
+                        if (isWinning) {
+                            drawArc(
+                                color = Color.White,
+                                startAngle = startAngle,
+                                sweepAngle = sweepAngle,
+                                useCenter = true,
+                                topLeft = Offset(centerX - radius, centerY - radius),
+                                size = Size(radius * 2, radius * 2),
+                                style = androidx.compose.ui.graphics.drawscope.Stroke(width = 6f)
+                            )
+                        }
 
                         val middleAngle = Math.toRadians((startAngle + sweepAngle / 2).toDouble())
                         val textRadius = radius * 0.65f
@@ -151,7 +171,7 @@ fun SpinWheelGame(
                                 isAntiAlias = true
                             }
                             val foodName = foods[index].name
-                            val displayName = if (foodName.length > 4) foodName.take(4) else foodName
+                            val displayName = if (foodName.length > 6) foodName.take(6) else foodName
                             drawText(displayName, textX, textY + paint.textSize / 3, paint)
                             restore()
                         }
@@ -175,15 +195,24 @@ fun SpinWheelGame(
 
         if (hasSpun && foods.isNotEmpty()) {
             Spacer(modifier = Modifier.height(16.dp))
+            val winningFood = if (winningIndex >= 0 && winningIndex < foods.size) foods[winningIndex] else null
+            if (winningFood != null) {
+                Text(
+                    text = "🎉 ${winningFood.name}",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = OrangePrimary
+                )
+            }
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "🍽️ 转到了! 选择美食吧:",
+                text = "选择美食吧:",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onBackground
             )
             Spacer(modifier = Modifier.height(8.dp))
             foods.take(3).forEach { food ->
                 Button(
-                    onClick = { onResult(food.name) },
+                    onClick = { onResult(food.name, 50) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 32.dp, vertical = 4.dp),
@@ -200,6 +229,7 @@ fun SpinWheelGame(
             Button(
                 onClick = {
                     hasSpun = false
+                    winningIndex = -1
                     isSpinning.value = true
                 },
                 modifier = Modifier

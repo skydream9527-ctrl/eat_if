@@ -37,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
@@ -53,51 +54,38 @@ import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.random.Random
 
+private const val TARGET_FLOOR = 20
+
 @Composable
 fun Climb100Game(
     foods: List<Food>,
     isPaused: Boolean = false,
-    onResult: (String) -> Unit
+    onResult: (String, Int) -> Unit,
+    mode: String = "single"
 ) {
     val scope = rememberCoroutineScope()
     val gameState = remember { mutableStateOf(GameState.IDLE) }
     val currentFloor = remember { mutableStateOf(0) }
     val playerY = remember { Animatable(0f) }
     val platforms = remember {
-        generatePlatforms(20).toMutableList()
+        generatePlatforms(TARGET_FLOOR).toMutableList()
+    }
+    val obstacleFloors = remember {
+        generateObstacleFloors(TARGET_FLOOR).toMutableList()
     }
     var platformOffset by remember { mutableStateOf(0) }
     var internalPaused by remember { mutableStateOf(false) }
+    var obstacleWarning by remember { mutableStateOf(false) }
 
     val actualPaused = isPaused || internalPaused
 
-    LaunchedEffect(gameState.value, actualPaused) {
-        if (gameState.value == GameState.PLAYING) {
-            while (gameState.value == GameState.PLAYING && currentFloor.value < 10) {
-                if (actualPaused) {
-                    delay(100)
-                    continue
-                }
-                delay(1500)
-                val targetPlatform = platforms.getOrNull(currentFloor.value + 1) ?: return@LaunchedEffect
-                val success = Random.nextFloat() > 0.2f
-
-                if (success) {
-                    currentFloor.value++
-                    platformOffset = currentFloor.value
-                    playerY.animateTo(
-                        targetValue = 0f,
-                        animationSpec = tween(durationMillis = 300, easing = LinearEasing)
-                    )
-                    if (currentFloor.value >= 10) {
-                        gameState.value = GameState.WON
-                        delay(500)
-                        val randomFood = foods.random().name
-                        onResult(randomFood)
-                    }
-                } else {
-                    gameState.value = GameState.LOST
-                }
+    LaunchedEffect(gameState.value, currentFloor.value, actualPaused) {
+        if (gameState.value == GameState.PLAYING && !actualPaused) {
+            val nextFloor = currentFloor.value + 1
+            if (nextFloor < TARGET_FLOOR && nextFloor in obstacleFloors) {
+                obstacleWarning = true
+                delay(500)
+                obstacleWarning = false
             }
         }
     }
@@ -119,7 +107,7 @@ fun Climb100Game(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = "当前楼层: ${currentFloor.value} / 10",
+            text = "当前楼层: ${currentFloor.value} / $TARGET_FLOOR",
             style = MaterialTheme.typography.titleLarge,
             color = OrangePrimary
         )
@@ -129,27 +117,27 @@ fun Climb100Game(
         Box(
             modifier = Modifier
                 .size(280.dp, 350.dp)
-                .background(White, RoundedCornerShape(16.dp))
+                .background(
+                    if (obstacleWarning && gameState.value == GameState.PLAYING) Red.copy(alpha = 0.15f) else White,
+                    RoundedCornerShape(16.dp)
+                )
                 .pointerInput(gameState.value) {
                     if (gameState.value == GameState.PLAYING) {
                         detectTapGestures {
                             scope.launch {
-                                val success = Random.nextFloat() > 0.15f
-                                if (success) {
-                                    if (currentFloor.value < 10) {
-                                        currentFloor.value++
-                                        platformOffset = currentFloor.value
-                                    }
-                                    if (currentFloor.value >= 10) {
-                                        gameState.value = GameState.WON
-                                        delay(500)
-                                        val randomFood = foods.random().name
-                                        onResult(randomFood)
-                                    }
-                                } else {
+                                val nextFloor = currentFloor.value + 1
+                                if (nextFloor in obstacleFloors) {
                                     playerY.animateTo(200f, tween(500))
                                     delay(300)
                                     gameState.value = GameState.LOST
+                                } else {
+                                    if (currentFloor.value < TARGET_FLOOR) {
+                                        currentFloor.value++
+                                        platformOffset = currentFloor.value
+                                    }
+                                    if (currentFloor.value >= TARGET_FLOOR) {
+                                        gameState.value = GameState.WON
+                                    }
                                 }
                             }
                         }
@@ -169,11 +157,13 @@ fun Climb100Game(
                         val y = startY - displayFloor * platformSpacing
                         val isCurrentPlatform = index == currentFloor.value
                         val isReached = index <= currentFloor.value
+                        val isObstacle = index in obstacleFloors
 
                         drawRoundRect(
                             color = when {
                                 isCurrentPlatform -> OrangePrimary
                                 isReached -> Green
+                                isObstacle -> Red
                                 else -> OrangeLight
                             },
                             topLeft = Offset(platformX, y),
@@ -189,7 +179,7 @@ fun Climb100Game(
                                 isAntiAlias = true
                             }
                             drawText(
-                                "${index + 1}",
+                                if (isObstacle && !isReached) "⚠" else "${index + 1}",
                                 platformX + platformWidth / 2,
                                 y + platformHeight / 2 + 8f,
                                 paint
@@ -231,6 +221,30 @@ fun Climb100Game(
                         style = MaterialTheme.typography.headlineSmall,
                         color = Green
                     )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    if (foods.isNotEmpty()) {
+                        Text(
+                            text = "选择一顿美食奖励自己吧:",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        foods.take(3).forEach { food ->
+                            Button(
+                                onClick = { onResult(food.name, 100) },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 32.dp, vertical = 4.dp),
+                                shape = RoundedCornerShape(16.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = OrangePrimary,
+                                    contentColor = White
+                                )
+                            ) {
+                                Text(text = food.name, style = MaterialTheme.typography.titleMedium)
+                            }
+                        }
+                    }
                 }
             } else if (gameState.value == GameState.LOST) {
                 Column(
@@ -251,7 +265,7 @@ fun Climb100Game(
                         Spacer(modifier = Modifier.height(8.dp))
                         foods.take(3).forEach { food ->
                             Button(
-                                onClick = { onResult(food.name) },
+                                onClick = { onResult(food.name, (currentFloor.value * 100 / TARGET_FLOOR).coerceIn(0, 100)) },
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(horizontal = 32.dp, vertical = 4.dp),
@@ -292,6 +306,10 @@ fun Climb100Game(
                         onClick = {
                             currentFloor.value = 0
                             platformOffset = 0
+                            obstacleFloors.clear()
+                            obstacleFloors.addAll(generateObstacleFloors(TARGET_FLOOR))
+                            platforms.clear()
+                            platforms.addAll(generatePlatforms(TARGET_FLOOR))
                             gameState.value = GameState.PLAYING
                         },
                         modifier = Modifier.size(width = 160.dp, height = 56.dp),
@@ -322,9 +340,9 @@ fun Climb100Game(
                     }
 
                     Text(
-                        text = "👆 点击屏幕跳跃!",
+                        text = if (obstacleWarning) "🚫 小心障碍!" else "👆 点击屏幕跳跃!",
                         style = MaterialTheme.typography.bodyLarge,
-                        color = GrayMedium,
+                        color = if (obstacleWarning) Red else GrayMedium,
                         modifier = Modifier.padding(top = 16.dp)
                     )
                 }
@@ -349,7 +367,12 @@ fun Climb100Game(
                         onClick = {
                             currentFloor.value = 0
                             platformOffset = 0
+                            obstacleWarning = false
                             scope.launch { playerY.snapTo(0f) }
+                            obstacleFloors.clear()
+                            obstacleFloors.addAll(generateObstacleFloors(TARGET_FLOOR))
+                            platforms.clear()
+                            platforms.addAll(generatePlatforms(TARGET_FLOOR))
                             gameState.value = GameState.PLAYING
                         },
                         modifier = Modifier.size(width = 160.dp, height = 56.dp),
@@ -379,6 +402,16 @@ private fun generatePlatforms(count: Int): List<Float> {
         platforms.add(lastX)
     }
     return platforms
+}
+
+private fun generateObstacleFloors(totalFloors: Int): List<Int> {
+    val obstacles = mutableListOf<Int>()
+    var nextObstacle = Random.nextInt(3, 6)
+    while (nextObstacle < totalFloors) {
+        obstacles.add(nextObstacle)
+        nextObstacle += Random.nextInt(3, 6)
+    }
+    return obstacles
 }
 
 private enum class GameState {

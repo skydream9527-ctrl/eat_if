@@ -1,6 +1,7 @@
 package com.eatif.app.games.game2048
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,6 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -55,7 +57,8 @@ private enum class GameState {
 fun Game2048(
     foods: List<Food>,
     isPaused: Boolean = false,
-    onResult: (String) -> Unit
+    onResult: (String, Int) -> Unit,
+    mode: String = "single"
 ) {
     var grid by remember { mutableStateOf(Array(4) { IntArray(4) }) }
     var score by remember { mutableStateOf(0) }
@@ -228,6 +231,19 @@ fun Game2048(
                 .size(300.dp)
                 .background(GrayMedium, RoundedCornerShape(8.dp))
                 .padding(4.dp)
+                .pointerInput(gameState, actualPaused) {
+                    detectDragGestures { change, dragAmount ->
+                        change.consume()
+                        if (gameState != GameState.PLAYING || actualPaused) return@detectDragGestures
+                        val (dx, dy) = dragAmount
+                        if (kotlin.math.abs(dx) < 30f && kotlin.math.abs(dy) < 30f) return@detectDragGestures
+                        if (kotlin.math.abs(dx) > kotlin.math.abs(dy)) {
+                            move(if (dx > 0) Direction.RIGHT else Direction.LEFT)
+                        } else {
+                            move(if (dy > 0) Direction.DOWN else Direction.UP)
+                        }
+                    }
+                }
         ) {
             Column(
                 modifier = Modifier.fillMaxSize(),
@@ -319,26 +335,35 @@ fun Game2048(
         Spacer(modifier = Modifier.height(16.dp))
 
         when {
-            score >= 64 -> {
+            score >= 256 -> {
                 Text(
                     text = "🎉 恭喜通关!",
                     style = MaterialTheme.typography.headlineSmall,
                     color = Green
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                Button(
-                    onClick = {
-                        val randomFood = foods.random().name
-                        onResult(randomFood)
-                    },
-                    modifier = Modifier.size(width = 200.dp, height = 56.dp),
-                    shape = RoundedCornerShape(28.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = OrangePrimary,
-                        contentColor = White
+                if (foods.isNotEmpty()) {
+                    Text(
+                        text = "选择美食庆祝吧:",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onBackground
                     )
-                ) {
-                    Text("领取奖励", style = MaterialTheme.typography.titleMedium)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    foods.take(3).forEach { food ->
+                        Button(
+                            onClick = { onResult(food.name, (score * 100 / 2048).coerceIn(0, 100)) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = OrangePrimary,
+                                contentColor = White
+                            )
+                        ) {
+                            Text(text = food.name, style = MaterialTheme.typography.titleMedium)
+                        }
+                    }
                 }
             }
             !canMove() -> {
@@ -357,7 +382,7 @@ fun Game2048(
                     Spacer(modifier = Modifier.height(8.dp))
                     foods.take(3).forEach { food ->
                         Button(
-                            onClick = { onResult(food.name) },
+                            onClick = { onResult(food.name, (score * 100 / 2048).coerceIn(0, 100)) },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 4.dp),
@@ -423,12 +448,4 @@ private fun getTileColor(value: Int): Color {
         2048 -> Color(0xFFEDC22E)
         else -> Color(0xFF3C3A32)
     }
-}
-
-private enum class Direction {
-    UP, DOWN, LEFT, RIGHT
-}
-
-private enum class GameState {
-    IDLE, PLAYING, WON, LOST
 }

@@ -2,6 +2,7 @@ package com.eatif.app.games.snake
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import com.eatif.app.domain.model.Food
 import com.eatif.app.ui.theme.GrayLight
@@ -44,7 +46,8 @@ fun SnakeGame(
     foods: List<Food>,
     isPaused: Boolean = false,
     onPauseToggle: ((Boolean) -> Unit)? = null,
-    onResult: (String) -> Unit
+    onResult: (String, Int) -> Unit,
+    mode: String = "single"
 ) {
     val gridWidth = 15
     val gridHeight = 15
@@ -91,7 +94,7 @@ fun SnakeGame(
                     delay(100)
                     continue
                 }
-                delay(150)
+                delay(max(80, 150 - score * 7).toLong())
                 direction = nextDirection
                 val head = snake.first()
                 val newHead = when (direction) {
@@ -116,12 +119,9 @@ fun SnakeGame(
                 if (newHead == food) {
                     score++
                     food = generateFood()
-                    if (score >= 5) {
+                    if (score >= 10) {
                         gameState = GameState.WON
                         snakeVersion++
-                        delay(300)
-                        val randomFood = foods.random().name
-                        onResult(randomFood)
                     }
                 } else {
                     snake.removeLast()
@@ -148,7 +148,7 @@ fun SnakeGame(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = "得分: $score / 5",
+            text = "得分: $score / 10",
             style = MaterialTheme.typography.titleLarge,
             color = OrangePrimary
         )
@@ -159,6 +159,21 @@ fun SnakeGame(
             modifier = Modifier
                 .size((gridWidth * cellSize.value).dp)
                 .background(White, RoundedCornerShape(8.dp))
+                .pointerInput(Unit) {
+                    detectDragGestures { change, dragAmount ->
+                        change.consume()
+                        val (dx, dy) = dragAmount
+                        if (kotlin.math.abs(dx) > 30f || kotlin.math.abs(dy) > 30f) {
+                            if (kotlin.math.abs(dx) > kotlin.math.abs(dy)) {
+                                if (dx > 0 && direction != Direction.LEFT) nextDirection = Direction.RIGHT
+                                else if (dx < 0 && direction != Direction.RIGHT) nextDirection = Direction.LEFT
+                            } else {
+                                if (dy > 0 && direction != Direction.UP) nextDirection = Direction.DOWN
+                                else if (dy < 0 && direction != Direction.DOWN) nextDirection = Direction.UP
+                            }
+                        }
+                    }
+                }
         ) {
             Canvas(modifier = Modifier.fillMaxSize()) {
                 val cellWidth = size.width / gridWidth
@@ -188,7 +203,7 @@ fun SnakeGame(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        if (gameState == GameState.IDLE || gameState == GameState.GAME_OVER) {
+        if (gameState == GameState.IDLE || gameState == GameState.GAME_OVER || gameState == GameState.WON) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -208,13 +223,46 @@ fun SnakeGame(
                         Spacer(modifier = Modifier.height(8.dp))
                         foods.take(3).forEach { food ->
                             Button(
-                                onClick = { onResult(food.name) },
+                                onClick = { onResult(food.name, (score * 100 / 10).coerceIn(0, 100)) },
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(vertical = 4.dp),
                                 shape = RoundedCornerShape(16.dp),
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = OrangePrimary,
+                                    contentColor = White
+                                )
+                            ) {
+                                Text(text = food.name, style = MaterialTheme.typography.titleMedium)
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                }
+
+                if (gameState == GameState.WON) {
+                    Text(
+                        text = "🎉 恭喜通关!",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = Green
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    if (foods.isNotEmpty()) {
+                        Text(
+                            text = "选择一顿美食奖励自己吧:",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        foods.take(3).forEach { food ->
+                            Button(
+                                onClick = { onResult(food.name, 100) },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp),
+                                shape = RoundedCornerShape(16.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Green,
                                     contentColor = White
                                 )
                             ) {
@@ -235,7 +283,7 @@ fun SnakeGame(
                     )
                 ) {
                     Text(
-                        text = if (gameState == GameState.GAME_OVER) "重新开始" else "开始游戏",
+                        text = if (gameState == GameState.GAME_OVER) "重新开始" else if (gameState == GameState.WON) "再玩一次" else "开始游戏",
                         style = MaterialTheme.typography.titleMedium
                     )
                 }

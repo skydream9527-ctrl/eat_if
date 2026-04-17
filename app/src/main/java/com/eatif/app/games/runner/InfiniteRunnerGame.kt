@@ -2,7 +2,8 @@ package com.eatif.app.games.runner
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
 import kotlinx.coroutines.launch
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
@@ -53,7 +54,8 @@ fun InfiniteRunnerGame(
     foods: List<Food>,
     isPaused: Boolean = false,
     onPauseToggle: ((Boolean) -> Unit)? = null,
-    onResult: (String) -> Unit
+    onResult: (String, Int) -> Unit,
+    mode: String = "single"
 ) {
     var score by remember { mutableStateOf(0) }
     var gameState by remember { mutableStateOf("ready") }
@@ -150,14 +152,12 @@ fun InfiniteRunnerGame(
                             x = spawnX,
                             width = Random.nextFloat() * 30 + 40,
                             height = Random.nextFloat() * 40 + 50,
-                            isHigh = Random.nextBoolean()
+                            isHigh = false
                         )
                     }
 
-                    if (elapsedSeconds >= 30 || obstaclesPassed >= 10) {
+                    if (elapsedSeconds >= 30 || obstaclesPassed >= 15) {
                         gameState = "won"
-                        val randomFood = foods.randomOrNull()
-                        if (randomFood != null) onResult(randomFood.name)
                     }
                 }
             }
@@ -168,11 +168,11 @@ fun InfiniteRunnerGame(
         if (isJumping) {
             characterY.animateTo(
                 targetValue = groundY - characterSize - 150f,
-                animationSpec = tween(durationMillis = 300, easing = LinearEasing)
+                animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing)
             )
             characterY.animateTo(
                 targetValue = groundY - characterSize,
-                animationSpec = tween(durationMillis = 300, easing = LinearEasing)
+                animationSpec = tween(durationMillis = 300, easing = LinearOutSlowInEasing)
             )
             isJumping = false
         }
@@ -195,7 +195,7 @@ fun InfiniteRunnerGame(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = "距离: ${elapsedSeconds}s | 障碍: $obstaclesPassed/10",
+            text = "距离: ${elapsedSeconds}s | 障碍: $obstaclesPassed/15",
             style = MaterialTheme.typography.titleLarge,
             color = OrangePrimary
         )
@@ -223,13 +223,11 @@ fun InfiniteRunnerGame(
                     size = Size(size.width, 20f)
                 )
 
-                if (gameState != "gameover") {
-                    drawCircle(
+                drawCircle(
                         color = Red,
                         radius = characterSize / 2,
                         center = Offset(characterX.value + characterSize / 2, characterY.value + characterSize / 2)
                     )
-                }
 
                 obstacles.forEach { obstacle ->
                     val obsY = if (obstacle.isHigh) groundY - obstacle.height - 20 else groundY - obstacle.height
@@ -270,7 +268,7 @@ fun InfiniteRunnerGame(
                             Spacer(modifier = Modifier.height(8.dp))
                             foods.take(3).forEach { food ->
                                 Button(
-                                    onClick = { onResult(food.name) },
+                                    onClick = { onResult(food.name, (obstaclesPassed * 100 / 15).coerceIn(0, 100)) },
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(vertical = 4.dp),
@@ -293,12 +291,44 @@ fun InfiniteRunnerGame(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(16.dp)
+                    ) {
                         Text(
                             text = "通关成功！",
                             style = MaterialTheme.typography.headlineLarge,
                             color = Green
                         )
+                        Text(
+                            text = "坚持了 ${elapsedSeconds} 秒 | 通过 ${obstaclesPassed} 个障碍",
+                            style = MaterialTheme.typography.titleLarge,
+                            color = White
+                        )
+                        if (foods.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = "选择一顿美食奖励自己吧:",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = White
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            foods.take(3).forEach { food ->
+                                Button(
+                                    onClick = { onResult(food.name, (obstaclesPassed * 100 / 15).coerceIn(0, 100)) },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 4.dp),
+                                    shape = RoundedCornerShape(16.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Green,
+                                        contentColor = White
+                                    )
+                                ) {
+                                    Text(text = food.name, style = MaterialTheme.typography.titleMedium)
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -368,7 +398,7 @@ fun InfiniteRunnerGame(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = "点击跳跃躲避障碍，坚持30秒或通过10个障碍即可通关",
+            text = "点击跳跃躲避障碍，坚持30秒或通过15个障碍即可通关",
             style = MaterialTheme.typography.bodySmall,
             color = Color(0xFF86868B)
         )

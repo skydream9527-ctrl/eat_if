@@ -49,7 +49,8 @@ fun FlappyEatGame(
     foods: List<Food>,
     isPaused: Boolean = false,
     onPauseToggle: ((Boolean) -> Unit)? = null,
-    onResult: (String) -> Unit
+    onResult: (String, Int) -> Unit,
+    mode: String = "single"
 ) {
     var birdY by remember { mutableStateOf(250f) }
     var birdVelocity by remember { mutableStateOf(0f) }
@@ -58,6 +59,7 @@ fun FlappyEatGame(
     var gameState by remember { mutableStateOf("ready") }
     var passedPipes by remember { mutableStateOf(0) }
     var internalPaused by remember { mutableStateOf(false) }
+    var deathBirdY by remember { mutableStateOf(250f) }
 
     val actualPaused = isPaused || internalPaused
 
@@ -118,6 +120,7 @@ fun FlappyEatGame(
                             val gapTop = pipe.gapY
                             val gapBottom = pipe.gapY + pipe.gapHeight
                             if (birdY < gapTop || birdY + birdSize > gapBottom) {
+                                deathBirdY = birdY
                                 gameState = "gameover"
                                 return@withFrameMillis
                             }
@@ -147,16 +150,13 @@ fun FlappyEatGame(
                     score = passedCount
 
                     if (birdY + birdSize > gameHeight - groundHeight || birdY < 0) {
+                        deathBirdY = birdY
                         gameState = "gameover"
                         return@withFrameMillis
                     }
 
-                    if (passedPipes >= 3 && gameState == "playing") {
-                        val randomFood = foods.randomOrNull()
-                        if (randomFood != null) {
-                            onResult(randomFood.name)
-                        }
-                        gameState = "gameover"
+                    if (passedPipes >= 8 && gameState == "playing") {
+                        gameState = "won"
                     }
                 }
             }
@@ -173,14 +173,6 @@ fun FlappyEatGame(
             text = "🐦 Flappy Eat",
             style = MaterialTheme.typography.headlineMedium,
             color = MaterialTheme.colorScheme.onBackground
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = "分数: $score",
-            style = MaterialTheme.typography.titleLarge,
-            color = OrangePrimary
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -226,16 +218,33 @@ fun FlappyEatGame(
                     )
                 }
 
-                if (gameState != "gameover") {
-                    drawCircle(
-                        color = OrangePrimary,
-                        radius = birdSize / 2,
-                        center = Offset(birdX + birdSize / 2, birdY + birdSize / 2)
-                    )
-                    drawCircle(
+                val drawBirdY = if (gameState == "gameover" || gameState == "won") deathBirdY else birdY
+                drawCircle(
+                    color = OrangePrimary,
+                    radius = birdSize / 2,
+                    center = Offset(birdX + birdSize / 2, drawBirdY + birdSize / 2)
+                )
+                drawCircle(
+                    color = White,
+                    radius = birdSize / 4,
+                    center = Offset(birdX + birdSize / 2 + 5, drawBirdY + birdSize / 2 - 3)
+                )
+            }
+
+            if (gameState == "playing") {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    Text(
+                        text = "分数: $score",
+                        style = MaterialTheme.typography.titleLarge,
                         color = White,
-                        radius = birdSize / 4,
-                        center = Offset(birdX + birdSize / 2 + 5, birdY + birdSize / 2 - 3)
+                        shadow = androidx.compose.ui.graphics.Shadow(
+                            color = Color.Black,
+                            blurRadius = 4f
+                        )
                     )
                 }
             }
@@ -289,13 +298,60 @@ fun FlappyEatGame(
                             Spacer(modifier = Modifier.height(8.dp))
                             foods.take(3).forEach { food ->
                                 Button(
-                                    onClick = { onResult(food.name) },
+                                    onClick = { onResult(food.name, (score * 100 / 8).coerceIn(0, 100)) },
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(vertical = 4.dp),
                                     shape = RoundedCornerShape(16.dp),
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = OrangePrimary,
+                                        contentColor = White
+                                    )
+                                ) {
+                                    Text(text = food.name, style = MaterialTheme.typography.titleMedium)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (gameState == "won") {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Text(
+                            text = "🎉 通关!",
+                            style = MaterialTheme.typography.headlineLarge,
+                            color = Green
+                        )
+                        Text(
+                            text = "得分: $score",
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                        if (foods.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = "选择一顿美食奖励自己吧:",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onBackground
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            foods.take(3).forEach { food ->
+                                Button(
+                                    onClick = { onResult(food.name, 100) },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 4.dp),
+                                    shape = RoundedCornerShape(16.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Green,
                                         contentColor = White
                                     )
                                 ) {
@@ -341,7 +397,7 @@ fun FlappyEatGame(
                     birdVelocity = flapStrength
                     passedPipes = 0
                     score = 0
-                } else if (gameState == "gameover") {
+                } else if (gameState == "gameover" || gameState == "won") {
                     gameState = "ready"
                     birdY = 250f
                     birdVelocity = 0f

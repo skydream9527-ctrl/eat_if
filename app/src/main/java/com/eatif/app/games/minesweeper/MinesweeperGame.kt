@@ -1,7 +1,7 @@
 package com.eatif.app.games.minesweeper
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -52,7 +52,8 @@ import com.eatif.app.ui.theme.White
 fun MinesweeperGame(
     foods: List<Food>,
     isPaused: Boolean = false,
-    onResult: (String) -> Unit
+    onResult: (String, Int) -> Unit,
+    mode: String = "single"
 ) {
     val gridSize = 8
     val mineCount = 8
@@ -64,6 +65,7 @@ fun MinesweeperGame(
     var uncoveredCount by remember { mutableStateOf(0) }
     var cellsRemaining by remember { mutableStateOf(safeCells) }
     var internalPaused by remember { mutableStateOf(false) }
+    var firstClickHappened by remember { mutableStateOf(false) }
     val actualPaused = isPaused || internalPaused
 
     val mineDisplayCount = board.flatten().count { it.isMine && !it.isRevealed }
@@ -108,7 +110,18 @@ fun MinesweeperGame(
                     onClick = {
                         if (gameState == GameState.IDLE || gameState == GameState.PLAYING) {
                             if (!cell.isRevealed && !cell.isFlagged) {
-                                if (cell.isMine) {
+                                if (!firstClickHappened) {
+                                    firstClickHappened = true
+                                    if (cell.isMine) {
+                                        var newBoard = createBoard(gridSize, mineCount)
+                                        while (newBoard[cell.row][cell.col].isMine) {
+                                            newBoard = createBoard(gridSize, mineCount)
+                                        }
+                                        board = newBoard
+                                    }
+                                }
+                                val targetCell = board[cell.row][cell.col]
+                                if (targetCell.isMine) {
                                     gameState = GameState.LOST
                                     board = board.map { row ->
                                         row.map { c ->
@@ -116,18 +129,12 @@ fun MinesweeperGame(
                                         }.toMutableList()
                                     }.toMutableList()
                                 } else {
-                                    val (newBoard, newUncovered) = revealCell(board, cell.row, cell.col, gridSize)
+                                    val (newBoard, newUncovered) = revealCell(board, targetCell.row, targetCell.col, gridSize)
                                     board = newBoard
                                     uncoveredCount += newUncovered
                                     cellsRemaining = safeCells - uncoveredCount
 
-                                    if (cellsRemaining <= safeCells / 2 && foods.isNotEmpty()) {
-                                        val randomFood = foods.random().name
-                                        onResult(randomFood)
-                                        gameState = GameState.WON
-                                    } else if (cellsRemaining == 0) {
-                                        val randomFood = foods.random().name
-                                        onResult(randomFood)
+                                    if (cellsRemaining <= safeCells / 5) {
                                         gameState = GameState.WON
                                     } else {
                                         gameState = GameState.PLAYING
@@ -169,7 +176,7 @@ fun MinesweeperGame(
                 Spacer(modifier = Modifier.height(8.dp))
                 foods.take(3).forEach { food ->
                     Button(
-                        onClick = { onResult(food.name) },
+                        onClick = { onResult(food.name, 0) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 4.dp),
@@ -191,6 +198,30 @@ fun MinesweeperGame(
                 color = Green
             )
             Spacer(modifier = Modifier.height(8.dp))
+            if (foods.isNotEmpty()) {
+                Text(
+                    text = "选择一顿美食奖励自己吧:",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                foods.take(3).forEach { food ->
+                    Button(
+                        onClick = { onResult(food.name, 100) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Green,
+                            contentColor = White
+                        )
+                    ) {
+                        Text(text = food.name, style = MaterialTheme.typography.titleMedium)
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+            }
         }
 
         Row(
@@ -214,6 +245,7 @@ fun MinesweeperGame(
                     gameState = GameState.IDLE
                     uncoveredCount = 0
                     cellsRemaining = safeCells
+                    firstClickHappened = false
                 },
                 modifier = Modifier.size(width = 160.dp, height = 56.dp),
                 shape = RoundedCornerShape(28.dp),
@@ -259,7 +291,10 @@ private fun CellView(
         modifier = Modifier
             .aspectRatio(1f)
             .background(backgroundColor)
-            .clickable(onClick = onClick),
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onFlag
+            ),
         contentAlignment = Alignment.Center
     ) {
         Text(
@@ -268,7 +303,7 @@ private fun CellView(
                 cell.isFlagged -> "🚩"
                 cell.isRevealed && cell.adjacentMines > 0 -> cell.adjacentMines.toString()
                 cell.isRevealed -> ""
-                else -> "?"
+                else -> ""
             },
             color = if (cell.isFlagged || (cell.isRevealed && cell.isMine)) Color.Unspecified else textColor,
             fontSize = 18.sp,

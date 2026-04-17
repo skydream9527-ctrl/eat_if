@@ -12,8 +12,8 @@ sealed class Screen(val route: String) {
         fun createRoute(mode: String) = "game_select/$mode"
     }
 
-    data object Play : Screen("play/{gameId}") {
-        fun createRoute(gameId: String) = "play/$gameId"
+    data object Play : Screen("play/{gameId}/{mode}") {
+        fun createRoute(gameId: String, mode: String = "single") = "play/$gameId/$mode"
     }
 
     data object FoodSelect : Screen("food_select")

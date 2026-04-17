@@ -2,6 +2,8 @@ package com.eatif.app.di
 
 import android.content.Context
 import androidx.room.Room
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.eatif.app.data.local.FoodDao
 import com.eatif.app.data.local.FoodDatabase
 import com.eatif.app.data.local.FoodDataSeeder
@@ -26,12 +28,20 @@ object DatabaseModule {
     fun provideFoodDatabase(
         @ApplicationContext context: Context
     ): FoodDatabase {
+        val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE foods ADD COLUMN tags TEXT NOT NULL DEFAULT '[]'")
+            }
+        }
+
         return Room.databaseBuilder(
             context,
             FoodDatabase::class.java,
             "food_database"
         )
             .addCallback(FoodDataSeeder.getCallback())
+            .addMigrations(MIGRATION_1_2)
+            .fallbackToDestructiveMigration()
             .build()
     }
 

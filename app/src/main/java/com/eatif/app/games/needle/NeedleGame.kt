@@ -35,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.unit.dp
 import com.eatif.app.domain.model.Food
@@ -46,18 +47,21 @@ import com.eatif.app.ui.theme.White
 import kotlin.math.cos
 import kotlin.math.sin
 
+private enum class NeedleGameState { PLAYING, WON, LOST }
+
 @Composable
 fun NeedleGame(
     foods: List<Food>,
     isPaused: Boolean = false,
-    onResult: (String) -> Unit
+    onResult: (String, Int) -> Unit,
+    mode: String = "single"
 ) {
     val needles = remember { mutableStateOf<List<Float>>(emptyList()) }
     val currentAngle = remember { mutableStateOf(0f) }
     val spinning = remember { mutableStateOf(false) }
     val animatableAngle = remember { Animatable(0f) }
     val score = remember { mutableStateOf(0) }
-    val gameOver = remember { mutableStateOf(false) }
+    var gameResult by remember { mutableStateOf<NeedleGameState>(NeedleGameState.PLAYING) }
     var internalPaused by remember { mutableStateOf(false) }
     val actualPaused = isPaused || internalPaused
     val targetScore = 5
@@ -80,14 +84,13 @@ fun NeedleGame(
             }
 
             if (collision) {
-                gameOver.value = true
+                gameResult = NeedleGameState.LOST
             } else {
                 needles.value = needles.value + newNeedleAngle
                 score.value++
 
-                if (score.value >= targetScore && foods.isNotEmpty()) {
-                    val selectedFood = foods.random().name
-                    onResult(selectedFood)
+                if (score.value >= targetScore) {
+                    gameResult = NeedleGameState.WON
                 }
             }
         }
@@ -111,39 +114,79 @@ fun NeedleGame(
         Text(
             text = "分数: ${score.value} / $targetScore",
             style = MaterialTheme.typography.titleLarge,
-            color = if (gameOver.value) Red else Green
+            color = when (gameResult) {
+                NeedleGameState.LOST -> Red
+                NeedleGameState.WON -> Green
+                else -> Green
+            }
         )
 
-        if (gameOver.value) {
-            Text(
-                text = "💥 碰撞! 游戏结束",
-                style = MaterialTheme.typography.titleMedium,
-                color = Red
-            )
-            if (foods.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = "选择一顿美食安慰自己吧:",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
+        when (gameResult) {
+            NeedleGameState.WON -> {
                 Spacer(modifier = Modifier.height(8.dp))
-                foods.take(3).forEach { food ->
-                    Button(
-                        onClick = { onResult(food.name) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = OrangePrimary,
-                            contentColor = White
-                        )
-                    ) {
-                        Text(text = food.name, style = MaterialTheme.typography.titleMedium)
+                Text(
+                    text = "🎉 通关!",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Green
+                )
+                if (foods.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "选择一顿美食奖励自己吧:",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    foods.take(3).forEach { food ->
+                        Button(
+                            onClick = { onResult(food.name, (score.value * 100 / targetScore).coerceIn(0, 100)) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = OrangePrimary,
+                                contentColor = White
+                            )
+                        ) {
+                            Text(text = food.name, style = MaterialTheme.typography.titleMedium)
+                        }
                     }
                 }
             }
+            NeedleGameState.LOST -> {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "💥 碰撞! 游戏结束",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Red
+                )
+                if (foods.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "选择一顿美食安慰自己吧:",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    foods.take(3).forEach { food ->
+                        Button(
+                            onClick = { onResult(food.name, (score.value * 100 / targetScore).coerceIn(0, 100)) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = OrangePrimary,
+                                contentColor = White
+                            )
+                        ) {
+                            Text(text = food.name, style = MaterialTheme.typography.titleMedium)
+                        }
+                    }
+                }
+            }
+            else -> {}
         }
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -164,8 +207,22 @@ fun NeedleGame(
                     color = Gray,
                     radius = diskRadius,
                     center = Offset(centerX, centerY),
-                    style = androidx.compose.ui.graphics.drawscope.Stroke(width = 4f)
+                    style = Stroke(width = 4f)
                 )
+
+                needles.value.forEach { angle ->
+                    val collisionStartAngle = angle - 25f
+                    val sweepAngle = 50f
+                    val arcRadius = diskRadius * 0.7f
+                    drawArc(
+                        color = Red.copy(alpha = 0.15f),
+                        startAngle = collisionStartAngle,
+                        sweepAngle = sweepAngle,
+                        useCenter = true,
+                        topLeft = Offset(centerX - arcRadius, centerY - arcRadius),
+                        size = androidx.compose.ui.geometry.Size(arcRadius * 2, arcRadius * 2)
+                    )
+                }
 
                 rotate(animatableAngle.value, Offset(centerX, centerY)) {
                     needles.value.forEach { angle ->
@@ -227,51 +284,51 @@ fun NeedleGame(
                 )
             }
 
-            Button(
-                onClick = {
-                    if (!spinning.value && !gameOver.value && score.value < targetScore) {
-                        spinning.value = true
+            when (gameResult) {
+                NeedleGameState.LOST -> {
+                    Button(
+                        onClick = {
+                            needles.value = emptyList()
+                            currentAngle.value = 0f
+                            score.value = 0
+                            gameResult = NeedleGameState.PLAYING
+                        },
+                        modifier = Modifier.size(width = 160.dp, height = 56.dp),
+                        shape = RoundedCornerShape(28.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = OrangePrimary,
+                            contentColor = White
+                        )
+                    ) {
+                        Text("重新开始", style = MaterialTheme.typography.titleMedium)
                     }
-                },
-                enabled = !spinning.value && !gameOver.value && score.value < targetScore && foods.isNotEmpty(),
-                modifier = Modifier.size(width = 160.dp, height = 56.dp),
-                shape = RoundedCornerShape(28.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = OrangePrimary,
-                    contentColor = White,
-                    disabledContainerColor = Gray.copy(alpha = 0.5f),
-                    disabledContentColor = White.copy(alpha = 0.5f)
-                )
-            ) {
-                Text(
-                    text = when {
-                        gameOver.value -> "游戏结束"
-                        score.value >= targetScore -> "完成!"
-                        else -> "插入"
-                    },
-                    style = MaterialTheme.typography.titleMedium
-                )
-            }
-        }
-
-        if (score.value >= targetScore && foods.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(
-                onClick = {
-                    val selectedFood = foods.random().name
-                    onResult(selectedFood)
-                },
-                modifier = Modifier.size(width = 200.dp, height = 56.dp),
-                shape = RoundedCornerShape(28.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Green,
-                    contentColor = White
-                )
-            ) {
-                Text(
-                    text = "🎉 领取奖励",
-                    style = MaterialTheme.typography.titleMedium
-                )
+                }
+                else -> {
+                    Button(
+                        onClick = {
+                            if (!spinning.value && gameResult == NeedleGameState.PLAYING && score.value < targetScore) {
+                                spinning.value = true
+                            }
+                        },
+                        enabled = !spinning.value && gameResult == NeedleGameState.PLAYING && score.value < targetScore && foods.isNotEmpty(),
+                        modifier = Modifier.size(width = 160.dp, height = 56.dp),
+                        shape = RoundedCornerShape(28.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = OrangePrimary,
+                            contentColor = White,
+                            disabledContainerColor = Gray.copy(alpha = 0.5f),
+                            disabledContentColor = White.copy(alpha = 0.5f)
+                        )
+                    ) {
+                        Text(
+                            text = when {
+                                gameResult == NeedleGameState.WON -> "完成!"
+                                else -> "插入"
+                            },
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                }
             }
         }
     }

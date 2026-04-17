@@ -43,15 +43,17 @@ fun ShootingGame(
     foods: List<Food>,
     isPaused: Boolean = false,
     onPauseToggle: ((Boolean) -> Unit)? = null,
-    onResult: (String, Int) -> Unit
+    onResult: (String, Int) -> Unit,
+    mode: String = "single"
 ) {
-    var shotsRemaining by remember { mutableStateOf(5) }
+    var shotsRemaining by remember { mutableStateOf(8) }
     var totalScore by remember { mutableStateOf(0) }
     var lastShotScore by remember { mutableStateOf(0) }
     var lastHitOffset by remember { mutableStateOf(Offset.Zero) }
     var isGameOver by remember { mutableStateOf(false) }
     var showHitEffect by remember { mutableStateOf(false) }
     var internalPaused by remember { mutableStateOf(false) }
+    var hitPositions by remember { mutableStateOf(listOf<Offset>()) }
     val hitEffectScale = remember { Animatable(0f) }
 
     val targetRadius = 120f
@@ -121,6 +123,7 @@ fun ShootingGame(
                             )
 
                             lastHitOffset = offset - center
+                            hitPositions = hitPositions + (offset - Offset(centerX, centerY))
 
                             val score = when {
                                 distance <= ringWidth -> ringScores[0]
@@ -162,6 +165,14 @@ fun ShootingGame(
                     radius = 6f,
                     center = Offset(centerX, centerY)
                 )
+
+                hitPositions.forEach { hitOffset ->
+                    drawCircle(
+                        color = Color(0xFF3C3A32),
+                        radius = 4f,
+                        center = Offset(centerX + hitOffset.x, centerY + hitOffset.y)
+                    )
+                }
             }
         }
 
@@ -191,7 +202,7 @@ fun ShootingGame(
         }
 
         if (isGameOver) {
-            val passThreshold = 250
+            val passThreshold = 400
             val passed = totalScore >= passThreshold
 
             Text(
@@ -204,11 +215,12 @@ fun ShootingGame(
 
             Button(
                 onClick = {
-                    shotsRemaining = 5
+                    shotsRemaining = 8
                     totalScore = 0
                     lastShotScore = 0
                     isGameOver = false
                     showHitEffect = false
+                    hitPositions = emptyList()
                 },
                 modifier = Modifier.size(width = 200.dp, height = 56.dp),
                 shape = RoundedCornerShape(28.dp),
@@ -243,7 +255,7 @@ fun ShootingGame(
                     Button(
                         onClick = {
                             val selectedFood = food.name
-                            val scorePercent = if (passed) (totalScore * 100 / 500).coerceIn(0, 100) else 0
+                            val scorePercent = if (passed) (totalScore * 100 / 800).coerceIn(0, 100) else 0
                             onResult(selectedFood, scorePercent)
                         },
                         modifier = Modifier

@@ -111,7 +111,7 @@ fun EatIfNavHost(
             GameSelectScreen(
                 mode = mode,
                 onGameSelected = { gameId ->
-                    navController.navigate(Screen.Play.createRoute(gameId))
+                    navController.navigate(Screen.Play.createRoute(gameId, mode))
                 },
                 onBackClick = {
                     navController.popBackStack()
@@ -121,9 +121,13 @@ fun EatIfNavHost(
 
         composable(
             route = Screen.Play.route,
-            arguments = listOf(navArgument("gameId") { type = NavType.StringType })
+            arguments = listOf(
+                navArgument("gameId") { type = NavType.StringType },
+                navArgument("mode") { type = NavType.StringType; defaultValue = "single" }
+            )
         ) { backStackEntry ->
             val gameId = backStackEntry.arguments?.getString("gameId") ?: ""
+            val mode = backStackEntry.arguments?.getString("mode") ?: "single"
             PlayScreen(
                 gameId = gameId,
                 onGameEnd = { foodName, scorePercent ->
