@@ -22,12 +22,13 @@ data class GameStatsEntity(
 
 fun GameStatsEntity.toDomain() = com.eatif.app.domain.model.GameStats(
     id = id, gameId = game_id, foodName = food_name,
-    score = score, scorePercent = score_percent, difficulty = difficulty,
+    score = score, scorePercent = score_percent,
+    difficulty = try { com.eatif.app.domain.model.GameDifficulty.valueOf(difficulty) } catch (e: Exception) { com.eatif.app.domain.model.GameDifficulty.NORMAL },
     level = level, playTimeSeconds = play_time_seconds, timestamp = timestamp
 )
 
 fun com.eatif.app.domain.model.GameStats.toEntity() = GameStatsEntity(
     id = id, game_id = gameId, food_name = foodName,
-    score = score, score_percent = scorePercent, difficulty = difficulty,
+    score = score, score_percent = scorePercent, difficulty = difficulty.name,
     level = level, play_time_seconds = playTimeSeconds, timestamp = timestamp
 )

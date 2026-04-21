@@ -12,6 +12,8 @@ data class LevelProgressEntity(
     val best_scores_json: String = "{}"
 )
 
+private val gson = Gson()
+
 fun LevelProgressEntity.toDomain() = com.eatif.app.domain.model.LevelProgress(
     gameId = game_id, currentLevel = current_level,
     stars = parseMap(stars_json), bestScores = parseMap(best_scores_json)
@@ -24,10 +26,9 @@ fun com.eatif.app.domain.model.LevelProgress.toEntity() = LevelProgressEntity(
 
 private fun parseMap(json: String): Map<Int, Int> {
     return try {
-        val gson = Gson()
         val type = object : TypeToken<Map<Int, Int>>() {}.type
         gson.fromJson(json, type) ?: emptyMap()
     } catch (e: Exception) { emptyMap() }
 }
 
-private fun mapToString(map: Map<Int, Int>): String = Gson().toJson(map)
+private fun mapToString(map: Map<Int, Int>): String = gson.toJson(map)

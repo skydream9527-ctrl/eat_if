@@ -2,10 +2,11 @@ package com.eatif.app.data.local
 
 import androidx.room.Entity
 import androidx.room.Index
+import androidx.room.PrimaryKey
 
 @Entity(tableName = "skin_collection", indices = [Index(value = ["game_id"])])
 data class SkinCollectionEntity(
-    val skin_id: String,
+    @PrimaryKey val skin_id: String,
     val game_id: String,
     val is_unlocked: Boolean = false,
     val is_active: Boolean = false
