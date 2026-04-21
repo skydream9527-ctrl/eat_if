@@ -12,8 +12,9 @@ sealed class Screen(val route: String) {
         fun createRoute(mode: String) = "game_select/$mode"
     }
 
-    data object Play : Screen("play/{gameId}/{mode}") {
-        fun createRoute(gameId: String, mode: String = "single") = "play/$gameId/$mode"
+    data object Play : Screen("play/{gameId}/{mode}/{levelNumber?}") {
+        fun createRoute(gameId: String, mode: String = "single", levelNumber: Int = 0) =
+            if (levelNumber > 0) "play/$gameId/$mode/$levelNumber" else "play/$gameId/$mode"
     }
 
     data object FoodSelect : Screen("food_select")

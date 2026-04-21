@@ -141,14 +141,17 @@ fun EatIfNavHost(
             route = Screen.Play.route,
             arguments = listOf(
                 navArgument("gameId") { type = NavType.StringType },
-                navArgument("mode") { type = NavType.StringType; defaultValue = "single" }
+                navArgument("mode") { type = NavType.StringType; defaultValue = "single" },
+                navArgument("levelNumber") { type = NavType.IntType; defaultValue = 0 }
             )
         ) { backStackEntry ->
             val gameId = backStackEntry.arguments?.getString("gameId") ?: ""
             val mode = backStackEntry.arguments?.getString("mode") ?: "single"
+            val levelNumber = backStackEntry.arguments?.getInt("levelNumber") ?: 0
             PlayScreen(
                 gameId = gameId,
                 mode = mode,
+                levelNumber = levelNumber,
                 onGameEnd = { foodName, scorePercent, result ->
                     navController.navigate(
                         "result/$foodName/$scorePercent/${result.xpEarned}/${result.playerLevel}"
@@ -279,7 +282,7 @@ fun EatIfNavHost(
             val gameName = GameList.games.find { it.id == gameId }?.name ?: "游戏"
             LevelSelectScreen(
                 gameId = gameId, gameName = gameName,
-                onLevelSelected = { _ -> navController.navigate(Screen.Play.createRoute(gameId, "single")) },
+                onLevelSelected = { levelNum -> navController.navigate(Screen.Play.createRoute(gameId, "single", levelNum)) },
                 onBackClick = { navController.popBackStack() }
             )
         }

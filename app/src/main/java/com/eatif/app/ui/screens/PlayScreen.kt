@@ -3,8 +3,12 @@ package com.eatif.app.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.HelpOutline
@@ -21,6 +25,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -30,10 +35,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.eatif.app.domain.model.GameDifficulty
+import com.eatif.app.domain.model.getDisplayName
+import com.eatif.app.domain.model.getEmoji
+import com.eatif.app.domain.usecase.GameLevelRegistry
+import com.eatif.app.domain.usecase.SkinResolver
 import com.eatif.app.games.GameRegistry
+import com.eatif.app.ui.LevelParamsHolder
+import com.eatif.app.ui.SkinParamsHolder
 import com.eatif.app.ui.components.TutorialDialog
 import com.eatif.app.ui.settings.GameSettingsManager
 import com.eatif.app.ui.theme.White
@@ -44,6 +57,7 @@ import com.eatif.app.ui.tutorial.GameTutorials
 fun PlayScreen(
     gameId: String,
     mode: String = "single",
+    levelNumber: Int = 0,
     onGameEnd: (String, Int, PlayViewModel.GameEndResult) -> Unit,
     onBackClick: () -> Unit,
     onSkinsClick: (() -> Unit)? = null,
@@ -55,6 +69,22 @@ fun PlayScreen(
     var showExitDialog by remember { mutableStateOf(false) }
     var showTutorial by remember { mutableStateOf(false) }
     var playStartTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
+
+    val skinResolver = remember { SkinResolver() }
+    val activeSkin = remember(gameId) { skinResolver.getActiveSkin(gameId) }
+
+    LaunchedEffect(gameId, activeSkin) {
+        SkinParamsHolder.activeSkin = activeSkin
+    }
+
+    LaunchedEffect(gameId, levelNumber) {
+        if (levelNumber > 0) {
+            val level = GameLevelRegistry.getLevel(gameId, levelNumber)
+            LevelParamsHolder.params = level?.params ?: emptyMap()
+        } else {
+            LevelParamsHolder.params = emptyMap()
+        }
+    }
 
     DisposableEffect(Unit) {
         playStartTime = System.currentTimeMillis()
@@ -106,6 +136,43 @@ fun PlayScreen(
                     }
                 },
                 actions = {
+                    val difficulty = GameSettingsManager.difficulty
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(
+                                    when (difficulty) {
+                                        GameDifficulty.EASY -> Color(0xFF4CAF50).copy(alpha = 0.2f)
+                                        GameDifficulty.NORMAL -> Color(0xFFFF9800).copy(alpha = 0.2f)
+                                        GameDifficulty.HARD -> Color(0xFFF44336).copy(alpha = 0.2f)
+                                    }
+                                )
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = "${difficulty.getEmoji()} ${difficulty.getDisplayName()}",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                        if (levelNumber > 0) {
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(MaterialTheme.colorScheme.primaryContainer)
+                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                            ) {
+                                Text(
+                                    text = "关卡 $levelNumber",
+                                    style = MaterialTheme.typography.labelMedium
+                                )
+                            }
+                        }
+                    }
                     if (tutorial != null) {
                         IconButton(onClick = {
                             showTutorial = true
