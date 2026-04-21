@@ -5,10 +5,8 @@ import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
 import androidx.glance.GlanceTheme
 import androidx.glance.appwidget.GlanceAppWidget
-import androidx.glance.appwidget.action.actionRunCallback
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
-import androidx.glance.clickable
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Column
 import androidx.glance.layout.Spacer
@@ -32,8 +30,7 @@ class FoodWidget : GlanceAppWidget() {
                     modifier = GlanceModifier
                         .fillMaxSize()
                         .background(GlanceTheme.colors.surface)
-                        .padding(16)
-                        .clickable(actionRunCallback<RefreshAction>()),
+                        .padding(16),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -48,11 +45,6 @@ class FoodWidget : GlanceAppWidget() {
                             color = GlanceTheme.colors.primary,
                             fontWeight = FontWeight.Bold
                         )
-                    )
-                    Spacer(modifier = GlanceModifier.height(12))
-                    Text(
-                        text = "点击换一个",
-                        style = TextStyle(color = GlanceTheme.colors.onSurfaceVariant)
                     )
                 }
             }

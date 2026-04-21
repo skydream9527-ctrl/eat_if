@@ -3,7 +3,6 @@ package com.eatif.app.ui.widget
 import android.content.Context
 import androidx.glance.GlanceId
 import androidx.glance.appwidget.action.ActionCallback
-import androidx.glance.appwidget.state.updateAppWidgetState
 
 class RefreshAction : ActionCallback {
     override suspend fun onAction(
@@ -11,9 +10,6 @@ class RefreshAction : ActionCallback {
         glanceId: GlanceId,
         parameters: androidx.glance.action.ActionParameters
     ) {
-        updateAppWidgetState(context, glanceId) { prefs ->
-            prefs
-        }
         FoodWidget().update(context, glanceId)
     }
 }
