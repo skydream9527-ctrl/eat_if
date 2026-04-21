@@ -240,11 +240,7 @@ fun FlappyEatGame(
                     Text(
                         text = "分数: $score",
                         style = MaterialTheme.typography.titleLarge,
-                        color = White,
-                        shadow = androidx.compose.ui.graphics.Shadow(
-                            color = Color.Black,
-                            blurRadius = 4f
-                        )
+                        color = White
                     )
                 }
             }

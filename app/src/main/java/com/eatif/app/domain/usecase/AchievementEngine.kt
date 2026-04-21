@@ -1,7 +1,9 @@
 package com.eatif.app.domain.usecase
 
 import com.eatif.app.data.local.AchievementProgressDao
+import com.eatif.app.data.local.AchievementProgressEntity
 import com.eatif.app.data.local.GameStatsDao
+import com.eatif.app.data.local.toEntity
 import com.eatif.app.data.local.PlayerProfileDao
 import com.eatif.app.data.local.toDomain
 import com.eatif.app.domain.model.Achievement

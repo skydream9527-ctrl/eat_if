@@ -2,6 +2,7 @@ package com.eatif.app.games.minesweeper
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -48,6 +49,7 @@ import com.eatif.app.ui.theme.OrangePrimary
 import com.eatif.app.ui.theme.Red
 import com.eatif.app.ui.theme.White
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MinesweeperGame(
     foods: List<Food>,

@@ -20,7 +20,6 @@ import androidx.glance.layout.padding
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
-import androidx.glance.unit.ColorProvider
 import androidx.room.Room
 import com.eatif.app.data.local.FoodDatabase
 import kotlinx.coroutines.flow.first
@@ -40,14 +39,14 @@ class FoodWidget : GlanceAppWidget() {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "🍽️ 今天吃什么？",
+                        text = "今天吃什么？",
                         style = TextStyle(color = GlanceTheme.colors.onSurface)
                     )
                     Spacer(modifier = GlanceModifier.height(8))
                     Text(
                         text = foodName,
                         style = TextStyle(
-                            color = ColorProvider(day = Color(0xFFFF6B35), night = Color(0xFFFF8F5C)),
+                            color = GlanceTheme.colors.primary,
                             fontWeight = FontWeight.Bold
                         )
                     )
@@ -56,7 +55,7 @@ class FoodWidget : GlanceAppWidget() {
                         modifier = GlanceModifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        androidx.glance.layout.Button(
+                        androidx.glance.appwidget.Button(
                             text = "换一个",
                             onClick = actionRunCallback<RefreshAction>()
                         )

@@ -47,6 +47,8 @@ import com.eatif.app.ui.components.EmptyStates
 import com.eatif.app.ui.components.EmptyStateWithAction
 import com.eatif.app.ui.components.GameCard
 import com.eatif.app.domain.model.GameDifficulty
+import com.eatif.app.domain.model.getDisplayName
+import com.eatif.app.domain.model.getEmoji
 import com.eatif.app.ui.settings.GameSettingsManager
 
 @OptIn(ExperimentalMaterial3Api::class)

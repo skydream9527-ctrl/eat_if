@@ -124,6 +124,7 @@ fun AchievementScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CategoryChip(label: String, selected: Boolean, onClick: () -> Unit) {
     FilterChip(
