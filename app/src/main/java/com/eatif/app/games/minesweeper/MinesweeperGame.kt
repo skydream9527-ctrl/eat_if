@@ -265,6 +265,7 @@ fun MinesweeperGame(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun CellView(
     cell: Cell,
