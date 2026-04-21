@@ -35,6 +35,10 @@ object GameList {
         Game("flappy", "Flappy Eat", "🐦", "飞行类", GameCategory.JUMP),
         Game("boxpusher", "推箱子", "📦", "推箱类", GameCategory.PUZZLE),
         Game("runner", "无限跑酷", "🏃", "跑酷类", GameCategory.ARCADE),
-        Game("shooting", "打靶", "🎯", "射击类", GameCategory.PRECISION)
+        Game("shooting", "打靶", "🎯", "射击类", GameCategory.PRECISION),
+        Game("match3", "消消乐", "🧩", "益智类", GameCategory.PUZZLE),
+        Game("linklink", "连连看", "🔗", "益智类", GameCategory.PUZZLE),
+        Game("memory", "记忆翻牌", "🃏", "益智类", GameCategory.PUZZLE),
+        Game("pingpong", "乒乓球", "🏓", "对战类", GameCategory.BATTLE)
     )
 }
