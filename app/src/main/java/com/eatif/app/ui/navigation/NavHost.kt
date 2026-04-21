@@ -1,6 +1,7 @@
 package com.eatif.app.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,6 +33,8 @@ import com.eatif.app.ui.screens.StatsScreen
 import com.eatif.app.ui.screens.SkinSelectorScreen
 import com.eatif.app.domain.model.GameList
 import com.eatif.app.ui.GameEndResultHolder
+import com.eatif.app.ui.LastGameContext
+import com.eatif.app.ui.LastGameContextHolder
 import com.eatif.app.ui.theme.ThemeManager
 
 @Composable
@@ -148,6 +151,13 @@ fun EatIfNavHost(
             val gameId = backStackEntry.arguments?.getString("gameId") ?: ""
             val mode = backStackEntry.arguments?.getString("mode") ?: "single"
             val levelNumber = backStackEntry.arguments?.getInt("levelNumber") ?: 0
+            LaunchedEffect(gameId, mode, levelNumber) {
+                LastGameContextHolder.lastGame = LastGameContext(
+                    gameId = gameId,
+                    mode = mode,
+                    levelNumber = levelNumber
+                )
+            }
             PlayScreen(
                 gameId = gameId,
                 mode = mode,
@@ -221,8 +231,15 @@ fun EatIfNavHost(
                 xpEarned = xpEarned,
                 playerLevel = playerLevel,
                 onPlayAgain = {
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.Home.route) { inclusive = true }
+                    val lastGame = LastGameContextHolder.lastGame
+                    if (lastGame != null) {
+                        navController.navigate(Screen.Play.createRoute(lastGame.gameId, lastGame.mode, lastGame.levelNumber)) {
+                            popUpTo(Screen.Home.route)
+                        }
+                    } else {
+                        navController.navigate(Screen.Home.route) {
+                            popUpTo(Screen.Home.route) { inclusive = true }
+                        }
                     }
                 }
             )
