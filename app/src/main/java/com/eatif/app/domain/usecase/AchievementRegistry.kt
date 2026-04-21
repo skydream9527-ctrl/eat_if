@@ -20,7 +20,11 @@ object AchievementRegistry {
         Achievement("marathon", "马拉松", "单局游戏超过 10 分钟", "🏃", AchievementCategory.MILESTONE, AchievementCondition.TotalPlayTime(600), 70),
         Achievement("total_hour", "时光旅者", "累计游玩时间超过 1 小时", "⏰", AchievementCategory.MILESTONE, AchievementCondition.TotalPlayTime(3600), 60),
         Achievement("five_different", "尝鲜玩家", "玩过 5 款不同的游戏", "🌟", AchievementCategory.EXPLORATION, AchievementCondition.PlayAllGames(5), 30),
-        Achievement("all_games", "全制霸", "玩过全部 15 款游戏", "👑", AchievementCategory.EXPLORATION, AchievementCondition.PlayAllGames(15), 80, unlockSkinId = "spinwheel_gold")
+        Achievement("all_games", "全制霸", "玩过全部 15 款游戏", "👑", AchievementCategory.EXPLORATION, AchievementCondition.PlayAllGames(15), 80, unlockSkinId = "spinwheel_gold"),
+        Achievement("match3_combo_5", "连击大师", "消消乐单次消除5组", "🧩", AchievementCategory.SKILL, AchievementCondition.GameHighScore(gameId = "match3", score = 50), 50),
+        Achievement("linklink_perfect", "连连看完美通关", "零失误完成连连看", "🔗", AchievementCategory.SKILL, AchievementCondition.GameHighScore(gameId = "linklink", score = 100), 60),
+        Achievement("memory_no_error", "记忆力满分", "记忆翻牌零翻错", "🃏", AchievementCategory.SKILL, AchievementCondition.GameHighScore(gameId = "memory", score = 100), 60),
+        Achievement("pingpong_win_5", "乒乓球连胜", "乒乓球连胜5次", "🏓", AchievementCategory.SKILL, AchievementCondition.GameHighScore(gameId = "pingpong", score = 5), 50)
     )
 
     fun getById(id: String): Achievement? = all.find { it.id == id }
