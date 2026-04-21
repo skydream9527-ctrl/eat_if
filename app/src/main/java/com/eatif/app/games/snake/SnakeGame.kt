@@ -39,6 +39,7 @@ import com.eatif.app.ui.theme.OrangePrimary
 import com.eatif.app.ui.theme.Red
 import com.eatif.app.ui.theme.White
 import kotlinx.coroutines.delay
+import kotlin.math.max
 import kotlin.random.Random
 
 @Composable

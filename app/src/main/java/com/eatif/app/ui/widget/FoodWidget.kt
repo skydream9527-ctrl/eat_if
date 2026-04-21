@@ -35,7 +35,7 @@ class FoodWidget : GlanceAppWidget() {
                     modifier = GlanceModifier
                         .fillMaxSize()
                         .background(GlanceTheme.colors.surface)
-                        .padding(16.dp),
+                        .padding(16),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -43,7 +43,7 @@ class FoodWidget : GlanceAppWidget() {
                         text = "🍽️ 今天吃什么？",
                         style = TextStyle(color = GlanceTheme.colors.onSurface)
                     )
-                    Spacer(modifier = GlanceModifier.height(8.dp))
+                    Spacer(modifier = GlanceModifier.height(8))
                     Text(
                         text = foodName,
                         style = TextStyle(
@@ -51,7 +51,7 @@ class FoodWidget : GlanceAppWidget() {
                             fontWeight = FontWeight.Bold
                         )
                     )
-                    Spacer(modifier = GlanceModifier.height(12.dp))
+                    Spacer(modifier = GlanceModifier.height(12))
                     Row(
                         modifier = GlanceModifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally

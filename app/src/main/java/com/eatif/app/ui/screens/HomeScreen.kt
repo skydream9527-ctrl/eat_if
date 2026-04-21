@@ -14,10 +14,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.MilitaryTech
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Card
@@ -74,7 +74,10 @@ fun HomeScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-        containerColor = MaterialTheme.colorScheme.background,
+                    containerColor = MaterialTheme.colorScheme.background
+                )
+            )
+        },
         bottomBar = {
             NavigationBar {
                 NavigationBarItem(
@@ -90,7 +93,7 @@ fun HomeScreen(
                     onClick = onStatsClick
                 )
                 NavigationBarItem(
-                    icon = { Icon(Icons.Default.EmojiEvents, contentDescription = "成就") },
+                    icon = { Icon(Icons.Default.MilitaryTech, contentDescription = "成就") },
                     label = { Text("成就") },
                     selected = false,
                     onClick = onAchievementsClick
@@ -102,9 +105,6 @@ fun HomeScreen(
                     onClick = onProfileClick
                 )
             }
-        }
-                )
-            )
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
