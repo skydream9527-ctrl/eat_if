@@ -1,5 +1,7 @@
 package com.eatif.app.ui.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clip
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -39,7 +41,9 @@ fun GameCard(
     isFavorite: Boolean = false,
     onFavoriteClick: (() -> Unit)? = null,
     onSettingsClick: (() -> Unit)? = null,
-    onLevelClick: (() -> Unit)? = null
+    onLevelClick: (() -> Unit)? = null,
+    stars: Int = 0,
+    highScore: Int = 0
 ) {
     Card(
         onClick = onClick,
@@ -118,6 +122,39 @@ fun GameCard(
                         contentDescription = "关卡",
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+
+            if (stars > 0) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(top = 32.dp, end = 4.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.9f))
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        text = "⭐".repeat(minOf(stars, 3)),
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                }
+            }
+
+            if (highScore > 0) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(start = 4.dp, bottom = if (onLevelClick != null) 36.dp else 4.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f))
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        text = "最高: $highScore%",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
             }

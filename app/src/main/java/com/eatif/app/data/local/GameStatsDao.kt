@@ -23,6 +23,9 @@ interface GameStatsDao {
     @Query("SELECT * FROM game_stats WHERE game_id = :gameId ORDER BY score_percent DESC LIMIT 1")
     fun getBestScoreForGame(gameId: String): Flow<GameStatsEntity?>
 
+    @Query("SELECT * FROM game_stats WHERE game_id = :gameId ORDER BY score_percent DESC LIMIT 1")
+    suspend fun getBestScoreForGameOnce(gameId: String): GameStatsEntity?
+
     @Query("SELECT DISTINCT game_id FROM game_stats")
     fun getUniqueGamesPlayed(): Flow<List<String>>
 

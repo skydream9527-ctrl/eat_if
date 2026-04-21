@@ -30,10 +30,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.eatif.app.domain.model.Game
@@ -52,8 +55,15 @@ fun GameSelectScreen(
     onGameSelected: (String) -> Unit,
     onBackClick: () -> Unit,
     onGameRuleClick: (String) -> Unit = {},
-    onLevelSelectClick: (String) -> Unit = {}
+    onLevelSelectClick: (String) -> Unit = {},
+    viewModel: GameSelectViewModel = hiltViewModel()
 ) {
+    LaunchedEffect(Unit) {
+        viewModel.loadGameInfo(GameList.games.map { it.id })
+    }
+
+    val gameInfoMap by viewModel.gameInfoMap.collectAsState()
+
     val title = if (mode == "double") "双人竞技 - 选择游戏" else "单人模式 - 选择游戏"
     var selectedCategory by remember { mutableStateOf<GameCategory?>(null) }
     var showFavoritesOnly by remember { mutableStateOf(false) }
@@ -153,6 +163,7 @@ fun GameSelectScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(filteredGames) { game ->
+                        val gameInfo = gameInfoMap[game.id]
                         GameCard(
                             title = game.name,
                             emoji = game.emoji,
@@ -163,7 +174,9 @@ fun GameSelectScreen(
                             },
                             onClick = { onGameSelected(game.id) },
                             onSettingsClick = { onGameRuleClick(game.id) },
-                            onLevelClick = { onLevelSelectClick(game.id) }
+                            onLevelClick = { onLevelSelectClick(game.id) },
+                            stars = gameInfo?.stars ?: 0,
+                            highScore = gameInfo?.highScore ?: 0
                         )
                     }
                 }
