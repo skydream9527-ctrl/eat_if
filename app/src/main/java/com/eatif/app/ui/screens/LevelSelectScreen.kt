@@ -49,6 +49,7 @@ fun LevelSelectScreen(
 ) {
     val levels by viewModel.levels.collectAsState()
     val unlockedMap by viewModel.unlockedMap.collectAsState()
+    val progress by viewModel.progress.collectAsState()
 
     LaunchedEffect(gameId) {
         viewModel.loadLevels(gameId)
@@ -81,7 +82,7 @@ fun LevelSelectScreen(
         ) {
             items(levels) { level ->
                 val isUnlocked = unlockedMap[level.levelNumber] ?: false
-                val stars = viewModel.progress.value?.stars?.get(level.levelNumber) ?: 0
+                val stars = progress?.stars?.get(level.levelNumber) ?: 0
                 LevelCard(
                     levelNumber = level.levelNumber,
                     difficulty = level.difficulty.name,
