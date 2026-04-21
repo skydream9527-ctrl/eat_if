@@ -4,6 +4,7 @@ import android.app.Application
 import com.eatif.app.data.session.SessionManager
 import com.eatif.app.games.initGameRegistry
 import com.eatif.app.ui.onboarding.OnboardingManager
+import com.eatif.app.ui.settings.AchievementSettingsManager
 import com.eatif.app.ui.settings.GameSettingsManager
 import com.eatif.app.ui.sounds.SoundManager
 import com.eatif.app.ui.theme.ThemeManager
@@ -15,6 +16,7 @@ class EatIfApplication : Application() {
         super.onCreate()
         ThemeManager.init(this)
         GameSettingsManager.init(this)
+        AchievementSettingsManager.init(this)
         SoundManager.init(this)
         OnboardingManager.init(this)
         SessionManager.init(this)

@@ -42,8 +42,9 @@ import com.eatif.app.ui.tutorial.GameTutorials
 fun PlayScreen(
     gameId: String,
     mode: String = "single",
-    onGameEnd: (String, Int) -> Unit,
+    onGameEnd: (String, Int, PlayViewModel.GameEndResult) -> Unit,
     onBackClick: () -> Unit,
+    onSkinsClick: (() -> Unit)? = null,
     viewModel: PlayViewModel = hiltViewModel()
 ) {
     val foods by viewModel.foods.collectAsState()
@@ -53,8 +54,12 @@ fun PlayScreen(
     var showTutorial by remember { mutableStateOf(false) }
 
     val handleGameEnd: (String, Int) -> Unit = { foodName, scorePercent ->
-        viewModel.recordHistory(foodName, gameId, scorePercent)
-        onGameEnd(foodName, scorePercent)
+        viewModel.processGameEnd(
+            gameId = gameId, foodName = foodName, scorePercent = scorePercent,
+            playTimeSeconds = 0, onResult = { result ->
+                onGameEnd(foodName, scorePercent, result)
+            }
+        )
     }
 
     val tutorial = remember(gameId) { GameTutorials.getTutorial(gameId) }
@@ -153,6 +158,11 @@ fun PlayScreen(
                             style = MaterialTheme.typography.bodyLarge,
                             color = White.copy(alpha = 0.8f)
                         )
+                        if (onSkinsClick != null) {
+                            TextButton(onClick = { onSkinsClick() }) {
+                                Text("🎨 皮肤", color = White)
+                            }
+                        }
                     }
                 }
             }

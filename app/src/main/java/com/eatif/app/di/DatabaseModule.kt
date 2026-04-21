@@ -14,9 +14,11 @@ import com.eatif.app.data.local.LevelProgressDao
 import com.eatif.app.data.local.PlayerProfileDao
 import com.eatif.app.data.local.SkinCollectionDao
 import com.eatif.app.data.repository.FoodRepositoryImpl
+import com.eatif.app.data.repository.GameStatsRepositoryImpl
 import com.eatif.app.data.repository.HistoryRepositoryImpl
 import com.eatif.app.data.repository.RecommendRepositoryImpl
 import com.eatif.app.domain.repository.FoodRepository
+import com.eatif.app.domain.repository.GameStatsRepository
 import com.eatif.app.domain.repository.HistoryRepository
 import com.eatif.app.domain.repository.RecommendRepository
 import dagger.Module
@@ -163,4 +165,9 @@ object DatabaseModule {
     ): RecommendRepository {
         return RecommendRepositoryImpl(historyRepository, foodRepository)
     }
+
+    @Provides
+    @Singleton
+    fun provideGameStatsRepository(dao: GameStatsDao): GameStatsRepository =
+        GameStatsRepositoryImpl(dao)
 }

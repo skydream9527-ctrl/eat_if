@@ -135,7 +135,7 @@ fun EatIfNavHost(
             val mode = backStackEntry.arguments?.getString("mode") ?: "single"
             PlayScreen(
                 gameId = gameId,
-                onGameEnd = { foodName, scorePercent ->
+                onGameEnd = { foodName, scorePercent, result ->
                     navController.navigate(
                         Screen.Result.createRoute(foodName, scorePercent)
                     ) {
