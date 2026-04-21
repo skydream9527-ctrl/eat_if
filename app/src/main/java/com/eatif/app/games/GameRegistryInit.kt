@@ -5,9 +5,13 @@ import com.eatif.app.games.climb100.Climb100Game
 import com.eatif.app.games.flappy.FlappyEatGame
 import com.eatif.app.games.game2048.Game2048
 import com.eatif.app.games.jump.JumpGame
+import com.eatif.app.games.linklink.LinkLinkGame
+import com.eatif.app.games.match3.Match3Game
+import com.eatif.app.games.memory.MemoryGame
 import com.eatif.app.games.minesweeper.MinesweeperGame
 import com.eatif.app.games.needle.NeedleGame
 import com.eatif.app.games.onetstroke.OneStrokeGame
+import com.eatif.app.games.pingpong.PingPongGame
 import com.eatif.app.games.rps.RockPaperScissorsGame
 import com.eatif.app.games.runner.InfiniteRunnerGame
 import com.eatif.app.games.shooting.ShootingGame
@@ -61,5 +65,17 @@ fun initGameRegistry() {
     })
     GameRegistry.register(GameConfig("shooting", supportsSelfPause = true) { foods, isPaused, onPauseToggle, onResult, mode ->
         ShootingGame(foods = foods, isPaused = isPaused, onPauseToggle = onPauseToggle, onResult = onResult, mode = mode)
+    })
+    GameRegistry.register(GameConfig("match3", supportsSelfPause = true) { foods, isPaused, onPauseToggle, onResult, mode ->
+        Match3Game(foods = foods, isPaused = isPaused, onPauseToggle = onPauseToggle, onResult = onResult, mode = mode)
+    })
+    GameRegistry.register(GameConfig("linklink") { foods, isPaused, _, onResult, mode ->
+        LinkLinkGame(foods = foods, isPaused = isPaused, onResult = onResult, mode = mode)
+    })
+    GameRegistry.register(GameConfig("memory") { foods, isPaused, _, onResult, mode ->
+        MemoryGame(foods = foods, isPaused = isPaused, onResult = onResult, mode = mode)
+    })
+    GameRegistry.register(GameConfig("pingpong", supportsSelfPause = true) { foods, isPaused, onPauseToggle, onResult, mode ->
+        PingPongGame(foods = foods, isPaused = isPaused, onPauseToggle = onPauseToggle, onResult = onResult, mode = mode)
     })
 }
