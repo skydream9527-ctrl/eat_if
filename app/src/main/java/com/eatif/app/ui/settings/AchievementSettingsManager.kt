@@ -15,7 +15,7 @@ object AchievementSettingsManager {
     }
 
     fun getUnlockedIds(): Set<String> {
-        return prefs.getStringSet(KEY_UNLOCKED, emptySet()) ?: emptySet()
+        return prefs.getStringSet(KEY_UNLOCKED, emptySet())?.toSet() ?: emptySet()
     }
 
     fun markUnlocked(id: String) {

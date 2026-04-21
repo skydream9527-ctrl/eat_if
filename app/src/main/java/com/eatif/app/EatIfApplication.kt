@@ -6,6 +6,7 @@ import com.eatif.app.games.initGameRegistry
 import com.eatif.app.ui.onboarding.OnboardingManager
 import com.eatif.app.ui.settings.AchievementSettingsManager
 import com.eatif.app.ui.settings.GameSettingsManager
+import com.eatif.app.ui.settings.SkinSettingsManager
 import com.eatif.app.ui.sounds.SoundManager
 import com.eatif.app.ui.theme.ThemeManager
 import dagger.hilt.android.HiltAndroidApp
@@ -17,6 +18,7 @@ class EatIfApplication : Application() {
         ThemeManager.init(this)
         GameSettingsManager.init(this)
         AchievementSettingsManager.init(this)
+        SkinSettingsManager.init(this)
         SoundManager.init(this)
         OnboardingManager.init(this)
         SessionManager.init(this)

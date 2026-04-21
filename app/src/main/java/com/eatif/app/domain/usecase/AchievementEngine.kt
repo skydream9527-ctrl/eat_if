@@ -66,7 +66,7 @@ class AchievementEngine @Inject constructor(
             )
             progressDao.upsert(progress.toEntity())
 
-            if (current >= required && achievement.id !in unlockedIds) {
+            if (current >= required) {
                 AchievementSettingsManager.markUnlocked(achievement.id)
                 newlyUnlocked.add(achievement)
             }
