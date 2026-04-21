@@ -43,11 +43,12 @@ class AchievementEngine @Inject constructor(
                 is AchievementCondition.TotalGames -> totalGames
                 is AchievementCondition.GameHighScore -> {
                     if (condition.gameId == "any") {
-                        val bestScore = statsDao.getBestScoreForGame(event.gameId).first()
-                        if (bestScore != null && bestScore.score_percent >= condition.score) condition.score else 0
+                        val allStats = statsDao.getGlobalTopScores().first()
+                        val maxScore = allStats.maxOfOrNull { it.score_percent } ?: 0
+                        if (maxScore >= condition.score) condition.score else 0
                     } else {
                         val best = statsDao.getBestScoreForGame(condition.gameId).first()
-                        if (best != null) best.score_percent else 0
+                        if (best != null && best.score_percent >= condition.score) condition.score else 0
                     }
                 }
                 is AchievementCondition.ConsecutiveDays -> currentStreak

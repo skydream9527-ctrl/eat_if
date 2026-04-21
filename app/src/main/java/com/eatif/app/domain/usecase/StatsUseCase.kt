@@ -1,5 +1,6 @@
 package com.eatif.app.domain.usecase
 
+import com.eatif.app.data.local.AchievementProgressDao
 import com.eatif.app.domain.model.GameStats
 import com.eatif.app.domain.repository.GameStatsRepository
 import com.eatif.app.domain.usecase.AchievementRegistry
@@ -19,19 +20,21 @@ data class StatsOverview(
 
 @Singleton
 class StatsUseCase @Inject constructor(
-    private val gameStatsRepository: GameStatsRepository
+    private val gameStatsRepository: GameStatsRepository,
+    private val achievementProgressDao: AchievementProgressDao
 ) {
     fun getStatsOverview(): Flow<StatsOverview> {
         return combine(
             gameStatsRepository.getTotalGamesCount(),
             gameStatsRepository.getTotalPlayTime(),
-            gameStatsRepository.getGlobalTopScores()
-        ) { totalGames, totalPlayTime, topScores ->
+            gameStatsRepository.getGlobalTopScores(),
+            achievementProgressDao.getUnlockedCount()
+        ) { totalGames, totalPlayTime, topScores, unlockedCount ->
             StatsOverview(
                 totalGames = totalGames,
                 totalPlayTimeSeconds = totalPlayTime ?: 0L,
                 bestScore = topScores.firstOrNull()?.scorePercent ?: 0,
-                achievementsUnlocked = 0,
+                achievementsUnlocked = unlockedCount,
                 totalAchievements = AchievementRegistry.all.size
             )
         }

@@ -22,7 +22,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -52,11 +54,18 @@ fun PlayScreen(
     var isPaused by remember { mutableStateOf(false) }
     var showExitDialog by remember { mutableStateOf(false) }
     var showTutorial by remember { mutableStateOf(false) }
+    var playStartTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
+
+    DisposableEffect(Unit) {
+        playStartTime = System.currentTimeMillis()
+        onDispose { }
+    }
 
     val handleGameEnd: (String, Int) -> Unit = { foodName, scorePercent ->
+        val playTimeSeconds = (System.currentTimeMillis() - playStartTime) / 1000
         viewModel.processGameEnd(
             gameId = gameId, foodName = foodName, scorePercent = scorePercent,
-            playTimeSeconds = 0, onResult = { result ->
+            playTimeSeconds = playTimeSeconds, onResult = { result ->
                 onGameEnd(foodName, scorePercent, result)
             }
         )
