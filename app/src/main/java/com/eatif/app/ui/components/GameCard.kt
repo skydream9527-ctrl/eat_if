@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -37,7 +38,8 @@ fun GameCard(
     modifier: Modifier = Modifier,
     isFavorite: Boolean = false,
     onFavoriteClick: (() -> Unit)? = null,
-    onSettingsClick: (() -> Unit)? = null
+    onSettingsClick: (() -> Unit)? = null,
+    onLevelClick: (() -> Unit)? = null
 ) {
     Card(
         onClick = onClick,
@@ -100,6 +102,20 @@ fun GameCard(
                     Icon(
                         imageVector = Icons.Filled.Settings,
                         contentDescription = "规则设置",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+
+            if (onLevelClick != null) {
+                IconButton(
+                    onClick = onLevelClick,
+                    modifier = Modifier.align(Alignment.BottomStart).padding(4.dp).size(36.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = "关卡",
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(20.dp)
                     )

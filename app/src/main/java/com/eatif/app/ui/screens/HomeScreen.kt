@@ -14,6 +14,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -42,6 +48,9 @@ fun HomeScreen(
     onSinglePlayerClick: () -> Unit,
     onTwoPlayerClick: () -> Unit,
     onSettingsClick: () -> Unit,
+    onStatsClick: () -> Unit = {},
+    onAchievementsClick: () -> Unit = {},
+    onProfileClick: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val foodCount by viewModel.foodCount.collectAsState()
@@ -65,7 +74,35 @@ fun HomeScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
+        containerColor = MaterialTheme.colorScheme.background,
+        bottomBar = {
+            NavigationBar {
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Home, contentDescription = "首页") },
+                    label = { Text("首页") },
+                    selected = true,
+                    onClick = { }
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Star, contentDescription = "统计") },
+                    label = { Text("统计") },
+                    selected = false,
+                    onClick = onStatsClick
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.EmojiEvents, contentDescription = "成就") },
+                    label = { Text("成就") },
+                    selected = false,
+                    onClick = onAchievementsClick
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Person, contentDescription = "我的") },
+                    label = { Text("我的") },
+                    selected = false,
+                    onClick = onProfileClick
+                )
+            }
+        }
                 )
             )
         },

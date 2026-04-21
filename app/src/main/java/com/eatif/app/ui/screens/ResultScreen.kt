@@ -47,6 +47,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.eatif.app.data.session.SessionManager
+import com.eatif.app.ui.components.AchievementUnlockDialog
+import com.eatif.app.ui.GameEndResultHolder
 import com.eatif.app.ui.theme.OrangePrimary
 import kotlinx.coroutines.delay
 
@@ -54,6 +56,8 @@ import kotlinx.coroutines.delay
 fun ResultScreen(
     foodName: String,
     scorePercent: Int = -1,
+    xpEarned: Int = 0,
+    playerLevel: Int = 1,
     onPlayAgain: () -> Unit
 ) {
     var showContent by remember { mutableStateOf(false) }
@@ -250,6 +254,29 @@ fun ResultScreen(
 
                 Spacer(modifier = Modifier.height(40.dp))
 
+                if (xpEarned > 0) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFC107).copy(alpha = 0.15f))
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(12.dp),
+                            horizontalArrangement = Arrangement.SpaceAround,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(text = "+$xpEarned", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = Color(0xFFFFC107))
+                                Text(text = "XP 获得", style = MaterialTheme.typography.labelMedium)
+                            }
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(text = "Lv.$playerLevel", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                                Text(text = "当前等级", style = MaterialTheme.typography.labelMedium)
+                            }
+                        }
+                    }
+                }
+
                 Button(
                     onClick = onPlayAgain,
                     modifier = Modifier
@@ -268,6 +295,16 @@ fun ResultScreen(
                 }
             }
         }
+    }
+
+    var currentAchievementIndex by remember { mutableStateOf(0) }
+    val unlockedAchievements = remember { GameEndResultHolder.unlockedAchievements }
+
+    if (unlockedAchievements.isNotEmpty() && currentAchievementIndex < unlockedAchievements.size) {
+        AchievementUnlockDialog(
+            achievement = unlockedAchievements[currentAchievementIndex],
+            onDismiss = { currentAchievementIndex++ }
+        )
     }
 }
 
