@@ -33,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.eatif.app.domain.model.Food
 import com.eatif.app.ui.theme.GrayLight
 import com.eatif.app.ui.theme.GrayMedium
@@ -207,7 +208,7 @@ fun Match3Game(
                                     GemColor.BLUE -> "🔵"
                                     GemColor.PURPLE -> "🟣"
                                 },
-                                fontSize = 20.dp.value.toInt().sp
+                                fontSize = 20.sp
                             )
                         }
                     }
