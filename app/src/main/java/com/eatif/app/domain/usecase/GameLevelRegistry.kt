@@ -94,7 +94,27 @@ object GameLevelRegistry {
         GameLevel("boxpusher", 2, GameDifficulty.EASY, 1, mapOf()),
         GameLevel("boxpusher", 3, GameDifficulty.NORMAL, 2, mapOf()),
         GameLevel("boxpusher", 4, GameDifficulty.HARD, 3, mapOf()),
-        GameLevel("boxpusher", 5, GameDifficulty.HARD, 4, mapOf())
+        GameLevel("boxpusher", 5, GameDifficulty.HARD, 4, mapOf()),
+        GameLevel("match3", 1, GameDifficulty.EASY, 0, mapOf("moves" to "30")),
+        GameLevel("match3", 2, GameDifficulty.EASY, 1, mapOf("moves" to "25")),
+        GameLevel("match3", 3, GameDifficulty.NORMAL, 2, mapOf("moves" to "20")),
+        GameLevel("match3", 4, GameDifficulty.HARD, 3, mapOf("moves" to "15")),
+        GameLevel("match3", 5, GameDifficulty.HARD, 4, mapOf("moves" to "10")),
+        GameLevel("linklink", 1, GameDifficulty.EASY, 0, mapOf("grid" to "4x4")),
+        GameLevel("linklink", 2, GameDifficulty.EASY, 1, mapOf("grid" to "4x5")),
+        GameLevel("linklink", 3, GameDifficulty.NORMAL, 2, mapOf("grid" to "5x6")),
+        GameLevel("linklink", 4, GameDifficulty.HARD, 3, mapOf("grid" to "6x6")),
+        GameLevel("linklink", 5, GameDifficulty.HARD, 4, mapOf("grid" to "6x7")),
+        GameLevel("memory", 1, GameDifficulty.EASY, 0, mapOf("grid" to "2x2")),
+        GameLevel("memory", 2, GameDifficulty.EASY, 1, mapOf("grid" to "2x3")),
+        GameLevel("memory", 3, GameDifficulty.NORMAL, 2, mapOf("grid" to "3x4")),
+        GameLevel("memory", 4, GameDifficulty.HARD, 3, mapOf("grid" to "4x4")),
+        GameLevel("memory", 5, GameDifficulty.HARD, 4, mapOf("grid" to "4x5")),
+        GameLevel("pingpong", 1, GameDifficulty.EASY, 0, mapOf("speed" to "slow")),
+        GameLevel("pingpong", 2, GameDifficulty.EASY, 1, mapOf("speed" to "medium")),
+        GameLevel("pingpong", 3, GameDifficulty.NORMAL, 2, mapOf("speed" to "fast")),
+        GameLevel("pingpong", 4, GameDifficulty.HARD, 3, mapOf("speed" to "very_fast")),
+        GameLevel("pingpong", 5, GameDifficulty.HARD, 4, mapOf("speed" to "insane"))
     )
 
     fun getLevelsForGame(gameId: String): List<GameLevel> = levels.filter { it.gameId == gameId }
