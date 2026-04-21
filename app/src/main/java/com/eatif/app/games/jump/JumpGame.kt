@@ -150,14 +150,11 @@ fun JumpGame(
         if (gameState == "falling" && !actualPaused) {
             val startValue = animatableCharY.value
             val endValue = 600f
-            animate(
-                initialValue = startValue,
+            animatableCharY.animateTo(
                 targetValue = endValue,
                 animationSpec = tween(durationMillis = 800)
-            ) { value, _ ->
-                characterY = value
-                animatableCharY.snapTo(value)
-            }
+            )
+            characterY = endValue
             gameState = "gameover"
         }
     }
@@ -186,12 +183,11 @@ fun JumpGame(
 
         if (isCharging) {
             LinearProgressIndicator(
-                progress = { jumpPower },
+                progress = jumpPower,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(8.dp),
                 color = Green,
-                trackColor = White,
             )
             Text(
                 text = "按住蓄力，松开跳跃！",

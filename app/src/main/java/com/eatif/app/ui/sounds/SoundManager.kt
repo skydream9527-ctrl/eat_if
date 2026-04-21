@@ -32,7 +32,7 @@ object SoundManager {
         }
 
         val audioAttributes = AudioAttributes.Builder()
-            .setUsage(AudioAttributes.USAGE_GAME_ENVIRONMENTAL)
+            .setUsage(AudioAttributes.USAGE_GAME)
             .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
             .build()
 
@@ -42,11 +42,8 @@ object SoundManager {
             .build()
 
         soundPool?.let { pool ->
-            try {
-                soundClick = pool.load(context, android.R.raw.fallbackring, 1)
-            } catch (e: Exception) {
-                soundClick = 0
-            }
+            // Sound resources would be loaded from app's raw resources
+            // For now, we just initialize the pool without sounds (vibration only)
         }
 
         isInitialized = true
