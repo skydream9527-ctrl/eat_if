@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>游戏页面 - 今天吃什么？</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #FFF8F0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top App Bar */
+        .top-bar {
+            background-color: #FFF8F0;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        .close-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        .close-btn:hover {
+            background: rgba(0,0,0,0.05);
+        }
+        .top-bar-title {
+            font-size: 20px;
+            font-weight: 500;
+            color: #333;
+            margin-left: 8px;
+            flex: 1;
+        }
+        .top-bar-info {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .level-badge {
+            background: #FFE5D0;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 14px;
+        }
+        .difficulty-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 14px;
+        }
+        .difficulty-badge.easy {
+            background: rgba(76,175,80,0.2);
+        }
+        .difficulty-badge.normal {
+            background: rgba(255,152,0,0.2);
+        }
+        .difficulty-badge.hard {
+            background: rgba(244,67,54,0.2);
+        }
+        .help-btn, .pause-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 24px;
+        }
+
+        /* Game Area */
+        .game-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #F5F5F5;
+            position: relative;
+        }
+
+        /* Demo Game: 2048 */
+        .game-container {
+            background: #BBADA0;
+            border-radius: 8px;
+            padding: 12px;
+            width: 320px;
+            height: 320px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 12px;
+        }
+        .game-cell {
+            background: rgba(238, 228, 218, 0.35);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: bold;
+            color: #776E65;
+        }
+        .game-cell.value-2 {
+            background: #EEE4DA;
+        }
+        .game-cell.value-4 {
+            background: #EDE0C8;
+        }
+        .game-cell.value-8 {
+            background: #F2B179;
+            color: #F9F6F2;
+        }
+        .game-cell.value-16 {
+            background: #F59563;
+            color: #F9F6F2;
+        }
+        .game-cell.value-32 {
+            background: #F67C5F;
+            color: #F9F6F2;
+        }
+        .game-cell.value-64 {
+            background: #F65E3B;
+            color: #F9F6F2;
+        }
+
+        /* Pause Overlay */
+        .pause-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        .pause-overlay.visible {
+            display: flex;
+        }
+        .pause-title {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        .pause-subtitle {
+            font-size: 16px;
+            opacity: 0.8;
+        }
+        .skin-btn {
+            margin-top: 16px;
+            background: transparent;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        /* Exit Dialog */
+        .exit-dialog {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            min-width: 280px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+            display: none;
+            z-index: 100;
+        }
+        .exit-dialog.visible {
+            display: block;
+        }
+        .dialog-title {
+            font-size: 20px;
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+        .dialog-content {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 24px;
+        }
+        .dialog-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+        .dialog-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .dialog-btn.cancel {
+            background: #E0E0E0;
+        }
+        .dialog-btn.exit {
+            background: #F44336;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Top App Bar -->
+    <header class="top-bar">
+        <button class="close-btn" onclick="showExitDialog()">✕</button>
+        <h1 class="top-bar-title">2048</h1>
+        <div class="top-bar-info">
+            <span class="difficulty-badge normal">🟡 普通</span>
+            <span class="level-badge">关卡 3</span>
+            <button class="help-btn">❓</button>
+            <button class="pause-btn" onclick="togglePause()">⏸️</button>
+        </div>
+    </header>
+
+    <!-- Game Area -->
+    <main class="game-area">
+        <div class="game-container">
+            <div class="game-cell value-2">2</div>
+            <div class="game-cell value-4">4</div>
+            <div class="game-cell value-8">8</div>
+            <div class="game-cell value-16">16</div>
+            <div class="game-cell value-2">2</div>
+            <div class="game-cell"></div>
+            <div class="game-cell value-32">32</div>
+            <div class="game-cell value-4">4</div>
+            <div class="game-cell value-64">64</div>
+            <div class="game-cell value-8">8</div>
+            <div class="game-cell"></div>
+            <div class="game-cell value-2">2</div>
+            <div class="game-cell"></div>
+            <div class="game-cell value-4">4</div>
+            <div class="game-cell value-16">16</div>
+            <div class="game-cell value-8">8</div>
+        </div>
+
+        <!-- Pause Overlay -->
+        <div class="pause-overlay" id="pauseOverlay">
+            <span class="pause-title">⏸️ 游戏已暂停</span>
+            <span class="pause-subtitle">点击播放按钮继续</span>
+            <button class="skin-btn">🎨 皮肤</button>
+        </div>
+    </main>
+
+    <!-- Exit Dialog -->
+    <div class="exit-dialog" id="exitDialog">
+        <h3 class="dialog-title">退出游戏</h3>
+        <p class="dialog-content">确定要退出当前游戏吗？进度将不会保存。</p>
+        <div class="dialog-buttons">
+            <button class="dialog-btn cancel" onclick="hideExitDialog()">继续游戏</button>
+            <button class="dialog-btn exit" onclick="alert('已退出')">退出</button>
+        </div>
+    </div>
+
+    <script>
+        let isPaused = false;
+
+        function togglePause() {
+            isPaused = !isPaused;
+            const overlay = document.getElementById('pauseOverlay');
+            const btn = document.querySelector('.pause-btn');
+            if (isPaused) {
+                overlay.classList.add('visible');
+                btn.textContent = '▶️';
+            } else {
+                overlay.classList.remove('visible');
+                btn.textContent = '⏸️';
+            }
+        }
+
+        function showExitDialog() {
+            document.getElementById('exitDialog').classList.add('visible');
+        }
+
+        function hideExitDialog() {
+            document.getElementById('exitDialog').classList.remove('visible');
+        }
+
+        // Click on pause overlay to unpause
+        document.getElementById('pauseOverlay').addEventListener('click', function(e) {
+            if (e.target === this || e.target.classList.contains('pause-subtitle')) {
+                togglePause();
+            }
+        });
+    </script>
+</body>
+</html>

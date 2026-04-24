@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>游戏选择 - 今天吃什么？</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #FFF8F0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top App Bar */
+        .top-bar {
+            background-color: #FFF8F0;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        .back-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        .back-btn:hover {
+            background: rgba(0,0,0,0.05);
+        }
+        .top-bar-title {
+            font-size: 20px;
+            font-weight: 500;
+            color: #333;
+            margin-left: 8px;
+            flex: 1;
+        }
+        .top-bar-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .difficulty-badge {
+            background: rgba(255,152,0,0.2);
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 14px;
+            color: #333;
+        }
+        .favorite-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 24px;
+        }
+
+        /* Difficulty Selector */
+        .difficulty-selector {
+            padding: 16px;
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+        .difficulty-option {
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: #E0E0E0;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .difficulty-option.active {
+            background: #FF6B35;
+            color: white;
+        }
+
+        /* Category Filter */
+        .category-filter {
+            padding: 8px 16px;
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            background: #FFF8F0;
+        }
+        .category-chip {
+            padding: 6px 12px;
+            border-radius: 16px;
+            background: #E0E0E0;
+            border: none;
+            cursor: pointer;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+        .category-chip.active {
+            background: #FF6B35;
+            color: white;
+        }
+
+        /* Games Grid */
+        .games-grid {
+            padding: 16px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .game-card {
+            background: #FFFFFF;
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        .game-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+
+        .game-favorite {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .game-emoji {
+            font-size: 48px;
+            margin-bottom: 8px;
+        }
+
+        .game-name {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+            text-align: center;
+        }
+
+        .game-category {
+            font-size: 12px;
+            color: #888;
+            margin-top: 4px;
+        }
+
+        .game-stats {
+            display: flex;
+            gap: 4px;
+            margin-top: 8px;
+        }
+        .star {
+            font-size: 14px;
+            color: #FFC107;
+        }
+        .star.empty {
+            color: #E0E0E0;
+        }
+
+        .game-high-score {
+            font-size: 11px;
+            color: #888;
+            margin-top: 4px;
+        }
+
+        .game-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .game-action-btn {
+            padding: 4px 8px;
+            border-radius: 8px;
+            background: #E0E0E0;
+            font-size: 12px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- Top App Bar -->
+    <header class="top-bar">
+        <button class="back-btn">←</button>
+        <h1 class="top-bar-title">单人模式 - 选择游戏</h1>
+        <div class="top-bar-actions">
+            <span class="difficulty-badge">🟡 普通</span>
+            <button class="favorite-btn">🤍</button>
+        </div>
+    </header>
+
+    <!-- Difficulty Selector -->
+    <div class="difficulty-selector">
+        <button class="difficulty-option active">🟢 简单</button>
+        <button class="difficulty-option">🟡 普通</button>
+        <button class="difficulty-option">🔴 困难</button>
+    </div>
+
+    <!-- Category Filter -->
+    <div class="category-filter">
+        <button class="category-chip active">全部</button>
+        <button class="category-chip">精准</button>
+        <button class="category-chip">跳跃</button>
+        <button class="category-chip">攀爬</button>
+        <button class="category-chip">运气</button>
+        <button class="category-chip">对战</button>
+        <button class="category-chip">益智</button>
+        <button class="category-chip">经典</button>
+        <button class="category-chip">街机</button>
+    </div>
+
+    <!-- Games Grid -->
+    <div class="games-grid">
+        <div class="game-card">
+            <span class="game-favorite">❤️</span>
+            <span class="game-emoji">🎯</span>
+            <span class="game-name">见缝插针</span>
+            <span class="game-category">精准类</span>
+            <div class="game-stats">
+                <span class="star">⭐</span>
+                <span class="star">⭐</span>
+                <span class="star">⭐</span>
+                <span class="star empty">☆</span>
+                <span class="star empty">☆</span>
+            </div>
+            <span class="game-high-score">最高: 85%</span>
+            <div class="game-actions">
+                <span class="game-action-btn">📖 规则</span>
+                <span class="game-action-btn">🏆 关卡</span>
+            </div>
+        </div>
+
+        <div class="game-card">
+            <span class="game-favorite">🤍</span>
+            <span class="game-emoji">🏃</span>
+            <span class="game-name">跳一跳</span>
+            <span class="game-category">跳跃类</span>
+            <div class="game-stats">
+                <span class="star">⭐</span>
+                <span class="star">⭐</span>
+                <span class="star empty">☆</span>
+                <span class="star empty">☆</span>
+                <span class="star empty">☆</span>
+            </div>
+            <span class="game-high-score">最高: 60%</span>
+            <div class="game-actions">
+                <span class="game-action-btn">📖 规则</span>
+                <span class="game-action-btn">🏆 关卡</span>
+            </div>
+        </div>
+
+        <div class="game-card">
+            <span class="game-favorite">❤️</span>
+            <span class="game-emoji">🧗</span>
+            <span class="game-name">勇闯100层</span>
+            <span class="game-category">攀爬类</span>
+            <div class="game-stats">
+                <span class="star">⭐</span>
+                <span class="star">⭐</span>
+                <span class="star">⭐</span>
+                <span class="star">⭐</span>
+                <span class="star empty">☆</span>
+            </div>
+            <span class="game-high-score">最高: 92%</span>
+            <div class="game-actions">
+                <span class="game-action-btn">📖 规则</span>
+                <span class="game-action-btn">🏆 关卡</span>
+            </div>
+        </div>
+
+        <div class="game-card">
+            <span class="game-favorite">🤍</span>
+            <span class="game-emoji">🎰</span>
+            <span class="game-name">老虎机</span>
+            <span class="game-category">运气类</span>
+            <div class="game-stats">
+                <span class="star">⭐</span>
+                <span class="star empty">☆</span>
+                <span class="star empty">☆</span>
+                <span class="star empty">☆</span>
+                <span class="star empty">☆</span>
+            </div>
+            <span class="game-high-score">最高: 25%</span>
+            <div class="game-actions">
+                <span class="game-action-btn">📖 规则</span>
+            </div>
+        </div>
+
+        <div class="game-card">
+            <span class="game-favorite">❤️</span>
+            <span class="game-emoji">🎯</span>
+            <span class="game-name">大转盘</span>
+            <span class="game-category">运气类</span>
+            <div class="game-stats">
+                <span class="star">⭐</span>
+                <span class="star">⭐</span>
+                <span class="star empty">☆</span>
+                <span class="star empty">☆</span>
+                <span class="star empty">☆</span>
+            </div>
+            <span class="game-high-score">最高: 50%</span>
+            <div class="game-actions">
+                <span class="game-action-btn">📖 规则</span>
+            </div>
+        </div>
+
+        <div class="game-card">
+            <span class="game-favorite">🤍</span>
+            <span class="game-emoji">✊</span>
+            <span class="game-name">石头剪刀布</span>
+            <span class="game-category">对战类</span>
+            <div class="game-stats">
+                <span class="star">⭐</span>
+                <span class="star">⭐</span>
+                <span class="star">⭐</span>
+                <span class="star empty">☆</span>
+                <span class="star empty">☆</span>
+            </div>
+            <span class="game-high-score">最高: 75%</span>
+            <div class="game-actions">
+                <span class="game-action-btn">📖 规则</span>
+            </div>
+        </div>
+
+        <div class="game-card">
+            <span class="game-favorite">❤️</span>
+            <span class="game-emoji">🧩</span>
+            <span class="game-name">2048</span>
+            <span class="game-category">益智类</span>
+            <div class="game-stats">
+                <span class="star">⭐</span>
+                <span class="star">⭐</span>
+                <span class="star">⭐</span>
+                <span class="star">⭐</span>
+                <span class="star">⭐</span>
+            </div>
+            <span class="game-high-score">最高: 100%</span>
+            <div class="game-actions">
+                <span class="game-action-btn">📖 规则</span>
+                <span class="game-action-btn">🏆 关卡</span>
+            </div>
+        </div>
+
+        <div class="game-card">
+            <span class="game-favorite">🤍</span>
+            <span class="game-emoji">🐍</span>
+            <span class="game-name">贪吃蛇</span>
+            <span class="game-category">经典类</span>
+            <div class="game-stats">
+                <span class="star">⭐</span>
+                <span class="star">⭐</span>
+                <span class="star empty">☆</span>
+                <span class="star empty">☆</span>
+                <span class="star empty">☆</span>
+            </div>
+            <span class="game-high-score">最高: 40%</span>
+            <div class="game-actions">
+                <span class="game-action-btn">📖 规则</span>
+            </div>
+        </div>
+
+        <div class="game-card">
+            <span class="game-favorite">❤️</span>
+            <span class="game-emoji">🧱</span>
+            <span class="game-name">俄罗斯方块</span>
+            <span class="game-category">街机类</span>
+            <div class="game-stats">
+                <span class="star">⭐</span>
+                <span class="star">⭐</span>
+                <span class="star">⭐</span>
+                <span class="star">⭐</span>
+                <span class="star empty">☆</span>
+            </div>
+            <span class="game-high-score">最高: 88%</span>
+            <div class="game-actions">
+                <span class="game-action-btn">📖 规则</span>
+                <span class="game-action-btn">🏆 关卡</span>
+            </div>
+        </div>
+
+        <div class="game-card">
+            <span class="game-favorite">🤍</span>
+            <span class="game-emoji">🔍</span>
+            <span class="game-name">扫雷</span>
+            <span class="game-category">精准类</span>
+            <div class="game-stats">
+                <span class="star">⭐</span>
+                <span class="star">⭐</span>
+                <span class="star empty">☆</span>
+                <span class="star empty">☆</span>
+                <span class="star empty">☆</span>
+            </div>
+            <span class="game-high-score">最高: 55%</span>
+            <div class="game-actions">
+                <span class="game-action-btn">📖 规则</span>
+            </div>
+        </div>
+
+        <div class="game-card">
+            <span class="game-favorite">❤️</span>
+            <span class="game-emoji">🃏</span>
+            <span class="game-name">记忆翻牌</span>
+            <span class="game-category">益智类</span>
+            <div class="game-stats">
+                <span class="star">⭐</span>
+                <span class="star">⭐</span>
+                <span class="star">⭐</span>
+                <span class="star empty">☆</span>
+                <span class="star empty">☆</span>
+            </div>
+            <span class="game-high-score">最高: 70%</span>
+            <div class="game-actions">
+                <span class="game-action-btn">📖 规则</span>
+                <span class="game-action-btn">🏆 关卡</span>
+            </div>
+        </div>
+
+        <div class="game-card">
+            <span class="game-favorite">🤍</span>
+            <span class="game-emoji">🏓</span>
+            <span class="game-name">乒乓球</span>
+            <span class="game-category">对战类</span>
+            <div class="game-stats">
+                <span class="star">⭐</span>
+                <span class="star">⭐</span>
+                <span class="star empty">☆</span>
+                <span class="star empty">☆</span>
+                <span class="star empty">☆</span>
+            </div>
+            <span class="game-high-score">最高: 45%</span>
+            <div class="game-actions">
+                <span class="game-action-btn">📖 规则</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Difficulty selector
+        document.querySelectorAll('.difficulty-option').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.difficulty-option').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Category filter
+        document.querySelectorAll('.category-chip').forEach(chip => {
+            chip.addEventListener('click', function() {
+                document.querySelectorAll('.category-chip').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Favorite toggle
+        document.querySelectorAll('.game-favorite').forEach(fav => {
+            fav.addEventListener('click', function(e) {
+                e.stopPropagation();
+                this.textContent = this.textContent === '❤️' ? '🤍' : '❤️';
+            });
+        });
+
+        // Game card click
+        document.querySelectorAll('.game-card').forEach(card => {
+            card.addEventListener('click', function() {
+                alert('开始游戏: ' + this.querySelector('.game-name').textContent);
+            });
+        });
+    </script>
+</body>
+</html>

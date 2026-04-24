@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成就 - 今天吃什么？</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #FFF8F0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top App Bar */
+        .top-bar {
+            background-color: #FFF8F0;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        .back-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        .back-btn:hover {
+            background: rgba(0,0,0,0.05);
+        }
+        .top-bar-title {
+            font-size: 20px;
+            font-weight: 500;
+            color: #333;
+            margin-left: 8px;
+        }
+
+        /* Content */
+        .achievement-content {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        /* Filter Chips */
+        .filter-row {
+            padding: 8px 16px;
+            display: flex;
+            gap: 8px;
+        }
+        .filter-chip {
+            padding: 6px 12px;
+            border-radius: 16px;
+            background: #E0E0E0;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .filter-chip.active {
+            background: #FF6B35;
+            color: white;
+        }
+
+        /* Category Chips */
+        .category-row {
+            padding: 4px 16px 8px;
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+        }
+        .category-chip {
+            padding: 4px 8px;
+            border-radius: 12px;
+            background: #E0E0E0;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .category-chip.active {
+            background: #FF6B35;
+            color: white;
+        }
+
+        /* Achievement Grid */
+        .achievement-grid {
+            padding: 16px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .achievement-card {
+            background: #FFFFFF;
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            text-align: center;
+            cursor: pointer;
+        }
+        .achievement-card.unlocked {
+            background: #FFE5D0;
+        }
+        .achievement-card.locked {
+            opacity: 0.5;
+        }
+
+        .achievement-icon {
+            font-size: 40px;
+            margin-bottom: 8px;
+        }
+
+        .achievement-name {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .achievement-desc {
+            font-size: 12px;
+            color: #888;
+            margin-top: 4px;
+            max-lines: 2;
+            overflow: hidden;
+        }
+
+        .achievement-progress {
+            margin-top: 8px;
+        }
+        .progress-bar {
+            height: 6px;
+            background: #E0E0E0;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #FF6B35;
+        }
+        .progress-text {
+            font-size: 11px;
+            color: #888;
+            margin-top: 2px;
+        }
+
+        .achievement-status {
+            margin-top: 4px;
+            font-size: 14px;
+        }
+
+        /* Detail Dialog */
+        .detail-dialog {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            min-width: 280px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            text-align: center;
+            display: none;
+            z-index: 100;
+        }
+        .detail-dialog.visible {
+            display: block;
+        }
+        .detail-icon {
+            font-size: 64px;
+            margin-bottom: 12px;
+        }
+        .detail-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .detail-desc {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 12px;
+        }
+        .detail-progress {
+            font-size: 13px;
+            color: #888;
+        }
+        .detail-xp {
+            font-size: 13px;
+            color: #FFC107;
+            margin-top: 8px;
+        }
+        .detail-close {
+            margin-top: 16px;
+            padding: 8px 24px;
+            border-radius: 8px;
+            border: none;
+            background: #FF6B35;
+            color: white;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- Top App Bar -->
+    <header class="top-bar">
+        <button class="back-btn">←</button>
+        <h1 class="top-bar-title">成就</h1>
+    </header>
+
+    <!-- Content -->
+    <main class="achievement-content">
+        <!-- Status Filter -->
+        <div class="filter-row">
+            <button class="filter-chip active" onclick="filterStatus(this)">全部</button>
+            <button class="filter-chip" onclick="filterStatus(this)">已解锁</button>
+            <button class="filter-chip" onclick="filterStatus(this)">未解锁</button>
+        </div>
+
+        <!-- Category Filter -->
+        <div class="category-row">
+            <button class="category-chip active" onclick="filterCategory(this)">全部</button>
+            <button class="category-chip" onclick="filterCategory(this)">里程碑</button>
+            <button class="category-chip" onclick="filterCategory(this)">技能</button>
+            <button class="category-chip" onclick="filterCategory(this)">连击</button>
+            <button class="category-chip" onclick="filterCategory(this)">探索</button>
+        </div>
+
+        <!-- Achievement Grid -->
+        <div class="achievement-grid">
+            <!-- Unlocked Achievements -->
+            <div class="achievement-card unlocked" onclick="showDetail('里程碑', '首次胜利', '完成第一局游戏', 100)">
+                <div class="achievement-icon">🎉</div>
+                <div class="achievement-name">首次胜利</div>
+                <div class="achievement-desc">完成第一局游戏</div>
+                <div class="achievement-status">✅</div>
+            </div>
+
+            <div class="achievement-card unlocked" onclick="showDetail('里程碑', '游戏达人', '累计完成10局游戏', 100)">
+                <div class="achievement-icon">🎮</div>
+                <div class="achievement-name">游戏达人</div>
+                <div class="achievement-desc">累计完成10局游戏</div>
+                <div class="achievement-status">✅</div>
+            </div>
+
+            <div class="achievement-card unlocked" onclick="showDetail('技能', '精准高手', '见缝插针得分90%以上', 100)">
+                <div class="achievement-icon">🎯</div>
+                <div class="achievement-name">精准高手</div>
+                <div class="achievement-desc">见缝插针得分90%以上</div>
+                <div class="achievement-status">✅</div>
+            </div>
+
+            <div class="achievement-card unlocked" onclick="showDetail('连击', '连胜达人', '连续获得5次85%以上分数', 100)">
+                <div class="achievement-icon">🔥</div>
+                <div class="achievement-name">连胜达人</div>
+                <div class="achievement-desc">连续获得5次85%以上分数</div>
+                <div class="achievement-status">✅</div>
+            </div>
+
+            <!-- Locked Achievements -->
+            <div class="achievement-card locked" onclick="showDetail('里程碑', '资深玩家', '累计完成100局游戏', 50)">
+                <div class="achievement-icon">🏆</div>
+                <div class="achievement-name">资深玩家</div>
+                <div class="achievement-desc">累计完成100局游戏</div>
+                <div class="achievement-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 50%"></div>
+                    </div>
+                    <div class="progress-text">50/100</div>
+                </div>
+            </div>
+
+            <div class="achievement-card locked" onclick="showDetail('探索', '美食收藏家', '添加50道美食到美食库', 30)">
+                <div class="achievement-icon">🍽️</div>
+                <div class="achievement-name">美食收藏家</div>
+                <div class="achievement-desc">添加50道美食到美食库</div>
+                <div class="achievement-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 60%"></div>
+                    </div>
+                    <div class="progress-text">30/50</div>
+                </div>
+            </div>
+
+            <div class="achievement-card locked" onclick="showDetail('技能', '2048大师', '2048获得512方块', 0)">
+                <div class="achievement-icon">🧩</div>
+                <div class="achievement-name">2048大师</div>
+                <div class="achievement-desc">2048获得512方块</div>
+                <div class="achievement-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 20%"></div>
+                    </div>
+                    <div class="progress-text">0/1</div>
+                </div>
+            </div>
+
+            <div class="achievement-card locked" onclick="showDetail('连击', '七连胜', '连续获得7次高分', 0)">
+                <div class="achievement-icon">🌟</div>
+                <div class="achievement-name">七连胜</div>
+                <div class="achievement-desc">连续获得7次高分</div>
+                <div class="achievement-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 71%"></div>
+                    </div>
+                    <div class="progress-text">5/7</div>
+                </div>
+            </div>
+
+            <div class="achievement-card locked" onclick="showDetail('探索', '游戏探险家', '尝试所有15款游戏', 80)">
+                <div class="achievement-icon">🗺️</div>
+                <div class="achievement-name">游戏探险家</div>
+                <div class="achievement-desc">尝试所有15款游戏</div>
+                <div class="achievement-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 80%"></div>
+                    </div>
+                    <div class="progress-text">12/15</div>
+                </div>
+            </div>
+
+            <div class="achievement-card locked" onclick="showDetail('技能', '完美主义', '任意游戏得分100%', 0)">
+                <div class="achievement-icon">✨</div>
+                <div class="achievement-name">完美主义</div>
+                <div class="achievement-desc">任意游戏得分100%</div>
+                <div class="achievement-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 85%"></div>
+                    </div>
+                    <div class="progress-text">最高: 85%</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Detail Dialog -->
+    <div class="detail-dialog" id="detailDialog">
+        <div class="detail-icon">🏆</div>
+        <div class="detail-title" id="detailTitle">资深玩家</div>
+        <div class="detail-desc" id="detailDesc">累计完成100局游戏</div>
+        <div class="detail-progress" id="detailProgress">进度: 50/100</div>
+        <div class="detail-xp" id="detailXP">奖励: +200 XP</div>
+        <button class="detail-close" onclick="closeDetail()">关闭</button>
+    </div>
+
+    <script>
+        function filterStatus(el) {
+            document.querySelectorAll('.filter-row .filter-chip').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function filterCategory(el) {
+            document.querySelectorAll('.category-row .category-chip').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function showDetail(category, name, desc, progress) {
+            document.getElementById('detailTitle').textContent = name;
+            document.getElementById('detailDesc').textContent = desc;
+            document.getElementById('detailProgress').textContent = progress >= 100 ? '已解锁 ✅' : '进度: ' + progress + '%';
+            document.getElementById('detailXP').textContent = '奖励: +' + Math.floor(progress / 10) * 20 + ' XP';
+            document.getElementById('detailDialog').classList.add('visible');
+        }
+
+        function closeDetail() {
+            document.getElementById('detailDialog').classList.remove('visible');
+        }
+    </script>
+</body>
+</html>

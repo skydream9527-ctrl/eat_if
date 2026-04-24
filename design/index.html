@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>设计页面索引 - 今天吃什么？</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #FFF8F0;
+            min-height: 100vh;
+            padding: 32px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #888;
+            margin-bottom: 32px;
+        }
+
+        .design-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .design-card {
+            background: #FFFFFF;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .design-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        }
+
+        .card-emoji {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .card-desc {
+            font-size: 14px;
+            color: #888;
+            margin-top: 8px;
+        }
+
+        .card-link {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 8px 16px;
+            background: #FF6B35;
+            color: white;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .note {
+            margin-top: 32px;
+            padding: 16px;
+            background: #FFE5D0;
+            border-radius: 12px;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 设计页面索引</h1>
+        <p class="subtitle">点击下方卡片查看各页面的 HTML 设计稿</p>
+
+        <div class="design-grid">
+            <a href="home.html" class="design-card">
+                <span class="card-emoji">🏠</span>
+                <h2 class="card-title">首页 (HomeScreen)</h2>
+                <p class="card-desc">主页面，包含模式选择、推荐美食展示、底部导航栏</p>
+                <span class="card-link">查看设计</span>
+            </a>
+
+            <a href="game-select.html" class="design-card">
+                <span class="card-emoji">🎮</span>
+                <h2 class="card-title">游戏选择 (GameSelectScreen)</h2>
+                <p class="card-desc">游戏列表页面，包含难度选择、分类筛选、收藏功能</p>
+                <span class="card-link">查看设计</span>
+            </a>
+
+            <a href="play.html" class="design-card">
+                <span class="card-emoji">🕹️</span>
+                <h2 class="card-title">游戏页面 (PlayScreen)</h2>
+                <p class="card-desc">游戏进行中页面，包含暂停/继续、退出确认、难度显示</p>
+                <span class="card-link">查看设计</span>
+            </a>
+
+            <a href="result.html" class="design-card">
+                <span class="card-emoji">🎉</span>
+                <h2 class="card-title">结果页面 (ResultScreen)</h2>
+                <p class="card-desc">游戏结束结果展示，包含得分、推荐美食、XP奖励、成就弹窗</p>
+                <span class="card-link">查看设计</span>
+            </a>
+
+            <a href="settings.html" class="design-card">
+                <span class="card-emoji">⚙️</span>
+                <h2 class="card-title">设置页面 (SettingsScreen)</h2>
+                <p class="card-desc">应用设置页面，包含主题、难度、音效、美食库入口</p>
+                <span class="card-link">查看设计</span>
+            </a>
+
+            <a href="achievements.html" class="design-card">
+                <span class="card-emoji">🏆</span>
+                <h2 class="card-title">成就页面 (AchievementScreen)</h2>
+                <p class="card-desc">成就展示页面，包含分类筛选、进度展示、详情弹窗</p>
+                <span class="card-link">查看设计</span>
+            </a>
+        </div>
+
+        <div class="note">
+            💡 提示：这些 HTML 页面是静态设计稿，展示了 Material 3 设计风格和橙色主题色。您可以在浏览器中直接打开查看，并根据需要进行调整。
+        </div>
+    </div>
+</body>
+</html>

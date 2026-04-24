@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>设置 - 今天吃什么？</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #FFF8F0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top App Bar */
+        .top-bar {
+            background-color: #FFF8F0;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        .back-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        .back-btn:hover {
+            background: rgba(0,0,0,0.05);
+        }
+        .top-bar-title {
+            font-size: 20px;
+            font-weight: 500;
+            color: #333;
+            margin-left: 8px;
+        }
+
+        /* Content */
+        .settings-content {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+        }
+
+        /* Settings Card */
+        .settings-card {
+            background: #FFFFFF;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        /* Navigation Card */
+        .nav-card {
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav-card:hover {
+            background: #FFE5D0;
+        }
+        .nav-card-title {
+            font-size: 18px;
+            font-weight: 500;
+        }
+        .nav-card-desc {
+            font-size: 14px;
+            color: #888;
+            margin-top: 4px;
+        }
+        .nav-arrow {
+            font-size: 20px;
+            color: #888;
+        }
+
+        /* Section Title */
+        .section-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+
+        /* Toggle Row */
+        .toggle-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+        }
+        .toggle-label {
+            font-size: 16px;
+        }
+        .toggle-desc {
+            font-size: 13px;
+            color: #888;
+        }
+        .toggle-switch {
+            width: 48px;
+            height: 24px;
+            background: #E0E0E0;
+            border-radius: 12px;
+            cursor: pointer;
+            position: relative;
+        }
+        .toggle-switch.active {
+            background: #FF6B35;
+        }
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: left 0.2s;
+        }
+        .toggle-switch.active::after {
+            left: 26px;
+        }
+
+        /* Theme Colors */
+        .theme-colors {
+            display: flex;
+            gap: 12px;
+            margin-top: 8px;
+        }
+        .theme-color {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            position: relative;
+        }
+        .theme-color.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 16px;
+        }
+        .theme-color.orange { background: #FF6B35; }
+        .theme-color.blue { background: #2196F3; }
+        .theme-color.green { background: #4CAF50; }
+        .theme-color.purple { background: #9C27B0; }
+        .theme-color.pink { background: #E91E63; }
+        .theme-color.teal { background: #009688; }
+
+        /* Difficulty Row */
+        .difficulty-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+        }
+        .difficulty-label {
+            font-size: 16px;
+        }
+        .difficulty-desc {
+            font-size: 13px;
+            color: #888;
+            margin-top: 4px;
+        }
+        .difficulty-emojis {
+            display: flex;
+            gap: 8px;
+        }
+        .difficulty-emoji {
+            font-size: 24px;
+            cursor: pointer;
+            opacity: 0.5;
+        }
+        .difficulty-emoji.selected {
+            opacity: 1;
+        }
+
+        /* About Section */
+        .about-section {
+            margin-top: 8px;
+        }
+        .about-version {
+            font-size: 14px;
+            color: #888;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Top App Bar -->
+    <header class="top-bar">
+        <button class="back-btn">←</button>
+        <h1 class="top-bar-title">设置</h1>
+    </header>
+
+    <!-- Content -->
+    <main class="settings-content">
+        <!-- Food Library -->
+        <div class="settings-card nav-card" onclick="alert('打开美食库')">
+            <div>
+                <div class="nav-card-title">🍽️ 我的美食库</div>
+                <div class="nav-card-desc">管理个人收藏的餐厅和菜品</div>
+            </div>
+            <span class="nav-arrow">→</span>
+        </div>
+
+        <!-- History -->
+        <div class="settings-card nav-card" onclick="alert('打开历史')">
+            <div>
+                <div class="nav-card-title">👣 吃吃足迹</div>
+                <div class="nav-card-desc">查看历史吃饭记录</div>
+            </div>
+            <span class="nav-arrow">→</span>
+        </div>
+
+        <!-- Appearance -->
+        <div class="settings-card">
+            <div class="section-title">🌙 外观</div>
+
+            <!-- Follow System -->
+            <div class="toggle-row">
+                <div>
+                    <div class="toggle-label">跟随系统</div>
+                    <div class="toggle-desc">自动切换深色/浅色模式</div>
+                </div>
+                <div class="toggle-switch" onclick="toggleSwitch(this)"></div>
+            </div>
+
+            <!-- Dark Mode -->
+            <div class="toggle-row">
+                <div>
+                    <div class="toggle-label">深色模式</div>
+                    <div class="toggle-desc">开启深色主题</div>
+                </div>
+                <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
+            </div>
+
+            <!-- Theme Colors -->
+            <div class="toggle-label" style="margin-top: 12px;">主题色</div>
+            <div class="theme-colors">
+                <div class="theme-color orange selected" onclick="selectColor(this)"></div>
+                <div class="theme-color blue" onclick="selectColor(this)"></div>
+                <div class="theme-color green" onclick="selectColor(this)"></div>
+                <div class="theme-color purple" onclick="selectColor(this)"></div>
+                <div class="theme-color pink" onclick="selectColor(this)"></div>
+                <div class="theme-color teal" onclick="selectColor(this)"></div>
+            </div>
+        </div>
+
+        <!-- Game Settings -->
+        <div class="settings-card">
+            <div class="section-title">🎮 游戏设置</div>
+
+            <!-- Difficulty -->
+            <div class="difficulty-row">
+                <div>
+                    <div class="difficulty-label">游戏难度</div>
+                    <div class="difficulty-desc">当前: 🟡 普通</div>
+                </div>
+                <div class="difficulty-emojis">
+                    <span class="difficulty-emoji" onclick="selectDifficulty(this)">🟢</span>
+                    <span class="difficulty-emoji selected" onclick="selectDifficulty(this)">🟡</span>
+                    <span class="difficulty-emoji" onclick="selectDifficulty(this)">🔴</span>
+                </div>
+            </div>
+
+            <!-- Sound & Vibration -->
+            <div class="toggle-row">
+                <div>
+                    <div class="toggle-label">音效与振动</div>
+                    <div class="toggle-desc">游戏音效和触感反馈</div>
+                </div>
+                <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
+            </div>
+        </div>
+
+        <!-- About -->
+        <div class="settings-card">
+            <div class="section-title">ℹ️ 关于</div>
+            <div class="about-section">
+                <div class="about-version">版本: 1.0.0</div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function toggleSwitch(el) {
+            el.classList.toggle('active');
+        }
+
+        function selectColor(el) {
+            document.querySelectorAll('.theme-color').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+        }
+
+        function selectDifficulty(el) {
+            document.querySelectorAll('.difficulty-emoji').forEach(d => d.classList.remove('selected'));
+            el.classList.add('selected');
+        }
+    </script>
+</body>
+</html>

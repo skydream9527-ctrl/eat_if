@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>首页 - 今天吃什么？</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #FFF8F0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top App Bar */
+        .top-bar {
+            background-color: #FFF8F0;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        .top-bar-title {
+            font-size: 20px;
+            font-weight: 500;
+            color: #333;
+        }
+        .settings-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .settings-btn:hover {
+            background: rgba(0,0,0,0.05);
+        }
+        .icon {
+            font-size: 24px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .emoji-display {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+
+        .main-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+
+        .food-count {
+            font-size: 14px;
+            color: #FF6B35;
+            font-weight: 500;
+        }
+
+        /* Recommendations Section */
+        .recommendations-section {
+            margin-top: 24px;
+            width: 100%;
+        }
+        .recommendations-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .recommendations-title {
+            font-size: 16px;
+            font-weight: 500;
+        }
+        .refresh-btn {
+            color: #FF6B35;
+            font-size: 14px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 4px 8px;
+        }
+        .recommendations-list {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+        }
+        .recommendation-card {
+            min-width: 120px;
+            background: #FFE5D0;
+            border-radius: 12px;
+            padding: 12px;
+        }
+        .rec-food-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+        }
+        .rec-reason {
+            font-size: 12px;
+            color: rgba(51,51,51,0.6);
+            margin-top: 4px;
+        }
+
+        /* Mode Cards */
+        .mode-cards {
+            margin-top: 32px;
+            width: 100%;
+            max-width: 400px;
+        }
+        .mode-card {
+            background: #FFFFFF;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .mode-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+        .mode-card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .mode-emoji {
+            font-size: 32px;
+        }
+        .mode-title {
+            font-size: 18px;
+            font-weight: 500;
+            color: #333;
+        }
+        .mode-desc {
+            font-size: 14px;
+            color: #888;
+            margin-top: 4px;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            background: #FFFFFF;
+            padding: 8px 0;
+            display: flex;
+            justify-content: space-around;
+            border-top: 1px solid rgba(0,0,0,0.05);
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px 16px;
+            cursor: pointer;
+            color: #888;
+        }
+        .nav-item.active {
+            color: #FF6B35;
+        }
+        .nav-icon {
+            font-size: 24px;
+        }
+        .nav-label {
+            font-size: 12px;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Top App Bar -->
+    <header class="top-bar">
+        <h1 class="top-bar-title">🍽️ 今天吃什么？</h1>
+        <button class="settings-btn">
+            <span class="icon">⚙️</span>
+        </button>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="emoji-display">🎰</div>
+        <h2 class="main-title">今天吃什么？</h2>
+        <p class="subtitle">通过小游戏决定你的下一顿饭</p>
+        <p class="food-count">当前美食库: 50 道菜</p>
+
+        <!-- Recommendations -->
+        <section class="recommendations-section">
+            <div class="recommendations-header">
+                <span class="recommendations-title">猜你想吃</span>
+                <button class="refresh-btn">换一批</button>
+            </div>
+            <div class="recommendations-list">
+                <div class="recommendation-card">
+                    <div class="rec-food-name">火锅</div>
+                    <div class="rec-reason">上次吃了3次</div>
+                </div>
+                <div class="recommendation-card">
+                    <div class="rec-food-name">烧烤</div>
+                    <div class="rec-reason">天气适合</div>
+                </div>
+                <div class="recommendation-card">
+                    <div class="rec-food-name">日料</div>
+                    <div class="rec-reason">最近热门</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Mode Cards -->
+        <section class="mode-cards">
+            <div class="mode-card" onclick="alert('点击单人模式')">
+                <div class="mode-card-header">
+                    <span class="mode-emoji">👤</span>
+                    <div>
+                        <div class="mode-title">单人模式</div>
+                        <div class="mode-desc">独自决定今天吃什么</div>
+                    </div>
+                </div>
+            </div>
+            <div class="mode-card" onclick="alert('点击双人竞技')">
+                <div class="mode-card-header">
+                    <span class="mode-emoji">👥</span>
+                    <div>
+                        <div class="mode-title">双人竞技</div>
+                        <div class="mode-desc">和朋友一起决定吃啥</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <div class="nav-item active">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-label">首页</span>
+        </div>
+        <div class="nav-item">
+            <span class="nav-icon">⭐</span>
+            <span class="nav-label">统计</span>
+        </div>
+        <div class="nav-item">
+            <span class="nav-icon">🏅</span>
+            <span class="nav-label">成就</span>
+        </div>
+        <div class="nav-item">
+            <span class="nav-icon">👤</span>
+            <span class="nav-label">我的</span>
+        </div>
+    </nav>
+
+    <script>
+        // Interactive elements
+        document.querySelectorAll('.mode-card').forEach(card => {
+            card.addEventListener('click', function() {
+                this.style.background = '#FFE5D0';
+                setTimeout(() => {
+                    this.style.background = '#FFFFFF';
+                }, 200);
+            });
+        });
+
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>
