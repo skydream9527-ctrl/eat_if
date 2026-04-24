@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>扔针 Needle | 游戏视觉风格</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1a1a2e; color: #fff; padding: 40px; }
+        .back { color: #888; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 30px; }
+        .back:hover { color: #fff; }
+        h1 { font-size: 2.2em; margin-bottom: 8px; }
+        h1 span { font-size: 1.5em; margin-right: 12px; }
+        .subtitle { color: #888; margin-bottom: 40px; }
+        .section { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 32px; margin-bottom: 24px; border: 1px solid rgba(255,255,255,0.1); }
+        .section-title { font-size: 1.3em; font-weight: 600; margin-bottom: 20px; color: #dfe6e9; }
+        .color-palette { display: flex; gap: 16px; flex-wrap: wrap; }
+        .color-item { text-align: center; }
+        .color-swatch { width: 80px; height: 80px; border-radius: 50%; margin-bottom: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .color-name { font-size: 0.8em; color: #888; }
+        .color-hex { font-size: 0.75em; color: #666; font-family: monospace; }
+        .frame-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+        .frame { background: rgba(0,0,0,0.3); border-radius: 12px; padding: 20px; text-align: center; }
+        .frame-icon { font-size: 3em; margin-bottom: 12px; }
+        .frame-name { font-weight: 600; margin-bottom: 4px; }
+        .frame-desc { font-size: 0.8em; color: #888; }
+        .frame-state { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.7em; margin-top: 8px; }
+        .state-idle { background: #5f27cd; }
+        .state-playing { background: #1dd1a1; }
+        .state-win { background: #feca57; color: #222; }
+        .state-lose { background: #ff6b6b; }
+        .game-area { background: rgba(0,0,0,0.3); border-radius: 12px; padding: 30px; display: flex; flex-direction: column; align-items: center; gap: 20px; }
+        .disc { width: 200px; height: 200px; border-radius: 50%; background: linear-gradient(135deg, #ff6b6b, #ee5a5a); position: relative; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 32px rgba(255,107,107,0.3); }
+        .disc::before { content:''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 150px; height: 150px; border-radius: 50%; border: 3px dashed rgba(255,255,255,0.3); }
+        .needle { position: absolute; width: 4px; height: 120px; background: linear-gradient(to bottom, #feca57 50%, #ff6b6b 50%); transform-origin: bottom center; top: -60px; }
+        .needle.thrown { animation: throwNeedle 0.3s ease-out forwards; }
+        .needle-count { position: absolute; bottom: -40px; font-size: 0.9em; color: #888; }
+        .tap-area { width: 100%; height: 150px; display: flex; align-items: center; justify-content: center; }
+        .tap-hint { padding: 16px 32px; background: rgba(255,255,255,0.1); border-radius: 30px; font-size: 1.1em; cursor: pointer; transition: transform 0.2s; }
+        .tap-hint:hover { transform: scale(1.05); background: rgba(255,255,255,0.15); }
+        @keyframes throwNeedle { 0%{transform:translateY(0) rotate(0)} 100%{transform:translateY(-80px) rotate(45deg)} }
+        @keyframes wobble { 0%,100%{transform:rotate(-5deg)} 50%{transform:rotate(5deg)} }
+        @keyframes success { 0%{transform:scale(1)} 50%{transform:scale(1.1)} 100%{transform:scale(1)} }
+        .anim-wobble { animation: wobble 0.3s ease infinite; }
+        .anim-success { animation: success 0.4s ease; }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back">← 返回总览</a>
+    <h1><span>📍</span>扔针 Needle</h1>
+    <p class="subtitle">向旋转圆盘扔针，不能重叠 · 精准操作风格</p>
+
+    <div class="section">
+        <h2 class="section-title">配色方案</h2>
+        <div class="color-palette">
+            <div class="color-item">
+                <div class="color-swatch" style="background:linear-gradient(135deg,#ff6b6b,#ee5a5a)"></div>
+                <div class="color-name">圆盘红</div>
+                <div class="color-hex">#FF6B6B</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:linear-gradient(135deg,#feca57,#f9b42d)"></div>
+                <div class="color-name">针黄</div>
+                <div class="color-hex">#FECA57</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:#dfe6e9"></div>
+                <div class="color-name">地面灰</div>
+                <div class="color-hex">#DFE6E9</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:#ff9ff3"></div>
+                <div class="color-name">成功粉</div>
+                <div class="color-hex">#FF9FF3</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:#b2bec3"></div>
+                <div class="color-name">针尖灰</div>
+                <div class="color-hex">#B2BEC3</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">关键帧状态</h2>
+        <div class="frame-grid">
+            <div class="frame">
+                <div class="frame-icon">🎯</div>
+                <div class="frame-name">IDLE</div>
+                <div class="frame-desc">等待点击扔针</div>
+                <span class="frame-state state-idle">待机</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon anim-wobble">📍</div>
+                <div class="frame-name">AIMING</div>
+                <div class="frame-desc">圆盘摆动中</div>
+                <span class="frame-state state-playing">瞄准</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon anim-success">✅</div>
+                <div class="frame-name">STUCK</div>
+                <div class="frame-desc">针扎在圆盘上</div>
+                <span class="frame-state state-win">成功</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon">❌</div>
+                <div class="frame-name">COLLISION</div>
+                <div class="frame-desc">针扎到其他针</div>
+                <span class="frame-state state-lose">碰撞</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon">💀</div>
+                <div class="frame-name">GAME_OVER</div>
+                <div class="frame-desc">圆盘装满，游戏结束</div>
+                <span class="frame-state state-lose">结束</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">游戏示例</h2>
+        <div class="game-area">
+            <div class="disc">
+                <div class="needle" style="transform:rotate(-30deg);"></div>
+                <div class="needle" style="transform:rotate(45deg);"></div>
+                <div class="needle" style="transform:rotate(120deg);"></div>
+                <div class="needle-count">3/15 针</div>
+            </div>
+            <div class="tap-area">
+                <div class="tap-hint">点击扔针</div>
+            </div>
+        </div>
+        <p style="text-align:center;color:#888;font-size:0.85em;margin-top:12px;">针不能重叠扎在圆盘上，越窄越刺激</p>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">动画说明</h2>
+        <ul style="color:#888;line-height:2;list-style:none;">
+            <li>• <strong style="color:#fff">摆动动画</strong>：圆盘左右摆动，越摆越大</li>
+            <li>• <strong style="color:#fff">扔针动画</strong>：针向上飞出扎入，300ms</li>
+            <li>• <strong style="color:#fff">成功动画</strong>：针轻微弹跳后固定</li>
+            <li>• <strong style="color:#fff">碰撞动画</strong>：红屏闪烁 + 针弹飞</li>
+        </ul>
+    </div>
+</body>
+</html>

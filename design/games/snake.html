@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>贪吃蛇 Snake | 游戏视觉风格</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1a1a2e; color: #fff; padding: 40px; }
+        .back { color: #888; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 30px; }
+        .back:hover { color: #fff; }
+        h1 { font-size: 2.2em; margin-bottom: 8px; }
+        h1 span { font-size: 1.5em; margin-right: 12px; }
+        .subtitle { color: #888; margin-bottom: 40px; }
+        .section { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 32px; margin-bottom: 24px; border: 1px solid rgba(255,255,255,0.1); }
+        .section-title { font-size: 1.3em; font-weight: 600; margin-bottom: 20px; color: #2ed573; }
+        .color-palette { display: flex; gap: 16px; flex-wrap: wrap; }
+        .color-item { text-align: center; }
+        .color-swatch { width: 80px; height: 80px; border-radius: 12px; margin-bottom: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .color-name { font-size: 0.8em; color: #888; }
+        .color-hex { font-size: 0.75em; color: #666; font-family: monospace; }
+        .frame-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+        .frame { background: rgba(0,0,0,0.3); border-radius: 12px; padding: 20px; text-align: center; }
+        .frame-icon { font-size: 3em; margin-bottom: 12px; }
+        .frame-name { font-weight: 600; margin-bottom: 4px; }
+        .frame-desc { font-size: 0.8em; color: #888; }
+        .frame-state { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.7em; margin-top: 8px; }
+        .state-idle { background: #5f27cd; }
+        .state-playing { background: #1dd1a1; }
+        .state-win { background: #feca57; color: #222; }
+        .state-lose { background: #ff6b6b; }
+        .snake-demo { display: flex; gap: 4px; justify-content: center; margin: 20px 0; }
+        .snake-segment { width: 32px; height: 32px; background: linear-gradient(135deg, #2ed573, #26de81); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 1.2em; }
+        .snake-head { background: linear-gradient(135deg, #26de81, #20bf6b); outline: 2px solid #fff; }
+        .snake-food { background: linear-gradient(135deg, #ff6b6b, #ee5a5a); border-radius: 50%; }
+        .grid-preview { display: grid; grid-template-columns: repeat(15, 20px); gap: 1px; background: #222; padding: 8px; border-radius: 8px; justify-content: center; }
+        .grid-cell { width: 20px; height: 20px; background: rgba(255,255,255,0.05); border-radius: 2px; }
+        .grid-cell.snake { background: linear-gradient(135deg, #2ed573, #26de81); }
+        .grid-cell.head { background: linear-gradient(135deg, #26de81, #20bf6b); outline: 2px solid #fff; }
+        .grid-cell.food { background: linear-gradient(135deg, #ff6b6b, #ee5a5a); border-radius: 50%; }
+        @keyframes move { 0%,100%{transform:translateX(0)} 50%{transform:translateX(4px)} }
+        @keyframes grow { 0%{transform:scale(0.5);opacity:0} 100%{transform:scale(1);opacity:1} }
+        .anim-move { animation: move 0.2s linear infinite; }
+        .anim-grow { animation: grow 0.3s ease; }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back">← 返回总览</a>
+    <h1><span>🐍</span>贪吃蛇 Snake</h1>
+    <p class="subtitle">控制蛇吃食物增长，躲避障碍 · 像素复古风格</p>
+
+    <div class="section">
+        <h2 class="section-title">配色方案</h2>
+        <div class="color-palette">
+            <div class="color-item">
+                <div class="color-swatch" style="background:linear-gradient(135deg,#2ed573,#26de81)"></div>
+                <div class="color-name">蛇身绿</div>
+                <div class="color-hex">#2ED573</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:linear-gradient(135deg,#20bf6b,#17a05b)"></div>
+                <div class="color-name">蛇头绿</div>
+                <div class="color-hex">#20BF6B</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:linear-gradient(135deg,#ff6b6b,#ee5a5a)"></div>
+                <div class="color-name">食物红</div>
+                <div class="color-hex">#FF6B6B</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:linear-gradient(135deg,#1e90ff,#1a78c2)"></div>
+                <div class="color-name">方向键蓝</div>
+                <div class="color-hex">#1E90FF</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:#222"></div>
+                <div class="color-name">背景色</div>
+                <div class="color-hex">#1A1A2E</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">关键帧状态</h2>
+        <div class="frame-grid">
+            <div class="frame">
+                <div class="frame-icon">🐍</div>
+                <div class="frame-name">IDLE</div>
+                <div class="frame-desc">等待开始</div>
+                <span class="frame-state state-idle">待机</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon anim-move">🏃</div>
+                <div class="frame-name">PLAYING</div>
+                <div class="frame-desc">蛇移动中</div>
+                <span class="frame-state state-playing">进行中</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon anim-grow">🍎</div>
+                <div class="frame-name">EATING</div>
+                <div class="frame-desc">吃到食物，蛇身增长</div>
+                <span class="frame-state state-win">进食</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon">💀</div>
+                <div class="frame-name">GAME_OVER</div>
+                <div class="frame-desc">撞墙或撞自己</div>
+                <span class="frame-state state-lose">结束</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">蛇身结构</h2>
+        <div class="snake-demo">
+            <div class="snake-segment snake-head">🐍</div>
+            <div class="snake-segment">🟢</div>
+            <div class="snake-segment">🟢</div>
+            <div class="snake-segment">🟢</div>
+            <div class="snake-food snake-segment">🍎</div>
+        </div>
+        <div class="grid-preview">
+            <script>
+                // Generate grid
+                for(let i=0;i<225;i++){
+                    let cls = 'grid-cell';
+                    if(i===47||i===48||i===49) cls+=' snake';
+                    if(i===46) cls+=' head';
+                    if(i===182) cls+=' food';
+                    document.write('<div class=\"'+cls+'\"></div>');
+                }
+            </script>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">动画说明</h2>
+        <ul style="color:#888;line-height:2;list-style:none;">
+            <li>• <strong style="color:#fff">移动动画</strong>：逐格移动，150-300ms间隔（速度随长度加快）</li>
+            <li>• <strong style="color:#fff">进食动画</strong>：食物缩小消失 + 蛇尾弹跳增长，200ms</li>
+            <li>• <strong style="color:#fff">转向动画</strong>：瞬间转向，无过渡动画</li>
+            <li>• <strong style="color:#fff">死亡动画</strong>：蛇身闪红 + 爆炸粒子，500ms</li>
+        </ul>
+    </div>
+</body>
+</html>

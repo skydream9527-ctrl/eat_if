@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>扫雷 Minesweeper | 游戏视觉风格</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1a1a2e; color: #fff; padding: 40px; }
+        .back { color: #888; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 30px; }
+        .back:hover { color: #fff; }
+        h1 { font-size: 2.2em; margin-bottom: 8px; }
+        h1 span { font-size: 1.5em; margin-right: 12px; }
+        .subtitle { color: #888; margin-bottom: 40px; }
+        .section { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 32px; margin-bottom: 24px; border: 1px solid rgba(255,255,255,0.1); }
+        .section-title { font-size: 1.3em; font-weight: 600; margin-bottom: 20px; color: #636e72; }
+        .color-palette { display: flex; gap: 16px; flex-wrap: wrap; }
+        .color-item { text-align: center; }
+        .color-swatch { width: 80px; height: 80px; border-radius: 12px; margin-bottom: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 1.5em; font-weight: 700; }
+        .color-name { font-size: 0.8em; color: #888; }
+        .color-hex { font-size: 0.75em; color: #666; font-family: monospace; }
+        .frame-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+        .frame { background: rgba(0,0,0,0.3); border-radius: 12px; padding: 20px; text-align: center; }
+        .frame-icon { font-size: 3em; margin-bottom: 12px; }
+        .frame-name { font-weight: 600; margin-bottom: 4px; }
+        .frame-desc { font-size: 0.8em; color: #888; }
+        .frame-state { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.7em; margin-top: 8px; }
+        .state-idle { background: #5f27cd; }
+        .state-playing { background: #1dd1a1; }
+        .state-win { background: #feca57; color: #222; }
+        .state-lose { background: #ff6b6b; }
+        .mine-grid { display: grid; grid-template-columns: repeat(9, 40px); gap: 2px; background: #dfe6e9; padding: 8px; border-radius: 8px; justify-content: center; }
+        .cell { width: 40px; height: 40px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 1.1em; font-weight: 700; cursor: pointer; }
+        .cell-hidden { background: linear-gradient(135deg, #b2bec3, #a0aec0); }
+        .cell-hidden:hover { background: linear-gradient(135deg, #a0aec0, #8e9eab); }
+        .cell-n1 { background: #0984e3; color: #fff; }
+        .cell-n2 { background: #2ed573; color: #fff; }
+        .cell-n3 { background: #ff6b6b; color: #fff; }
+        .cell-n4 { background: #5f27cd; color: #fff; }
+        .cell-flag { background: #feca57; color: #fff; }
+        .cell-mine { background: #ff6b6b; }
+        .cell-revealed { background: #dfe6e9; }
+        @keyframes explode { 0%{transform:scale(1)} 50%{transform:scale(1.2);background:#ff6b6b} 100%{transform:scale(1)} }
+        @keyframes flag { 0%{transform:rotate(0)} 100%{transform:rotate(-15deg)} }
+        .anim-explode { animation: explode 0.3s ease; }
+        .anim-flag { animation: flag 0.2s ease; }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back">← 返回总览</a>
+    <h1><span>💣</span>扫雷 Minesweeper</h1>
+    <p class="subtitle">揭开方格找出所有安全区域 · 数字颜色编码</p>
+
+    <div class="section">
+        <h2 class="section-title">配色方案</h2>
+        <div class="color-palette">
+            <div class="color-item">
+                <div class="color-swatch cell-hidden"></div>
+                <div class="color-name">未翻开</div>
+                <div class="color-hex">#B2BEC3</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch cell-revealed"></div>
+                <div class="color-name">已翻开</div>
+                <div class="color-hex">#DFE6E9</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch cell-n1" style="color:#fff">1</div>
+                <div class="color-name">数字1-蓝</div>
+                <div class="color-hex">#0984E3</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch cell-n2" style="color:#fff">2</div>
+                <div class="color-name">数字2-绿</div>
+                <div class="color-hex">#2ED573</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch cell-n3" style="color:#fff">3</div>
+                <div class="color-name">数字3-红</div>
+                <div class="color-hex">#FF6B6B</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:#feca57">🚩</div>
+                <div class="color-name">旗帜</div>
+                <div class="color-hex">#FECA57</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">关键帧状态</h2>
+        <div class="frame-grid">
+            <div class="frame">
+                <div class="frame-icon">💣</div>
+                <div class="frame-name">IDLE</div>
+                <div class="frame-desc">等待点击格子</div>
+                <span class="frame-state state-idle">待机</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon">👆</div>
+                <div class="frame-name">REVEAL</div>
+                <div class="frame-desc">翻开格子显示数字</div>
+                <span class="frame-state state-playing">翻开</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon anim-flag">🚩</div>
+                <div class="frame-name">FLAG</div>
+                <div class="frame-desc">标记疑似地雷</div>
+                <span class="frame-state state-playing">插旗</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon anim-explode">💥</div>
+                <div class="frame-name">BOOM</div>
+                <div class="frame-desc">踩中地雷爆炸</div>
+                <span class="frame-state state-lose">爆炸</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon">🏆</div>
+                <div class="frame-name">WIN</div>
+                <div class="frame-desc">找出所有安全区</div>
+                <span class="frame-state state-win">胜利</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">棋盘示例</h2>
+        <div class="mine-grid">
+            <div class="cell cell-hidden"></div>
+            <div class="cell cell-hidden"></div>
+            <div class="cell cell-n1">1</div>
+            <div class="cell cell-flag anim-flag">🚩</div>
+            <div class="cell cell-n2">2</div>
+            <div class="cell cell-hidden"></div>
+            <div class="cell cell-hidden"></div>
+            <div class="cell cell-hidden"></div>
+            <div class="cell cell-hidden"></div>
+            <div class="cell cell-hidden"></div>
+            <div class="cell cell-n1">1</div>
+            <div class="cell cell-n2">2</div>
+            <div class="cell cell-flag anim-flag">🚩</div>
+            <div class="cell cell-n1">1</div>
+            <div class="cell cell-n1">1</div>
+            <div class="cell cell-n1">1</div>
+            <div class="cell cell-hidden"></div>
+            <div class="cell cell-hidden"></div>
+            <div class="cell cell-n1">1</div>
+            <div class="cell cell-n1">1</div>
+            <div class="cell cell-n1">1</div>
+            <div class="cell cell-n1">1</div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n1">1</div>
+            <div class="cell cell-n1">1</div>
+            <div class="cell cell-n1">1</div>
+            <div class="cell cell-n1">1</div>
+            <div class="cell cell-n2">2</div>
+            <div class="cell cell-n2">2</div>
+            <div class="cell cell-n1">1</div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n1">1</div>
+            <div class="cell cell-n1">1</div>
+            <div class="cell cell-n1">1</div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+            <div class="cell cell-n0"></div>
+        </div>
+        <p style="text-align:center;color:#888;font-size:0.85em;margin-top:12px;">数字表示周围地雷数量，右键插旗标记</p>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">动画说明</h2>
+        <ul style="color:#888;line-height:2;list-style:none;">
+            <li>• <strong style="color:#fff">翻开动画</strong>：格子按下效果 + 数字淡入，100ms</li>
+            <li>• <strong style="color:#fff">连锁翻开</strong>：空白格子触发周围连锁翻开</li>
+            <li>• <strong style="color:#fff">爆炸动画</strong>：踩雷红屏闪烁 + 地雷显示，300ms</li>
+            <li>• <strong style="color:#fff">胜利动画</strong>：所有地雷插旗庆祝</li>
+        </ul>
+    </div>
+</body>
+</html>

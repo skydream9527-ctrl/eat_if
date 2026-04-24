@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>推箱子 BoxPusher | 游戏视觉风格</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1a1a2e; color: #fff; padding: 40px; }
+        .back { color: #888; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 30px; }
+        .back:hover { color: #fff; }
+        h1 { font-size: 2.2em; margin-bottom: 8px; }
+        h1 span { font-size: 1.5em; margin-right: 12px; }
+        .subtitle { color: #888; margin-bottom: 40px; }
+        .section { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 32px; margin-bottom: 24px; border: 1px solid rgba(255,255,255,0.1); }
+        .section-title { font-size: 1.3em; font-weight: 600; margin-bottom: 20px; color: #dfe6e9; }
+        .color-palette { display: flex; gap: 16px; flex-wrap: wrap; }
+        .color-item { text-align: center; }
+        .color-swatch { width: 80px; height: 80px; border-radius: 12px; margin-bottom: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .color-name { font-size: 0.8em; color: #888; }
+        .color-hex { font-size: 0.75em; color: #666; font-family: monospace; }
+        .frame-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+        .frame { background: rgba(0,0,0,0.3); border-radius: 12px; padding: 20px; text-align: center; }
+        .frame-icon { font-size: 3em; margin-bottom: 12px; }
+        .frame-name { font-weight: 600; margin-bottom: 4px; }
+        .frame-desc { font-size: 0.8em; color: #888; }
+        .frame-state { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.7em; margin-top: 8px; }
+        .state-idle { background: #5f27cd; }
+        .state-playing { background: #1dd1a1; }
+        .state-win { background: #feca57; color: #222; }
+        .state-lose { background: #ff6b6b; }
+        .warehouse-grid { display: grid; grid-template-columns: repeat(6, 50px); gap: 2px; background: #222; padding: 12px; border-radius: 8px; justify-content: center; }
+        .cell { width: 50px; height: 50px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 1.5em; }
+        .cell-floor { background: #dfe6e9; }
+        .cell-wall { background: linear-gradient(135deg, #636e72, #4a5568); }
+        .cell-box { background: linear-gradient(135deg, #feca57, #f9b42d); box-shadow: 0 2px 8px rgba(254,202,87,0.4); }
+        .cell-box-done { background: linear-gradient(135deg, #2ed573, #26de81); }
+        .cell-target { background: #dfe6e9; outline: 3px dashed #ff6b6b; }
+        .cell-player { background: transparent; font-size: 2em; }
+        .dpad { display: grid; grid-template-columns: repeat(3, 50px); gap: 4px; justify-content: center; margin-top: 20px; }
+        .dpad-btn { width: 50px; height: 50px; background: rgba(255,255,255,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.2em; cursor: pointer; border: 1px solid rgba(255,255,255,0.2); }
+        .dpad-btn:hover { background: rgba(255,255,255,0.2); }
+        @keyframes move { 0%{transform:scale(1)} 50%{transform:scale(0.9)} 100%{transform:scale(1)} }
+        @keyframes push { 0%{transform:translateX(0)} 100%{transform:translateX(10px)} }
+        .anim-move { animation: move 0.15s ease; }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back">← 返回总览</a>
+    <h1><span>📦</span>推箱子 BoxPusher</h1>
+    <p class="subtitle">推动箱子到目标位置 · 仓库工厂主题</p>
+
+    <div class="section">
+        <h2 class="section-title">配色方案</h2>
+        <div class="color-palette">
+            <div class="color-item">
+                <div class="color-swatch" style="background:#dfe6e9"></div>
+                <div class="color-name">地板灰</div>
+                <div class="color-hex">#DFE6E9</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:linear-gradient(135deg,#636e72,#4a5568)"></div>
+                <div class="color-name">墙壁深灰</div>
+                <div class="color-hex">#636E72</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:linear-gradient(135deg,#feca57,#f9b42d)"></div>
+                <div class="color-name">箱子黄</div>
+                <div class="color-hex">#FECA57</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:linear-gradient(135deg,#2ed573,#26de81)"></div>
+                <div class="color-name">完成绿</div>
+                <div class="color-hex">#2ED573</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:#ff6b6b"></div>
+                <div class="color-name">目标红</div>
+                <div class="color-hex">#FF6B6B</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">关键帧状态</h2>
+        <div class="frame-grid">
+            <div class="frame">
+                <div class="frame-icon">🎮</div>
+                <div class="frame-name">IDLE</div>
+                <div class="frame-desc">等待操作</div>
+                <span class="frame-state state-idle">待机</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon anim-move">🏃</div>
+                <div class="frame-name">MOVE</div>
+                <div class="frame-desc">玩家移动一格</div>
+                <span class="frame-state state-playing">移动</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon">📦</div>
+                <div class="frame-name">PUSH</div>
+                <div class="frame-desc">推动箱子移动</div>
+                <span class="frame-state state-playing">推动</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon">✅</div>
+                <div class="frame-name">BOX_ON_TARGET</div>
+                <div class="frame-desc">箱子推到目标点</div>
+                <span class="frame-state state-win">就位</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon">🏆</div>
+                <div class="frame-name">LEVEL_COMPLETE</div>
+                <div class="frame-desc">所有箱子就位</div>
+                <span class="frame-state state-win">完成</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">场景示例</h2>
+        <div class="warehouse-grid">
+            <div class="cell cell-wall"></div>
+            <div class="cell cell-wall"></div>
+            <div class="cell cell-wall"></div>
+            <div class="cell cell-wall"></div>
+            <div class="cell cell-wall"></div>
+            <div class="cell cell-wall"></div>
+            <div class="cell cell-wall"></div>
+            <div class="cell cell-floor"></div>
+            <div class="cell cell-box">📦</div>
+            <div class="cell cell-floor"></div>
+            <div class="cell cell-target"></div>
+            <div class="cell cell-wall"></div>
+            <div class="cell cell-wall"></div>
+            <div class="cell cell-floor"></div>
+            <div class="cell cell-box">📦</div>
+            <div class="cell cell-player">🤖</div>
+            <div class="cell cell-floor"></div>
+            <div class="cell cell-wall"></div>
+            <div class="cell cell-wall"></div>
+            <div class="cell cell-wall"></div>
+            <div class="cell cell-wall"></div>
+            <div class="cell cell-wall"></div>
+            <div class="cell cell-wall"></div>
+            <div class="cell cell-wall"></div>
+        </div>
+        <div class="dpad">
+            <div class="dpad-btn"></div>
+            <div class="dpad-btn">⬆️</div>
+            <div class="dpad-btn"></div>
+            <div class="dpad-btn">⬅️</div>
+            <div class="dpad-btn"></div>
+            <div class="dpad-btn">➡️</div>
+            <div class="dpad-btn"></div>
+            <div class="dpad-btn">⬇️</div>
+            <div class="dpad-btn"></div>
+        </div>
+        <p style="text-align:center;color:#888;font-size:0.85em;margin-top:12px;">推箱子到红色虚线目标点上，所有箱子就位过关</p>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">动画说明</h2>
+        <ul style="color:#888;line-height:2;list-style:none;">
+            <li>• <strong style="color:#fff">移动动画</strong>：玩家平滑滑动到相邻格子，150ms ease</li>
+            <li>• <strong style="color:#fff">推动动画</strong>：箱子随玩家推动滑动，200ms</li>
+            <li>• <strong style="color:#fff">就位动画</strong>：箱子变绿色 + 轻微弹跳，250ms</li>
+            <li>• <strong style="color:#fff">撤销动画</strong>：步进撤销，逆向播放</li>
+        </ul>
+    </div>
+</body>
+</html>

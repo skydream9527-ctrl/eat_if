@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>射击 Shooting | 游戏视觉风格</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1a1a2e; color: #fff; padding: 40px; }
+        .back { color: #888; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 30px; }
+        .back:hover { color: #fff; }
+        h1 { font-size: 2.2em; margin-bottom: 8px; }
+        h1 span { font-size: 1.5em; margin-right: 12px; }
+        .subtitle { color: #888; margin-bottom: 40px; }
+        .section { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 32px; margin-bottom: 24px; border: 1px solid rgba(255,255,255,0.1); }
+        .section-title { font-size: 1.3em; font-weight: 600; margin-bottom: 20px; color: #ff6b6b; }
+        .color-palette { display: flex; gap: 16px; flex-wrap: wrap; }
+        .color-item { text-align: center; }
+        .color-swatch { width: 80px; height: 80px; border-radius: 50%; margin-bottom: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 2em; }
+        .color-name { font-size: 0.8em; color: #888; }
+        .color-hex { font-size: 0.75em; color: #666; font-family: monospace; }
+        .frame-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+        .frame { background: rgba(0,0,0,0.3); border-radius: 12px; padding: 20px; text-align: center; }
+        .frame-icon { font-size: 3em; margin-bottom: 12px; }
+        .frame-name { font-weight: 600; margin-bottom: 4px; }
+        .frame-desc { font-size: 0.8em; color: #888; }
+        .frame-state { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.7em; margin-top: 8px; }
+        .state-idle { background: #5f27cd; }
+        .state-playing { background: #1dd1a1; }
+        .state-win { background: #feca57; color: #222; }
+        .state-lose { background: #ff6b6b; }
+        .shooting-range { background: linear-gradient(180deg, #222 0%, #333 100%); border-radius: 12px; padding: 30px; position: relative; overflow: hidden; }
+        .crosshair { position: absolute; width: 40px; height: 40px; border: 3px solid #ff6b6b; border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        .crosshair::before, .crosshair::after { content:''; position: absolute; background: #ff6b6b; }
+        .crosshair::before { width: 2px; height: 100%; left: 50%; transform: translateX(-50%); }
+        .crosshair::after { height: 2px; width: 100%; top: 50%; transform: translateY(-50%); }
+        .target { position: absolute; width: 60px; height: 60px; background: linear-gradient(135deg, #ff6b6b, #ee5a5a); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5em; box-shadow: 0 4px 16px rgba(255,107,107,0.5); }
+        .target-1 { top: 20%; left: 30%; }
+        .target-2 { top: 40%; right: 25%; }
+        .target-3 { bottom: 30%; left: 50%; }
+        .hud { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .hud-item { background: rgba(0,0,0,0.5); padding: 8px 16px; border-radius: 8px; }
+        .bullets { display: flex; gap: 4px; }
+        .bullet { width: 8px; height: 20px; background: #feca57; border-radius: 4px; }
+        .bullet.used { background: #333; }
+        @keyframes targetPop { 0%{transform:scale(0);opacity:0} 100%{transform:scale(1);opacity:1} }
+        @keyframes shoot { 0%{transform:scale(1)} 50%{transform:scale(0.8)} 100%{transform:scale(1)} }
+        @keyframes hit { 0%{transform:scale(1);opacity:1} 100%{transform:scale(2);opacity:0} }
+        .anim-pop { animation: targetPop 0.3s ease; }
+        .anim-shoot { animation: shoot 0.1s ease; }
+        .anim-hit { animation: hit 0.3s ease forwards; }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back">← 返回总览</a>
+    <h1><span>🎯</span>射击 Shooting</h1>
+    <p class="subtitle">瞄准目标射击 · 准星清晰风格</p>
+
+    <div class="section">
+        <h2 class="section-title">配色方案</h2>
+        <div class="color-palette">
+            <div class="color-item">
+                <div class="color-swatch" style="background:linear-gradient(135deg,#ff6b6b,#ee5a5a)"></div>
+                <div class="color-name">目标红</div>
+                <div class="color-hex">#FF6B6B</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:#ff6b6b;border:3px solid #fff;">十</div>
+                <div class="color-name">准星红</div>
+                <div class="color-hex">#FF6B6B</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:#feca57">▮</div>
+                <div class="color-name">子弹黄</div>
+                <div class="color-hex">#FECA57</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:#48dbfb">💠</div>
+                <div class="color-name">特效蓝</div>
+                <div class="color-hex">#48DBFB</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:#1dd1a1">✓</div>
+                <div class="color-name">命中绿</div>
+                <div class="color-hex">#1DD1A1</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">关键帧状态</h2>
+        <div class="frame-grid">
+            <div class="frame">
+                <div class="frame-icon">🎯</div>
+                <div class="frame-name">IDLE</div>
+                <div class="frame-desc">目标出现</div>
+                <span class="frame-state state-idle">待机</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon">👆</div>
+                <div class="frame-name">AIMING</div>
+                <div class="frame-desc">移动准星瞄准</div>
+                <span class="frame-state state-playing">瞄准</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon anim-shoot">🔫</div>
+                <div class="frame-name">SHOOTING</div>
+                <div class="frame-desc">按下射击</div>
+                <span class="frame-state state-playing">射击</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon anim-hit" style="color:#ff6b6b;">💥</div>
+                <div class="frame-name">HIT</div>
+                <div class="frame-desc">命中目标</div>
+                <span class="frame-state state-win">命中</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon">🏆</div>
+                <div class="frame-name">LEVEL_COMPLETE</div>
+                <div class="frame-desc">击落所有目标</div>
+                <span class="frame-state state-win">完成</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">场景示例</h2>
+        <div class="shooting-range">
+            <div class="hud">
+                <div class="hud-item" style="color:#1dd1a1;">命中: 5/10</div>
+                <div class="hud-item">
+                    <span style="color:#888;">剩余子弹:</span>
+                    <div class="bullets" style="display:inline-flex;margin-left:8px;">
+                        <div class="bullet"></div>
+                        <div class="bullet"></div>
+                        <div class="bullet"></div>
+                        <div class="bullet used"></div>
+                        <div class="bullet used"></div>
+                    </div>
+                </div>
+            </div>
+            <div style="height:200px;position:relative;">
+                <div class="target target-1 anim-pop">🎯</div>
+                <div class="target target-2 anim-pop" style="animation-delay:0.2s;">🎯</div>
+                <div class="target target-3 anim-pop" style="animation-delay:0.4s;">🎯</div>
+                <div class="crosshair"></div>
+            </div>
+        </div>
+        <p style="text-align:center;color:#888;font-size:0.85em;margin-top:12px;">移动瞄准，点击射击，命中所有目标过关</p>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">动画说明</h2>
+        <ul style="color:#888;line-height:2;list-style:none;">
+            <li>• <strong style="color:#fff">目标出现</strong>：目标从0放大弹出，300ms</li>
+            <li>• <strong style="color:#fff">射击动画</strong>：准星轻微后坐力，100ms</li>
+            <li>• <strong style="color:#fff">命中动画</strong>：目标爆炸扩散 + 粒子飞溅</li>
+            <li>• <strong style="color:#fff">miss动画</strong>：子弹轨迹红线显示</li>
+        </ul>
+    </div>
+</body>
+</html>

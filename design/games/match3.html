@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>消消乐 Match3 | 游戏视觉风格</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1a1a2e; color: #fff; padding: 40px; }
+        .back { color: #888; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 30px; }
+        .back:hover { color: #fff; }
+        h1 { font-size: 2.2em; margin-bottom: 8px; }
+        h1 span { font-size: 1.5em; margin-right: 12px; }
+        .subtitle { color: #888; margin-bottom: 40px; }
+        .section { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 32px; margin-bottom: 24px; border: 1px solid rgba(255,255,255,0.1); }
+        .section-title { font-size: 1.3em; font-weight: 600; margin-bottom: 20px; color: #feca57; }
+        .color-palette { display: flex; gap: 16px; flex-wrap: wrap; }
+        .color-item { text-align: center; }
+        .color-swatch { width: 80px; height: 80px; border-radius: 12px; margin-bottom: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .color-name { font-size: 0.8em; color: #888; }
+        .color-hex { font-size: 0.75em; color: #666; font-family: monospace; }
+        .frame-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+        .frame { background: rgba(0,0,0,0.3); border-radius: 12px; padding: 20px; text-align: center; }
+        .frame-icon { font-size: 3em; margin-bottom: 12px; }
+        .frame-name { font-weight: 600; margin-bottom: 4px; }
+        .frame-desc { font-size: 0.8em; color: #888; }
+        .frame-state { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.7em; margin-top: 8px; }
+        .state-idle { background: #5f27cd; }
+        .state-playing { background: #1dd1a1; }
+        .state-win { background: #feca57; color: #222; }
+        .state-lose { background: #ff6b6b; }
+        .state-paused { background: #48dbfb; }
+        .state-processing { background: #ff9f43; color: #222; }
+        .component-row { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+        .component { background: rgba(0,0,0,0.3); border-radius: 12px; padding: 16px; flex: 1; min-width: 200px; }
+        .component-label { font-size: 0.75em; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .gem { width: 48px; height: 48px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; font-size: 1.4em; margin: 4px; }
+        .gem-red { background: linear-gradient(135deg, #ff6b6b, #ee5a5a); box-shadow: 0 4px 12px rgba(255,107,107,0.4); }
+        .gem-yellow { background: linear-gradient(135deg, #feca57, #f9b42d); box-shadow: 0 4px 12px rgba(254,202,87,0.4); }
+        .gem-green { background: linear-gradient(135deg, #1dd1a1, #10b59e); box-shadow: 0 4px 12px rgba(29,209,161,0.4); }
+        .gem-blue { background: linear-gradient(135deg, #48dbfb, #2ed9ff); box-shadow: 0 4px 12px rgba(72,219,251,0.4); }
+        .gem-purple { background: linear-gradient(135deg, #ff9ff3, #f368e0); box-shadow: 0 4px 12px rgba(255,159,243,0.4); }
+        .gem-selected { outline: 3px solid #fff; outline-offset: 2px; transform: scale(1.1); }
+        .ui-bar { background: rgba(0,0,0,0.5); border-radius: 12px; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
+        .ui-score { font-size: 1.5em; font-weight: 700; color: #feca57; }
+        .ui-moves { font-size: 1.2em; color: #48dbfb; }
+        .ui-target { font-size: 0.9em; color: #888; }
+        @keyframes pop { 0%{transform:scale(1)} 50%{transform:scale(1.3)} 100%{transform:scale(1)} }
+        @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
+        @keyframes sparkle { 0%,100%{opacity:1} 50%{opacity:0.5} }
+        .anim-pop { animation: pop 0.3s ease; }
+        .anim-shake { animation: shake 0.4s ease; }
+        .anim-sparkle { animation: sparkle 0.6s ease infinite; }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back">← 返回总览</a>
+    <h1><span>🍬</span>消消乐 Match3</h1>
+    <p class="subtitle">滑动交换糖果，3个以上相同连线消除 · Candy Crush 风格</p>
+
+    <div class="section">
+        <h2 class="section-title">配色方案</h2>
+        <div class="color-palette">
+            <div class="color-item">
+                <div class="color-swatch" style="background:linear-gradient(135deg,#ff6b6b,#ee5a5a)"></div>
+                <div class="color-name">糖果红</div>
+                <div class="color-hex">#FF6B6B</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:linear-gradient(135deg,#feca57,#f9b42d)"></div>
+                <div class="color-name">柠檬黄</div>
+                <div class="color-hex">#FECA57</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:linear-gradient(135deg,#1dd1a1,#10b59e)"></div>
+                <div class="color-name">薄荷绿</div>
+                <div class="color-hex">#1DD1A1</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:linear-gradient(135deg,#48dbfb,#2ed9ff)"></div>
+                <div class="color-name">天空蓝</div>
+                <div class="color-hex">#48DBFB</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:linear-gradient(135deg,#ff9ff3,#f368e0)"></div>
+                <div class="color-name">泡泡粉</div>
+                <div class="color-hex">#FF9FF3</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:linear-gradient(135deg,#222,#333)"></div>
+                <div class="color-name">背景深色</div>
+                <div class="color-hex">#1A1A2E</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">关键帧状态</h2>
+        <div class="frame-grid">
+            <div class="frame">
+                <div class="frame-icon">😐</div>
+                <div class="frame-name">IDLE</div>
+                <div class="frame-desc">等待开始，糖果静止</div>
+                <span class="frame-state state-idle">待机</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon anim-sparkle">🍬</div>
+                <div class="frame-name">PLAYING</div>
+                <div class="frame-desc">玩家滑动交换糖果</div>
+                <span class="frame-state state-playing">进行中</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon anim-pop">💥</div>
+                <div class="frame-name">PROCESSING</div>
+                <div class="frame-desc">连锁消除，糖果消失动画</div>
+                <span class="frame-state state-processing">处理中</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon">🏆</div>
+                <div class="frame-name">WIN</div>
+                <div class="frame-desc">达成目标分数</div>
+                <span class="frame-state state-win">胜利</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon anim-shake">💔</div>
+                <div class="frame-name">GAME_OVER</div>
+                <div class="frame-desc">步数用完未达标</div>
+                <span class="frame-state state-lose">失败</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon">⏸️</div>
+                <div class="frame-name">PAUSED</div>
+                <div class="frame-desc">游戏暂停</div>
+                <span class="frame-state state-paused">暂停</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">UI 组件</h2>
+        <div class="component-row">
+            <div class="component">
+                <div class="component-label">糖果元素</div>
+                <div class="gem gem-red">🍬</div>
+                <div class="gem gem-yellow">🍋</div>
+                <div class="gem gem-green">🍏</div>
+                <div class="gem gem-blue">🫐</div>
+                <div class="gem gem-purple anim-pop">🍇</div>
+            </div>
+            <div class="component">
+                <div class="component-label">选中状态</div>
+                <div class="gem gem-red gem-selected">🍬</div>
+                <div class="gem gem-yellow">🍋</div>
+            </div>
+            <div class="component">
+                <div class="component-label">消除特效</div>
+                <div class="gem gem-red anim-pop" style="opacity:0.5">🍬</div>
+                <span style="margin:0 8px">→</span>
+                <span style="font-size:2em">✨</span>
+            </div>
+        </div>
+        <div class="ui-bar">
+            <div>
+                <div class="ui-score">12,450</div>
+                <div class="ui-target">目标: 5000</div>
+            </div>
+            <div class="ui-moves">剩余步数: 15</div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">动画说明</h2>
+        <ul style="color:#888;line-height:2;list-style:none;">
+            <li>• <strong style="color:#fff">消除动画</strong>：糖果缩放消失 + 粒子爆炸效果，300ms ease-out</li>
+            <li>• <strong style="color:#fff">下落动画</strong>：糖果从上落下填补空位，200ms per row</li>
+            <li>• <strong style="color:#fff">选中动画</strong>：轻微弹跳 + 白色边框，150ms</li>
+            <li>• <strong style="color:#fff">连锁动画</strong>：combo x2/x3 显示放大，500ms</li>
+            <li>• <strong style="color:#fff">胜利动画</strong>：全屏糖果跳动 + 金币雨</li>
+        </ul>
+    </div>
+</body>
+</html>

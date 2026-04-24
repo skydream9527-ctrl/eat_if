@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>乒乓球 PingPong | 游戏视觉风格</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1a1a2e; color: #fff; padding: 40px; }
+        .back { color: #888; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 30px; }
+        .back:hover { color: #fff; }
+        h1 { font-size: 2.2em; margin-bottom: 8px; }
+        h1 span { font-size: 1.5em; margin-right: 12px; }
+        .subtitle { color: #888; margin-bottom: 40px; }
+        .section { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 32px; margin-bottom: 24px; border: 1px solid rgba(255,255,255,0.1); }
+        .section-title { font-size: 1.3em; font-weight: 600; margin-bottom: 20px; color: #48dbfb; }
+        .color-palette { display: flex; gap: 16px; flex-wrap: wrap; }
+        .color-item { text-align: center; }
+        .color-swatch { width: 80px; height: 80px; border-radius: 50%; margin-bottom: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .color-name { font-size: 0.8em; color: #888; }
+        .color-hex { font-size: 0.75em; color: #666; font-family: monospace; }
+        .frame-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+        .frame { background: rgba(0,0,0,0.3); border-radius: 12px; padding: 20px; text-align: center; }
+        .frame-icon { font-size: 3em; margin-bottom: 12px; }
+        .frame-name { font-weight: 600; margin-bottom: 4px; }
+        .frame-desc { font-size: 0.8em; color: #888; }
+        .frame-state { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.7em; margin-top: 8px; }
+        .state-idle { background: #5f27cd; }
+        .state-playing { background: #1dd1a1; }
+        .state-win { background: #feca57; color: #222; }
+        .state-lose { background: #ff6b6b; }
+        .table-tennis { background: linear-gradient(180deg, #1e90ff 0%, #48dbfb 100%); border-radius: 12px; padding: 30px; display: flex; flex-direction: column; align-items: center; gap: 20px; position: relative; overflow: hidden; }
+        .court { width: 300px; height: 180px; background: linear-gradient(135deg, #2ed573, #26de81); border-radius: 8px; position: relative; border: 4px solid #fff; }
+        .court::before { content:''; position: absolute; top: 0; bottom: 0; left: 50%; width: 4px; background: rgba(255,255,255,0.5); transform: translateX(-50%); }
+        .court::after { content:''; position: absolute; top: 50%; left: 0; right: 0; height: 4px; background: rgba(255,255,255,0.5); transform: translateY(-50%); }
+        .ball { position: absolute; width: 16px; height: 16px; background: #fff; border-radius: 50%; box-shadow: 0 0 10px rgba(255,255,255,0.8); }
+        .paddle { position: absolute; width: 60px; height: 12px; background: linear-gradient(135deg, #ff6b6b, #ee5a5a); border-radius: 6px; }
+        .paddle-left { left: 10px; top: 50%; transform: translateY(-50%); }
+        .paddle-right { right: 10px; top: 50%; transform: translateY(-50%); }
+        .score-display { position: absolute; top: 20px; display: flex; gap: 40px; font-size: 2em; font-weight: 700; }
+        .score-p1 { color: #fff; }
+        .score-p2 { color: #fff; }
+        @keyframes ballMove { 0%{left:142px;top:82px} 50%{left:250px;top:50px} 100%{left:142px;top:82px} }
+        @keyframes paddleSwing { 0%,100%{transform:translateY(-50%) rotate(0)} 50%{transform:translateY(-50%) rotate(10deg)} }
+        .anim-ball { animation: ballMove 1s ease-in-out infinite; }
+        .anim-paddle { animation: paddleSwing 0.5s ease infinite; }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back">← 返回总览</a>
+    <h1><span>🏓</span>乒乓球 PingPong</h1>
+    <p class="subtitle">触控挥拍击打乒乓球 · 流畅运动风格</p>
+
+    <div class="section">
+        <h2 class="section-title">配色方案</h2>
+        <div class="color-palette">
+            <div class="color-item">
+                <div class="color-swatch" style="background:linear-gradient(135deg,#2ed573,#26de81)"></div>
+                <div class="color-name">球台绿</div>
+                <div class="color-hex">#2ED573</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:#fff"></div>
+                <div class="color-name">球白</div>
+                <div class="color-hex">#FFFFFF</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:linear-gradient(135deg,#ff6b6b,#ee5a5a)"></div>
+                <div class="color-name">球拍红</div>
+                <div class="color-hex">#FF6B6B</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:linear-gradient(180deg,#1e90ff,#48dbfb)"></div>
+                <div class="color-name">背景蓝</div>
+                <div class="color-hex">#1E90FF</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:#feca57"></div>
+                <div class="color-name">得分黄</div>
+                <div class="color-hex">#FECA57</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">关键帧状态</h2>
+        <div class="frame-grid">
+            <div class="frame">
+                <div class="frame-icon">🎮</div>
+                <div class="frame-name">IDLE</div>
+                <div class="frame-desc">等待开始</div>
+                <span class="frame-state state-idle">待机</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon anim-ball" style="font-size:1em;">⚪</div>
+                <div class="frame-name">PLAYING</div>
+                <div class="frame-desc">球在运动中</div>
+                <span class="frame-state state-playing">进行中</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon anim-paddle">🏓</div>
+                <div class="frame-name">SWING</div>
+                <div class="frame-desc">挥拍击球</div>
+                <span class="frame-state state-playing">击球</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon">➕1</div>
+                <div class="frame-name">SCORE</div>
+                <div class="frame-desc">对方失分</div>
+                <span class="frame-state state-win">得分</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon">🏆</div>
+                <div class="frame-name">WIN</div>
+                <div class="frame-desc">达到目标分</div>
+                <span class="frame-state state-win">胜利</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">场景示例</h2>
+        <div class="table-tennis">
+            <div class="score-display">
+                <span class="score-p1">3</span>
+                <span style="color:#feca57;">:</span>
+                <span class="score-p2">2</span>
+            </div>
+            <div class="court">
+                <div class="paddle paddle-left anim-paddle"></div>
+                <div class="paddle paddle-right"></div>
+                <div class="ball anim-ball"></div>
+            </div>
+        </div>
+        <p style="text-align:center;color:#888;font-size:0.85em;margin-top:12px;">触控控制球拍击球，先到指定分数获胜</p>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">动画说明</h2>
+        <ul style="color:#888;line-height:2;list-style:none;">
+            <li>• <strong style="color:#fff">球运动</strong>：抛物线轨迹，带旋转效果</li>
+            <li>• <strong style="color:#fff">击球动画</strong>：球拍挥动 + 球速反弹变化</li>
+            <li>• <strong style="color:#fff">得分动画</strong>：数字放大 + 闪光特效</li>
+            <li>• <strong style="color:#fff">失分动画</strong>：红色闪烁 + 球消失</li>
+        </ul>
+    </div>
+</body>
+</html>

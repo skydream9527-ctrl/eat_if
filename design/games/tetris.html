@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>俄罗斯方块 Tetris | 游戏视觉风格</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1a1a2e; color: #fff; padding: 40px; }
+        .back { color: #888; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 30px; }
+        .back:hover { color: #fff; }
+        h1 { font-size: 2.2em; margin-bottom: 8px; }
+        h1 span { font-size: 1.5em; margin-right: 12px; }
+        .subtitle { color: #888; margin-bottom: 40px; }
+        .section { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 32px; margin-bottom: 24px; border: 1px solid rgba(255,255,255,0.1); }
+        .section-title { font-size: 1.3em; font-weight: 600; margin-bottom: 20px; color: #48dbfb; }
+        .color-palette { display: flex; gap: 16px; flex-wrap: wrap; }
+        .color-item { text-align: center; }
+        .color-swatch { width: 80px; height: 80px; border-radius: 12px; margin-bottom: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .color-name { font-size: 0.8em; color: #888; }
+        .color-hex { font-size: 0.75em; color: #666; font-family: monospace; }
+        .frame-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+        .frame { background: rgba(0,0,0,0.3); border-radius: 12px; padding: 20px; text-align: center; }
+        .frame-icon { font-size: 3em; margin-bottom: 12px; }
+        .frame-name { font-weight: 600; margin-bottom: 4px; }
+        .frame-desc { font-size: 0.8em; color: #888; }
+        .frame-state { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.7em; margin-top: 8px; }
+        .state-idle { background: #5f27cd; }
+        .state-playing { background: #1dd1a1; }
+        .state-win { background: #feca57; color: #222; }
+        .state-lose { background: #ff6b6b; }
+        .tetris-grid { display: grid; grid-template-columns: repeat(10, 32px); gap: 1px; background: #222; padding: 8px; border-radius: 8px; justify-content: center; }
+        .cell { width: 32px; height: 32px; border-radius: 3px; }
+        .cell-I { background: linear-gradient(135deg, #48dbfb, #0abde3); }
+        .cell-O { background: linear-gradient(135deg, #feca57, #f9b42d); }
+        .cell-T { background: linear-gradient(135deg, #ff9ff3, #f368e0); }
+        .cell-S { background: linear-gradient(135deg, #1dd1a1, #10b59e); }
+        .cell-Z { background: linear-gradient(135deg, #ff6b6b, #ee5a5a); }
+        .cell-L { background: linear-gradient(135deg, #ff9f43, #ee5a24); }
+        .cell-J { background: linear-gradient(135deg, #54a0ff, #2e86de); }
+        .cell-ghost { opacity: 0.3; }
+        .cell-filled { background: linear-gradient(135deg, #555, #333); }
+        .piece-row { display: flex; gap: 24px; justify-content: center; margin: 20px 0; flex-wrap: wrap; }
+        .piece-demo { text-align: center; }
+        .piece-label { font-size: 0.8em; color: #888; margin-top: 8px; }
+        @keyframes drop { 0%{transform:translateY(-20px);opacity:0} 100%{transform:translateY(0);opacity:1} }
+        @keyframes lineClear { 0%{transform:scaleX(1);background:#fff} 50%{transform:scaleX(1.1);background:#feca57} 100%{transform:scaleX(0);opacity:0} }
+        .anim-drop { animation: drop 0.15s ease; }
+        .anim-clear { animation: lineClear 0.3s ease forwards; }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back">← 返回总览</a>
+    <h1><span>🧱</span>俄罗斯方块 Tetris</h1>
+    <p class="subtitle">经典下落方块，填满消除 · 霓虹复古风格</p>
+
+    <div class="section">
+        <h2 class="section-title">配色方案</h2>
+        <div class="color-palette">
+            <div class="color-item">
+                <div class="color-swatch cell-I"></div>
+                <div class="color-name">I型-青</div>
+                <div class="color-hex">#48DBFB</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch cell-O"></div>
+                <div class="color-name">O型-黄</div>
+                <div class="color-hex">#FECA57</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch cell-T"></div>
+                <div class="color-name">T型-紫</div>
+                <div class="color-hex">#FF9FF3</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch cell-S"></div>
+                <div class="color-name">S型-绿</div>
+                <div class="color-hex">#1DD1A1</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch cell-Z"></div>
+                <div class="color-name">Z型-红</div>
+                <div class="color-hex">#FF6B6B</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch cell-L"></div>
+                <div class="color-name">L型-橙</div>
+                <div class="color-hex">#FF9F43</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">方块类型</h2>
+        <div class="piece-row">
+            <div class="piece-demo">
+                <div class="tetris-grid" style="grid-template-columns:repeat(4,24px);">
+                    <div class="cell cell-I"></div><div class="cell cell-I"></div><div class="cell cell-I"></div><div class="cell cell-I"></div>
+                </div>
+                <div class="piece-label">I型</div>
+            </div>
+            <div class="piece-demo">
+                <div class="tetris-grid" style="grid-template-columns:repeat(2,24px);">
+                    <div class="cell cell-O"></div><div class="cell cell-O"></div>
+                    <div class="cell cell-O"></div><div class="cell cell-O"></div>
+                </div>
+                <div class="piece-label">O型</div>
+            </div>
+            <div class="piece-demo">
+                <div class="tetris-grid" style="grid-template-columns:repeat(3,24px);">
+                    <div class="cell"></div><div class="cell cell-T"></div><div class="cell"></div>
+                    <div class="cell cell-T"></div><div class="cell cell-T"></div><div class="cell cell-T"></div>
+                </div>
+                <div class="piece-label">T型</div>
+            </div>
+            <div class="piece-demo">
+                <div class="tetris-grid" style="grid-template-columns:repeat(3,24px);">
+                    <div class="cell"></div><div class="cell cell-S"></div><div class="cell cell-S"></div>
+                    <div class="cell cell-S"></div><div class="cell cell-S"></div><div class="cell"></div>
+                </div>
+                <div class="piece-label">S型</div>
+            </div>
+            <div class="piece-demo">
+                <div class="tetris-grid" style="grid-template-columns:repeat(3,24px);">
+                    <div class="cell cell-Z"></div><div class="cell cell-Z"></div><div class="cell"></div>
+                    <div class="cell"></div><div class="cell cell-Z"></div><div class="cell cell-Z"></div>
+                </div>
+                <div class="piece-label">Z型</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">关键帧状态</h2>
+        <div class="frame-grid">
+            <div class="frame">
+                <div class="frame-icon">🎮</div>
+                <div class="frame-name">IDLE</div>
+                <div class="frame-desc">等待开始</div>
+                <span class="frame-state state-idle">待机</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon anim-drop">⬇️</div>
+                <div class="frame-name">PLAYING</div>
+                <div class="frame-desc">方块下落中</div>
+                <span class="frame-state state-playing">进行中</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon">🧹</div>
+                <div class="frame-name">LINE_CLEAR</div>
+                <div class="frame-desc">整行消除</div>
+                <span class="frame-state state-win">消除</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon">💀</div>
+                <div class="frame-name">GAME_OVER</div>
+                <div class="frame-desc">方块堆满顶部</div>
+                <span class="frame-state state-lose">结束</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon">🏆</div>
+                <div class="frame-name">LEVEL_UP</div>
+                <div class="frame-desc">等级提升，速度加快</div>
+                <span class="frame-state state-win">升级</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">动画说明</h2>
+        <ul style="color:#888;line-height:2;list-style:none;">
+            <li>• <strong style="color:#fff">下落动画</strong>：方块逐格下落，间隔随等级缩短(1000ms→100ms)</li>
+            <li>• <strong style="color:#fff">旋转动画</strong>：瞬间旋转无延迟</li>
+            <li>• <strong style="color:#fff">消行动画</strong>：白光亮起，横线收缩消失，300ms</li>
+            <li>• <strong style="color:#fff">堆积动画</strong>：方块落定轻微弹跳，100ms</li>
+            <li>• <strong style="color:#fff">Ghost显示</strong>：半透明轮廓显示落点位置</li>
+        </ul>
+    </div>
+</body>
+</html>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>连连看 LinkLink | 游戏视觉风格</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1a1a2e; color: #fff; padding: 40px; }
+        .back { color: #888; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 30px; }
+        .back:hover { color: #fff; }
+        h1 { font-size: 2.2em; margin-bottom: 8px; }
+        h1 span { font-size: 1.5em; margin-right: 12px; }
+        .subtitle { color: #888; margin-bottom: 40px; }
+        .section { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 32px; margin-bottom: 24px; border: 1px solid rgba(255,255,255,0.1); }
+        .section-title { font-size: 1.3em; font-weight: 600; margin-bottom: 20px; color: #5f27cd; }
+        .color-palette { display: flex; gap: 16px; flex-wrap: wrap; }
+        .color-item { text-align: center; }
+        .color-swatch { width: 80px; height: 80px; border-radius: 12px; margin-bottom: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .color-name { font-size: 0.8em; color: #888; }
+        .color-hex { font-size: 0.75em; color: #666; font-family: monospace; }
+        .frame-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+        .frame { background: rgba(0,0,0,0.3); border-radius: 12px; padding: 20px; text-align: center; }
+        .frame-icon { font-size: 3em; margin-bottom: 12px; }
+        .frame-name { font-weight: 600; margin-bottom: 4px; }
+        .frame-desc { font-size: 0.8em; color: #888; }
+        .frame-state { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.7em; margin-top: 8px; }
+        .state-idle { background: #5f27cd; }
+        .state-playing { background: #1dd1a1; }
+        .state-win { background: #feca57; color: #222; }
+        .state-lose { background: #ff6b6b; }
+        .icon-grid { display: grid; grid-template-columns: repeat(6, 60px); gap: 8px; justify-content: center; margin: 20px 0; }
+        .icon-cell { width: 60px; height: 60px; background: rgba(255,255,255,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.8em; }
+        .icon-cell.selected { background: rgba(94, 39, 205, 0.5); outline: 2px solid #5f27cd; }
+        .icon-cell.matched { opacity: 0.3; text-decoration: line-through; }
+        .icon-cell.empty { background: transparent; }
+        .path-line { position: relative; }
+        .path-line::after { content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 3px; background: #feca57; transform: translateY(-50%); z-index: 10; }
+        @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
+        @keyframes fadeOut { 0%{opacity:1;transform:scale(1)} 100%{opacity:0;transform:scale(0.8)} }
+        .anim-pulse { animation: pulse 1s ease infinite; }
+        .anim-fade { animation: fadeOut 0.5s ease forwards; }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back">← 返回总览</a>
+    <h1><span>🔗</span>连连看 LinkLink</h1>
+    <p class="subtitle">连接相同图标，路径不超两次拐弯 · 简洁清晰风格</p>
+
+    <div class="section">
+        <h2 class="section-title">配色方案</h2>
+        <div class="color-palette">
+            <div class="color-item">
+                <div class="color-swatch" style="background:#5f27cd"></div>
+                <div class="color-name">主题紫</div>
+                <div class="color-hex">#5F27CD</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:#48dbfb"></div>
+                <div class="color-name">清新蓝</div>
+                <div class="color-hex">#48DBFB</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:#00d2d3"></div>
+                <div class="color-name">青绿</div>
+                <div class="color-hex">#00D2D3</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:#54a0ff"></div>
+                <div class="color-name">天蓝</div>
+                <div class="color-hex">#54A0FF</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:#c8d6e5"></div>
+                <div class="color-name">浅灰</div>
+                <div class="color-hex">#C8D6E5</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">关键帧状态</h2>
+        <div class="frame-grid">
+            <div class="frame">
+                <div class="frame-icon anim-pulse">🎯</div>
+                <div class="frame-name">IDLE</div>
+                <div class="frame-desc">等待选择第一个图标</div>
+                <span class="frame-state state-idle">待机</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon">👆</div>
+                <div class="frame-name">FIRST_SELECTED</div>
+                <div class="frame-desc">已选第一个，等待第二个</div>
+                <span class="frame-state state-playing">已选中</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon">✨</div>
+                <div class="frame-name">MATCHED</div>
+                <div class="frame-desc">配对成功，两图标消失</div>
+                <span class="frame-state state-win">匹配</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon">❌</div>
+                <div class="frame-name">NO_MATCH</div>
+                <div class="frame-desc">不匹配，轻微抖动提示</div>
+                <span class="frame-state state-lose">失败</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon">🏆</div>
+                <div class="frame-name">WIN</div>
+                <div class="frame-desc">所有图标消除完毕</div>
+                <span class="frame-state state-win">胜利</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">棋盘布局示例</h2>
+        <div class="icon-grid">
+            <div class="icon-cell">🍎</div>
+            <div class="icon-cell">🍊</div>
+            <div class="icon-cell selected">🍎</div>
+            <div class="icon-cell">🍋</div>
+            <div class="icon-cell">🍇</div>
+            <div class="icon-cell">🍓</div>
+            <div class="icon-cell">🍊</div>
+            <div class="icon-cell">🍋</div>
+            <div class="icon-cell">🍇</div>
+            <div class="icon-cell">🍓</div>
+            <div class="icon-cell">🍎</div>
+            <div class="icon-cell">🍊</div>
+            <div class="icon-cell">🍋</div>
+            <div class="icon-cell matched">🍇</div>
+            <div class="icon-cell matched">🍓</div>
+            <div class="icon-cell empty"></div>
+            <div class="icon-cell">🍋</div>
+            <div class="icon-cell">🍎</div>
+        </div>
+        <p style="text-align:center;color:#888;font-size:0.85em;">苹果(🍎)被选中，连接线显示配对路径</p>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">动画说明</h2>
+        <ul style="color:#888;line-height:2;list-style:none;">
+            <li>• <strong style="color:#fff">选中动画</strong>：图标放大 + 紫色边框，150ms</li>
+            <li>• <strong style="color:#fff">连接线动画</strong>：黄色路径线绘制，200ms</li>
+            <li>• <strong style="color:#fff">消除动画</strong>：图标缩小消失 + 星星粒子，300ms</li>
+            <li>• <strong style="color:#fff">失败动画</strong>：选中图标抖动，200ms</li>
+            <li>• <strong style="color:#fff">洗牌动画</strong>：所有图标翻转重排，400ms</li>
+        </ul>
+    </div>
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大转盘 SpinWheel | 游戏视觉风格</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1a1a2e; color: #fff; padding: 40px; }
+        .back { color: #888; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 30px; }
+        .back:hover { color: #fff; }
+        h1 { font-size: 2.2em; margin-bottom: 8px; }
+        h1 span { font-size: 1.5em; margin-right: 12px; }
+        .subtitle { color: #888; margin-bottom: 40px; }
+        .section { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 32px; margin-bottom: 24px; border: 1px solid rgba(255,255,255,0.1); }
+        .section-title { font-size: 1.3em; font-weight: 600; margin-bottom: 20px; color: #feca57; }
+        .color-palette { display: flex; gap: 16px; flex-wrap: wrap; }
+        .color-item { text-align: center; }
+        .color-swatch { width: 80px; height: 80px; border-radius: 50%; margin-bottom: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .color-name { font-size: 0.8em; color: #888; }
+        .color-hex { font-size: 0.75em; color: #666; font-family: monospace; }
+        .frame-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+        .frame { background: rgba(0,0,0,0.3); border-radius: 12px; padding: 20px; text-align: center; }
+        .frame-icon { font-size: 3em; margin-bottom: 12px; }
+        .frame-name { font-weight: 600; margin-bottom: 4px; }
+        .frame-desc { font-size: 0.8em; color: #888; }
+        .frame-state { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.7em; margin-top: 8px; }
+        .state-idle { background: #5f27cd; }
+        .state-playing { background: #1dd1a1; }
+        .state-win { background: #feca57; color: #222; }
+        .wheel-container { display: flex; flex-direction: column; align-items: center; gap: 20px; margin: 20px 0; }
+        .wheel { width: 200px; height: 200px; border-radius: 50%; background: conic-gradient(#ff6b6b 0deg 60deg, #feca57 60deg 120deg, #1dd1a1 120deg 180deg, #48dbfb 180deg 240deg, #5f27cd 240deg 300deg, #ff9ff3 300deg 360deg); position: relative; box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+        .wheel-inner { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60px; height: 60px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5em; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+        .pointer { width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 30px solid #fff; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
+        .spin-btn { padding: 16px 48px; font-size: 1.2em; font-weight: 700; background: linear-gradient(135deg, #ff6b6b, #ee5a5a); color: #fff; border: none; border-radius: 30px; cursor: pointer; box-shadow: 0 4px 16px rgba(255,107,107,0.4); transition: transform 0.2s; }
+        .spin-btn:hover { transform: scale(1.05); }
+        .spin-btn:active { transform: scale(0.98); }
+        @keyframes spin { 0%{transform:rotate(0deg)} 100%{transform:rotate(1440deg)} }
+        @keyframes bounce { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+        .anim-spin { animation: spin 3s ease-out forwards; }
+        .anim-bounce { animation: bounce 0.5s ease infinite; }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back">← 返回总览</a>
+    <h1><span>🎡</span>大转盘 SpinWheel</h1>
+    <p class="subtitle">旋转指针选择结果 · 喜庆色彩风格</p>
+
+    <div class="section">
+        <h2 class="section-title">配色方案</h2>
+        <div class="color-palette">
+            <div class="color-item">
+                <div class="color-swatch" style="background:#ff6b6b"></div>
+                <div class="color-name">红色</div>
+                <div class="color-hex">#FF6B6B</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:#feca57"></div>
+                <div class="color-name">黄色</div>
+                <div class="color-hex">#FECA57</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:#1dd1a1"></div>
+                <div class="color-name">绿色</div>
+                <div class="color-hex">#1DD1A1</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:#48dbfb"></div>
+                <div class="color-name">蓝色</div>
+                <div class="color-hex">#48DBFB</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:#5f27cd"></div>
+                <div class="color-name">紫色</div>
+                <div class="color-hex">#5F27CD</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:#ff9ff3"></div>
+                <div class="color-name">粉色</div>
+                <div class="color-hex">#FF9FF3</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">关键帧状态</h2>
+        <div class="frame-grid">
+            <div class="frame">
+                <div class="frame-icon">🎯</div>
+                <div class="frame-name">IDLE</div>
+                <div class="frame-desc">等待点击旋转</div>
+                <span class="frame-state state-idle">待机</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon anim-spin">🎡</div>
+                <div class="frame-name">SPINNING</div>
+                <div class="frame-desc">转盘旋转中</div>
+                <span class="frame-state state-playing">旋转</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon anim-bounce">🎉</div>
+                <div class="frame-name">RESULT</div>
+                <div class="frame-desc">指针停止，显示结果</div>
+                <span class="frame-state state-win">结果</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon">✨</div>
+                <div class="frame-name">BONUS</div>
+                <div class="frame-desc">获得奖励确认</div>
+                <span class="frame-state state-win">奖励</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">转盘示例</h2>
+        <div class="wheel-container">
+            <div class="pointer"></div>
+            <div class="wheel anim-spin">
+                <div class="wheel-inner">🎯</div>
+            </div>
+            <button class="spin-btn">旋转</button>
+        </div>
+        <p style="text-align:center;color:#888;font-size:0.85em;">点击旋转按钮，转盘旋转数秒后停止</p>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">动画说明</h2>
+        <ul style="color:#888;line-height:2;list-style:none;">
+            <li>• <strong style="color:#fff">旋转动画</strong>：转盘加速旋转后缓慢停止，2-4秒</li>
+            <li>• <strong style="color:#fff">指针动画</strong>：轻微上下弹跳增加动感</li>
+            <li>• <strong style="color:#fff">结果动画</strong>：停止时该区域放大 + 星星特效</li>
+            <li>• <strong style="color:#fff">奖励动画</strong>：弹窗弹出 + 金币飞入效果</li>
+        </ul>
+    </div>
+</body>
+</html>

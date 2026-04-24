@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flappy Bird | 游戏视觉风格</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1a1a2e; color: #fff; padding: 40px; }
+        .back { color: #888; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 30px; }
+        .back:hover { color: #fff; }
+        h1 { font-size: 2.2em; margin-bottom: 8px; }
+        h1 span { font-size: 1.5em; margin-right: 12px; }
+        .subtitle { color: #888; margin-bottom: 40px; }
+        .section { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 32px; margin-bottom: 24px; border: 1px solid rgba(255,255,255,0.1); }
+        .section-title { font-size: 1.3em; font-weight: 600; margin-bottom: 20px; color: #feca57; }
+        .color-palette { display: flex; gap: 16px; flex-wrap: wrap; }
+        .color-item { text-align: center; }
+        .color-swatch { width: 80px; height: 80px; border-radius: 12px; margin-bottom: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .color-name { font-size: 0.8em; color: #888; }
+        .color-hex { font-size: 0.75em; color: #666; font-family: monospace; }
+        .frame-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+        .frame { background: rgba(0,0,0,0.3); border-radius: 12px; padding: 20px; text-align: center; }
+        .frame-icon { font-size: 3em; margin-bottom: 12px; }
+        .frame-name { font-weight: 600; margin-bottom: 4px; }
+        .frame-desc { font-size: 0.8em; color: #888; }
+        .frame-state { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.7em; margin-top: 8px; }
+        .state-idle { background: #5f27cd; }
+        .state-playing { background: #1dd1a1; }
+        .state-win { background: #feca57; color: #222; }
+        .state-lose { background: #ff6b6b; }
+        .pipe { position: relative; width: 60px; height: 200px; background: linear-gradient(90deg, #2ed573, #20bf6b); border-radius: 8px; margin: 0 20px; display: inline-block; }
+        .pipe::before { content:''; position: absolute; top: -20px; left: -10px; width: 80px; height: 30px; background: linear-gradient(90deg, #26de81, #20bf6b); border-radius: 4px; }
+        .pipe::after { content:''; position: absolute; bottom: -20px; left: -10px; width: 80px; height: 30px; background: linear-gradient(90deg, #26de81, #20bf6b); border-radius: 4px; }
+        .scene { background: linear-gradient(180deg, #48dbfb 0%, #87CEEB 50%, #7bed9f 100%); border-radius: 12px; padding: 40px; display: flex; align-items: center; justify-content: center; margin: 20px 0; position: relative; overflow: hidden; }
+        .bird { font-size: 2.5em; transition: transform 0.1s; }
+        .score-display { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); font-size: 2em; font-weight: 700; color: #fff; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+        @keyframes flyUp { 0%{transform:translateY(0) rotate(0)} 50%{transform:translateY(-20px) rotate(-15deg)} 100%{transform:translateY(0) rotate(0)} }
+        @keyframes fall { 0%{transform:translateY(0) rotate(0)} 100%{transform:translateY(100px) rotate(45deg)} }
+        @keyframes scorePop { 0%{transform:scale(1)} 50%{transform:scale(1.3)} 100%{transform:scale(1)} }
+        .anim-fly { animation: flyUp 0.3s ease; }
+        .anim-fall { animation: fall 0.5s ease forwards; }
+        .anim-score { animation: scorePop 0.2s ease; }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back">← 返回总览</a>
+    <h1><span>🐦</span>Flappy Bird</h1>
+    <p class="subtitle">点击飞行穿越管道 · 像素像素风格</p>
+
+    <div class="section">
+        <h2 class="section-title">配色方案</h2>
+        <div class="color-palette">
+            <div class="color-item">
+                <div class="color-swatch" style="background:linear-gradient(180deg,#48dbfb,#87CEEB)"></div>
+                <div class="color-name">天空蓝</div>
+                <div class="color-hex">#48DBFB</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:linear-gradient(180deg,#7bed9f,#26de81)"></div>
+                <div class="color-name">草地绿</div>
+                <div class="color-hex">#7BED9F</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:linear-gradient(135deg,#feca57,#f9b42d)"></div>
+                <div class="color-name">小鸟黄</div>
+                <div class="color-hex">#FECA57</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:linear-gradient(180deg,#2ed573,#20bf6b)"></div>
+                <div class="color-name">管道绿</div>
+                <div class="color-hex">#2ED573</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:linear-gradient(135deg,#ff6b6b,#ee5a5a)"></div>
+                <div class="color-name">管道红</div>
+                <div class="color-hex">#FF6B6B</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">关键帧状态</h2>
+        <div class="frame-grid">
+            <div class="frame">
+                <div class="frame-icon">🐦</div>
+                <div class="frame-name">IDLE</div>
+                <div class="frame-desc">等待点击开始</div>
+                <span class="frame-state state-idle">待机</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon anim-fly">🐦</div>
+                <div class="frame-name">FLYING</div>
+                <div class="frame-desc">点击向上飞，自然下落</div>
+                <span class="frame-state state-playing">飞行中</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon anim-score">+1</div>
+                <div class="frame-name">SCORE</div>
+                <div class="frame-desc">穿过管道得分</div>
+                <span class="frame-state state-win">得分</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon anim-fall">💀</div>
+                <div class="frame-name">DEAD</div>
+                <div class="frame-desc">撞到管道或地面</div>
+                <span class="frame-state state-lose">死亡</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">场景示例</h2>
+        <div class="scene">
+            <div class="score-display">12</div>
+            <div style="position:absolute;left:20%;top:0;bottom:0;display:flex;align-items:center;">
+                <div class="pipe" style="height:120px;margin-top:-80px;"></div>
+            </div>
+            <div style="position:absolute;left:50%;top:0;bottom:0;display:flex;align-items:center;">
+                <div class="pipe" style="height:160px;margin-bottom:-60px;"></div>
+            </div>
+            <div style="position:absolute;left:80%;top:0;bottom:0;display:flex;align-items:center;">
+                <div class="pipe" style="height:100px;margin-top:-50px;"></div>
+            </div>
+            <div class="bird">🐦</div>
+        </div>
+        <p style="text-align:center;color:#888;font-size:0.85em;">小鸟穿越管道间隙得分，撞到管道游戏结束</p>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">动画说明</h2>
+        <ul style="color:#888;line-height:2;list-style:none;">
+            <li>• <strong style="color:#fff">飞行动画</strong>：点击向上冲，松开缓慢下落，物理模拟</li>
+            <li>• <strong style="color:#fff">翅膀动画</strong>：飞行时上下拍动，100ms循环</li>
+            <li>• <strong style="color:#fff">穿管动画</strong>：得分时数字放大弹出</li>
+            <li>• <strong style="color:#fff">死亡动画</strong>：旋转下坠，落地爆炸粒子</li>
+            <li>• <strong style="color:#fff">管道滚动</strong>：背景向左滚动营造飞行感</li>
+        </ul>
+    </div>
+</body>
+</html>

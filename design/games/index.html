@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>游戏视觉风格总览 | Eat If</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); min-height: 100vh; color: #fff; padding: 40px; }
+        h1 { text-align: center; font-size: 2.5em; margin-bottom: 10px; background: linear-gradient(90deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .subtitle { text-align: center; color: #888; margin-bottom: 50px; font-size: 1.1em; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; max-width: 1400px; margin: 0 auto; }
+        .card { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 24px; transition: all 0.3s ease; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); }
+        .card:hover { transform: translateY(-4px); background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+        .card-icon { font-size: 3em; margin-bottom: 16px; }
+        .card-title { font-size: 1.4em; font-weight: 600; margin-bottom: 8px; }
+        .card-desc { color: #aaa; font-size: 0.9em; line-height: 1.5; }
+        .card-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+        .tag { background: rgba(255,255,255,0.1); padding: 4px 12px; border-radius: 20px; font-size: 0.75em; color: #888; }
+        .color-bar { display: flex; height: 6px; border-radius: 3px; overflow: hidden; margin-top: 16px; }
+        .color-bar span { flex: 1; }
+        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+        .legend { max-width: 1400px; margin: 50px auto 30px; display: flex; justify-content: center; gap: 40px; }
+        .legend-item { display: flex; align-items: center; gap: 10px; color: #888; font-size: 0.85em; }
+        .legend-dot { width: 12px; height: 12px; border-radius: 50%; }
+    </style>
+</head>
+<body>
+    <h1>游戏视觉风格总览</h1>
+    <p class="subtitle">Eat If · 18款游戏视觉样式与关键帧参考</p>
+
+    <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#ff6b6b"></div>消除/益智</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#48dbfb"></div>动作/跑酷</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#feca57"></div>策略/棋牌</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#1dd1a1"></div>技巧/反应</div>
+    </div>
+
+    <div class="grid">
+        <a href="match3.html" class="card">
+            <div class="card-icon">🍬</div>
+            <div class="card-title">消消乐 Match3</div>
+            <div class="card-desc">滑动交换糖果，3+消除连锁反应。色彩明亮，操作流畅。</div>
+            <div class="color-bar"><span style="background:#ff6b6b"></span><span style="background:#feca57"></span><span style="background:#48dbfb"></span><span style="background:#ff9ff3"></span><span style="background:#1dd1a1"></span></div>
+            <div class="card-tags"><span class="tag">益智</span><span class="tag">消除</span><span class="tag">关卡制</span></div>
+        </a>
+
+        <a href="linklink.html" class="card">
+            <div class="card-icon">🔗</div>
+            <div class="card-title">连连看 LinkLink</div>
+            <div class="card-desc">连接相同图标，路径不超过两次拐弯。简洁线条，清晰图标。</div>
+            <div class="color-bar"><span style="background:#5f27cd"></span><span style="background:#48dbfb"></span><span style="background:#00d2d3"></span><span style="background:#54a0ff"></span><span style="background:#c8d6e5"></span></div>
+            <div class="card-tags"><span class="tag">益智</span><span class="tag">连接</span><span class="tag">关卡制</span></div>
+        </a>
+
+        <a href="memory.html" class="card">
+            <div class="card-icon">🃏</div>
+            <div class="card-title">记忆翻牌 Memory</div>
+            <div class="card-desc">翻转配对卡牌，测试记忆力。翻转动画流畅，卡背精美。</div>
+            <div class="color-bar"><span style="background:#ff9f43"></span><span style="background:#ee5a24"></span><span style="background:#d63031"></span><span style="background:#0984e3"></span><span style="background:#6c5ce7"></span></div>
+            <div class="card-tags"><span class="tag">记忆</span><span class="tag">配对</span><span class="tag">关卡制</span></div>
+        </a>
+
+        <a href="tetris.html" class="card">
+            <div class="card-icon">🧱</div>
+            <div class="card-title">俄罗斯方块 Tetris</div>
+            <div class="card-desc">经典下落方块，填满消除。霓虹复古风格，块状分明。</div>
+            <div class="color-bar"><span style="background:#ff6b6b"></span><span style="background:#feca57"></span><span style="background:#48dbfb"></span><span style="background:#1dd1a1"></span><span style="background:#5f27cd"></span></div>
+            <div class="card-tags"><span class="tag">经典</span><span class="tag">消除</span><span class="tag">无尽</span></div>
+        </a>
+
+        <a href="snake.html" class="card">
+            <div class="card-icon">🐍</div>
+            <div class="card-title">贪吃蛇 Snake</div>
+            <div class="card-desc">控制蛇吃食物增长，躲避障碍。像素风格，速度感强。</div>
+            <div class="color-bar"><span style="background:#2ed573"></span><span style="background:#7bed9f"></span><span style="background:#ff6b6b"></span><span style="background:#1e90ff"></span><span style="background:#ffa502"></span></div>
+            <div class="card-tags"><span class="tag">动作</span><span class="tag">经典</span><span class="tag">无尽</span></div>
+        </a>
+
+        <a href="flappy.html" class="card">
+            <div class="card-icon">🐦</div>
+            <div class="card-title">Flappy Bird</div>
+            <div class="card-desc">点击飞行穿越管道。像素小鸟，死亡即结束，一秒上手。</div>
+            <div class="color-bar"><span style="background:#feca57"></span><span style="background:#ff9f43"></span><span style="background:#48dbfb"></span><span style="background:#222"></span><span style="background:#7bed9f"></span></div>
+            <div class="card-tags"><span class="tag">跑酷</span><span class="tag">反应</span><span class="tag">无尽</span></div>
+        </a>
+
+        <a href="onetstroke.html" class="card">
+            <div class="card-icon">✏️</div>
+            <div class="card-title">一笔连线 OneStroke</div>
+            <div class="card-desc">一笔画完所有路径不能重复。简洁线条，思维挑战。</div>
+            <div class="color-bar"><span style="background:#222"></span><span style="background:#ff6b6b"></span><span style="background:#feca57"></span><span style="background:#48dbfb"></span><span style="background:#1dd1a1"></span></div>
+            <div class="card-tags"><span class="tag">益智</span><span class="tag">一笔画</span><span class="tag">关卡制</span></div>
+        </a>
+
+        <a href="boxpusher.html" class="card">
+            <div class="card-icon">📦</div>
+            <div class="card-title">推箱子 BoxPusher</div>
+            <div class="card-desc">推动箱子到目标位置。仓库主题，逻辑清晰。</div>
+            <div class="color-bar"><span style="background:#dfe6e9"></span><span style="background:#b2bec3"></span><span style="background:#ff6b6b"></span><span style="background:#feca57"></span><span style="background:#2ed573"></span></div>
+            <div class="card-tags"><span class="tag">益智</span><span class="tag">推箱子</span><span class="tag">关卡制</span></div>
+        </a>
+
+        <a href="2048.html" class="card">
+            <div class="card-icon">🟫</div>
+            <div class="card-title">2048</div>
+            <div class="card-desc">滑动合并数字，合成2048。极简风格，数字醒目。</div>
+            <div class="color-bar"><span style="background:#eee4da"></span><span style="background:#ede0c8"></span><span style="background:#f2b179"></span><span style="background:#f59563"></span><span style="background:#ff6b6b"></span></div>
+            <div class="card-tags"><span class="tag">益智</span><span class="tag">合并</span><span class="tag">无尽</span></div>
+        </a>
+
+        <a href="minesweeper.html" class="card">
+            <div class="card-icon">💣</div>
+            <div class="card-title">扫雷 Minesweeper</div>
+            <div class="card-desc">揭开方格找出所有安全区域。数字颜色编码，经典再现。</div>
+            <div class="color-bar"><span style="background:#dfe6e9"></span><span style="background:#0984e3"></span><span style="background:#2ed573"></span><span style="background:#ff6b6b"></span><span style="background:#222"></span></div>
+            <div class="card-tags"><span class="tag">益智</span><span class="tag">扫雷</span><span class="tag">关卡制</span></div>
+        </a>
+
+        <a href="spinwheel.html" class="card">
+            <div class="card-icon">🎡</div>
+            <div class="card-title">大转盘 SpinWheel</div>
+            <div class="card-desc">旋转指针选择结果。喜庆色彩，动画流畅。</div>
+            <div class="color-bar"><span style="background:#ff6b6b"></span><span style="background:#feca57"></span><span style="background:#1dd1a1"></span><span style="background:#48dbfb"></span><span style="background:#5f27cd"></span></div>
+            <div class="card-tags"><span class="tag">运气</span><span class="tag">转盘</span><span class="tag">随机</span></div>
+        </a>
+
+        <a href="slot.html" class="card">
+            <div class="card-icon">🎰</div>
+            <div class="card-title">老虎机 Slot</div>
+            <div class="card-desc">拉霸旋转停止，相同符号连线。霓虹闪烁，金币动画。</div>
+            <div class="color-bar"><span style="background:#ff6b6b"></span><span style="background:#feca57"></span><span style="background:#1dd1a1"></span><span style="background:#5f27cd"></span><span style="background:#222"></span></div>
+            <div class="card-tags"><span class="tag">赌博</span><span class="tag">运气</span><span class="tag">老虎机</span></div>
+        </a>
+
+        <a href="needle.html" class="card">
+            <div class="card-icon">📍</div>
+            <div class="card-title">扔针 Needle</div>
+            <div class="card-desc">向旋转圆盘扔针，不能重叠。精准操作，越窄越刺激。</div>
+            <div class="color-bar"><span style="background:#dfe6e9"></span><span style="background:#b2bec3"></span><span style="background:#ff6b6b"></span><span style="background:#feca57"></span><span style="background:#ff9ff3"></span></div>
+            <div class="card-tags"><span class="tag">技巧</span><span class="tag">扔针</span><span class="tag">精准</span></div>
+        </a>
+
+        <a href="climb100.html" class="card">
+            <div class="card-icon">🧗</div>
+            <div class="card-title">爬100层 Climb100</div>
+            <div class="card-desc">向上攀爬100层平台。攀爬动画，逐层递进。</div>
+            <div class="color-bar"><span style="background:#636e72"></span><span style="background:#b2bec3"></span><span style="background:#feca57"></span><span style="background:#ff6b6b"></span><span style="background:#1dd1a1"></span></div>
+            <div class="card-tags"><span class="tag">动作</span><span class="tag">攀爬</span><span class="tag">关卡制</span></div>
+        </a>
+
+        <a href="pingpong.html" class="card">
+            <div class="card-icon">🏓</div>
+            <div class="card-title">乒乓球 PingPong</div>
+            <div class="card-desc">触控挥拍击打乒乓球。流畅动画，物理真实。</div>
+            <div class="color-bar"><span style="background:#fff"></span><span style="background:#ff6b6b"></span><span style="background:#48dbfb"></span><span style="background:#feca57"></span><span style="background:#1dd1a1"></span></div>
+            <div class="card-tags"><span class="tag">运动</span><span class="tag">乒乓球</span><span class="tag">对战</span></div>
+        </a>
+
+        <a href="rps.html" class="card">
+            <div class="card-icon">✊</div>
+            <div class="card-title">石头剪刀布 RPS</div>
+            <div class="card-desc">猜拳决定胜负。卡通手势，胜负反馈强烈。</div>
+            <div class="color-bar"><span style="background:#ff6b6b"></span><span style="background:#48dbfb"></span><span style="background:#feca57"></span><span style="background:#222"></span><span style="background:#fff"></span></div>
+            <div class="card-tags"><span class="tag">运气</span><span class="tag">猜拳</span><span class="tag">对战</span></div>
+        </a>
+
+        <a href="shooting.html" class="card">
+            <div class="card-icon">🎯</div>
+            <div class="card-title">射击 Shooting</div>
+            <div class="card-desc">瞄准目标射击。准星清晰，弹道流畅，命中反馈。</div>
+            <div class="color-bar"><span style="background:#ff6b6b"></span><span style="background:#222"></span><span style="background:#feca57"></span><span style="background:#48dbfb"></span><span style="background:#1dd1a1"></span></div>
+            <div class="card-tags"><span class="tag">射击</span><span class="tag">反应</span><span class="tag">关卡制</span></div>
+        </a>
+
+        <a href="runner.html" class="card">
+            <div class="card-icon">🏃</div>
+            <div class="card-title">跑酷 Runner</div>
+            <div class="card-desc">无尽跑酷闪避障碍。速度感强，近景障碍清晰。</div>
+            <div class="color-bar"><span style="background:#48dbfb"></span><span style="background:#ff6b6b"></span><span style="background:#feca57"></span><span style="background:#222"></span><span style="background:#7bed9f"></span></div>
+            <div class="card-tags"><span class="tag">跑酷</span><span class="tag">无尽</span><span class="tag">反应</span></div>
+        </a>
+    </div>
+
+    <p style="text-align:center;color:#666;margin-top:60px;font-size:0.85em;">
+        共18款游戏 · 设计文档持续更新
+    </p>
+</body>
+</html>

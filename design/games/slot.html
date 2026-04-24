@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>老虎机 Slot | 游戏视觉风格</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1a1a2e; color: #fff; padding: 40px; }
+        .back { color: #888; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 30px; }
+        .back:hover { color: #fff; }
+        h1 { font-size: 2.2em; margin-bottom: 8px; }
+        h1 span { font-size: 1.5em; margin-right: 12px; }
+        .subtitle { color: #888; margin-bottom: 40px; }
+        .section { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 32px; margin-bottom: 24px; border: 1px solid rgba(255,255,255,0.1); }
+        .section-title { font-size: 1.3em; font-weight: 600; margin-bottom: 20px; color: #ff6b6b; }
+        .color-palette { display: flex; gap: 16px; flex-wrap: wrap; }
+        .color-item { text-align: center; }
+        .color-swatch { width: 80px; height: 80px; border-radius: 12px; margin-bottom: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 2em; }
+        .color-name { font-size: 0.8em; color: #888; }
+        .color-hex { font-size: 0.75em; color: #666; font-family: monospace; }
+        .frame-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+        .frame { background: rgba(0,0,0,0.3); border-radius: 12px; padding: 20px; text-align: center; }
+        .frame-icon { font-size: 3em; margin-bottom: 12px; }
+        .frame-name { font-weight: 600; margin-bottom: 4px; }
+        .frame-desc { font-size: 0.8em; color: #888; }
+        .frame-state { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.7em; margin-top: 8px; }
+        .state-idle { background: #5f27cd; }
+        .state-playing { background: #1dd1a1; }
+        .state-win { background: #feca57; color: #222; }
+        .state-lose { background: #ff6b6b; }
+        .slot-machine { background: linear-gradient(135deg, #222, #333); border-radius: 20px; padding: 30px; display: flex; flex-direction: column; align-items: center; gap: 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
+        .reels { display: flex; gap: 8px; background: #111; padding: 16px; border-radius: 12px; }
+        .reel { width: 70px; height: 150px; background: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 3em; overflow: hidden; position: relative; }
+        .reel::before, .reel::after { content:''; position: absolute; left: 0; right: 0; height: 30px; z-index: 2; }
+        .reel::before { top: 0; background: linear-gradient(to bottom, #111, transparent); }
+        .reel::after { bottom: 0; background: linear-gradient(to top, #111, transparent); }
+        .payline { position: absolute; top: 50%; left: -10px; right: -10px; height: 4px; background: #feca57; transform: translateY(-50%); z-index: 10; }
+        .levers { display: flex; gap: 20px; }
+        .lever { width: 40px; height: 80px; background: linear-gradient(135deg, #888, #666); border-radius: 20px; position: relative; }
+        .lever::after { content:''; position: absolute; top: -20px; left: 50%; transform: translateX(-50%); width: 30px; height: 30px; background: linear-gradient(135deg, #ff6b6b, #ee5a5a); border-radius: 50%; }
+        .spin-btn { padding: 16px 48px; font-size: 1.2em; font-weight: 700; background: linear-gradient(135deg, #ff6b6b, #ee5a5a); color: #fff; border: none; border-radius: 30px; cursor: pointer; box-shadow: 0 4px 16px rgba(255,107,107,0.4); }
+        @keyframes reelSpin { 0%{transform:translateY(0)} 100%{transform:translateY(-300px)} }
+        @keyframes reelStop { 0%{transform:translateY(-300px)} 100%{transform:translateY(0)} }
+        @keyframes glow { 0%,100%{box-shadow:0 0 20px #feca57} 50%{box-shadow:0 0 40px #feca57} }
+        .anim-spin { animation: reelSpin 0.5s linear infinite; }
+        .anim-win { animation: glow 0.5s ease infinite; }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back">← 返回总览</a>
+    <h1><span>🎰</span>老虎机 Slot</h1>
+    <p class="subtitle">拉霸旋转停止，相同符号连线 · 霓虹闪烁风格</p>
+
+    <div class="section">
+        <h2 class="section-title">配色方案</h2>
+        <div class="color-palette">
+            <div class="color-item">
+                <div class="color-swatch" style="background:#ff6b6b">7</div>
+                <div class="color-name">七七红</div>
+                <div class="color-hex">#FF6B6B</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:#feca57">🍋</div>
+                <div class="color-name">柠檬黄</div>
+                <div class="color-hex">#FECA57</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:#1dd1a1">🍒</div>
+                <div class="color-name">樱桃绿</div>
+                <div class="color-hex">#1DD1A1</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:#5f27cd">🍇</div>
+                <div class="color-name">葡萄紫</div>
+                <div class="color-hex">#5F27CD</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:#48dbfb">⭐</div>
+                <div class="color-name">星星蓝</div>
+                <div class="color-hex">#48DBFB</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:#222"> BAR </div>
+                <div class="color-name">BAR黑</div>
+                <div class="color-hex">#222222</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">关键帧状态</h2>
+        <div class="frame-grid">
+            <div class="frame">
+                <div class="frame-icon">🎰</div>
+                <div class="frame-name">IDLE</div>
+                <div class="frame-desc">等待拉杆</div>
+                <span class="frame-state state-idle">待机</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon anim-spin" style="font-size:2em;">🍒</div>
+                <div class="frame-name">SPINNING</div>
+                <div class="frame-desc">转轮快速旋转</div>
+                <span class="frame-state state-playing">旋转</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon anim-win">🎉</div>
+                <div class="frame-name">WIN</div>
+                <div class="frame-desc">三个相同符号</div>
+                <span class="frame-state state-win">中奖</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon">😢</div>
+                <div class="frame-name">LOSE</div>
+                <div class="frame-desc">未连线上分</div>
+                <span class="frame-state state-lose">未中</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">机器示例</h2>
+        <div class="slot-machine">
+            <div class="reels">
+                <div class="reel" style="overflow:hidden;">
+                    <div style="transform:translateY(0);font-size:3em;">🍒</div>
+                </div>
+                <div class="reel" style="overflow:hidden;">
+                    <div style="transform:translateY(0);font-size:3em;">🍋</div>
+                </div>
+                <div class="reel" style="overflow:hidden;">
+                    <div style="transform:translateY(0);font-size:3em;">🍒</div>
+                </div>
+            </div>
+            <div class="payline"></div>
+            <div class="spin-btn">旋转</div>
+        </div>
+        <p style="text-align:center;color:#888;font-size:0.85em;margin-top:12px;">三个转轮停止在同一线上，相同符号连线得分</p>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">动画说明</h2>
+        <ul style="color:#888;line-height:2;list-style:none;">
+            <li>• <strong style="color:#fff">旋转动画</strong>：转轮符号快速滚动，500ms</li>
+            <li>• <strong style="color:#fff">停止动画</strong>：依次从左到右停止，各150ms延迟</li>
+            <li>• <strong style="color:#fff">中奖动画</strong>：边框霓虹闪烁 + 硬币雨</li>
+            <li>• <strong style="color:#fff">得分动画</strong>：分数飞向总得分区</li>
+        </ul>
+    </div>
+</body>
+</html>

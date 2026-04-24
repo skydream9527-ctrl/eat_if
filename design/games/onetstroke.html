@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>一笔连线 OneStroke | 游戏视觉风格</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1a1a2e; color: #fff; padding: 40px; }
+        .back { color: #888; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 30px; }
+        .back:hover { color: #fff; }
+        h1 { font-size: 2.2em; margin-bottom: 8px; }
+        h1 span { font-size: 1.5em; margin-right: 12px; }
+        .subtitle { color: #888; margin-bottom: 40px; }
+        .section { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 32px; margin-bottom: 24px; border: 1px solid rgba(255,255,255,0.1); }
+        .section-title { font-size: 1.3em; font-weight: 600; margin-bottom: 20px; color: #48dbfb; }
+        .color-palette { display: flex; gap: 16px; flex-wrap: wrap; }
+        .color-item { text-align: center; }
+        .color-swatch { width: 80px; height: 80px; border-radius: 12px; margin-bottom: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .color-name { font-size: 0.8em; color: #888; }
+        .color-hex { font-size: 0.75em; color: #666; font-family: monospace; }
+        .frame-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+        .frame { background: rgba(0,0,0,0.3); border-radius: 12px; padding: 20px; text-align: center; }
+        .frame-icon { font-size: 3em; margin-bottom: 12px; }
+        .frame-name { font-weight: 600; margin-bottom: 4px; }
+        .frame-desc { font-size: 0.8em; color: #888; }
+        .frame-state { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.7em; margin-top: 8px; }
+        .state-idle { background: #5f27cd; }
+        .state-playing { background: #1dd1a1; }
+        .state-win { background: #feca57; color: #222; }
+        .state-lose { background: #ff6b6b; }
+        .puzzle-grid { display: grid; grid-template-columns: repeat(5, 60px); gap: 8px; justify-content: center; margin: 20px 0; }
+        .node { width: 60px; height: 60px; background: rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8em; border: 3px solid #48dbfb; }
+        .node.start { background: rgba(29,209,161,0.3); border-color: #1dd1a1; }
+        .node.visited { background: rgba(254,202,87,0.3); border-color: #feca57; }
+        .node.blocked { background: rgba(255,107,107,0.2); border-color: #ff6b6b; text-decoration: line-through; opacity: 0.5; }
+        .line-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+        .puzzle-container { position: relative; display: inline-block; }
+        @keyframes lineDraw { 0%{stroke-dashoffset:1000} 100%{stroke-dashoffset:0} }
+        @keyframes nodePulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+        .anim-line { stroke-dasharray: 1000; animation: lineDraw 1s ease forwards; }
+        .anim-pulse { animation: nodePulse 0.5s ease infinite; }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back">← 返回总览</a>
+    <h1><span>✏️</span>一笔连线 OneStroke</h1>
+    <p class="subtitle">一笔画完所有路径不重复 · 简洁线条风格</p>
+
+    <div class="section">
+        <h2 class="section-title">配色方案</h2>
+        <div class="color-palette">
+            <div class="color-item">
+                <div class="color-swatch" style="background:#222"></div>
+                <div class="color-name">背景色</div>
+                <div class="color-hex">#1A1A2E</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:#48dbfb"></div>
+                <div class="color-name">节点蓝</div>
+                <div class="color-hex">#48DBFB</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:#feca57"></div>
+                <div class="color-name">路径黄</div>
+                <div class="color-hex">#FECA57</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:#1dd1a1"></div>
+                <div class="color-name">起点绿</div>
+                <div class="color-hex">#1DD1A1</div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background:#ff6b6b"></div>
+                <div class="color-name">错误红</div>
+                <div class="color-hex">#FF6B6B</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">关键帧状态</h2>
+        <div class="frame-grid">
+            <div class="frame">
+                <div class="frame-icon anim-pulse">🎯</div>
+                <div class="frame-name">IDLE</div>
+                <div class="frame-desc">等待触摸起点</div>
+                <span class="frame-state state-idle">待机</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon">✏️</div>
+                <div class="frame-name">DRAWING</div>
+                <div class="frame-desc">手指划线经过节点</div>
+                <span class="frame-state state-playing">绘制中</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon">❌</div>
+                <div class="frame-name">INVALID</div>
+                <div class="frame-desc">经过已走路径或死角</div>
+                <span class="frame-state state-lose">无效</span>
+            </div>
+            <div class="frame">
+                <div class="frame-icon">🏆</div>
+                <div class="frame-name">COMPLETE</div>
+                <div class="frame-desc">一笔画完所有路径</div>
+                <span class="frame-state state-win">完成</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">谜题示例</h2>
+        <div class="puzzle-container" style="background:rgba(0,0,0,0.3);padding:30px;border-radius:12px;">
+            <svg class="line-svg" viewBox="0 0 300 300">
+                <line x1="30" y1="30" x2="150" y2="30" stroke="#feca57" stroke-width="4" class="anim-line"/>
+                <line x1="150" y1="30" x2="270" y2="30" stroke="#feca57" stroke-width="4" class="anim-line"/>
+                <line x1="270" y1="30" x2="270" y2="150" stroke="#feca57" stroke-width="4" class="anim-line"/>
+                <line x1="270" y1="150" x2="150" y2="150" stroke="#feca57" stroke-width="4" class="anim-line"/>
+                <line x1="150" y1="150" x2="150" y2="270" stroke="#feca57" stroke-width="4" class="anim-line"/>
+                <line x1="150" y1="270" x2="30" y2="270" stroke="#feca57" stroke-width="4" class="anim-line"/>
+                <line x1="30" y1="270" x2="30" y2="150" stroke="#feca57" stroke-width="4" class="anim-line"/>
+                <line x1="30" y1="150" x2="30" y2="30" stroke="#feca57" stroke-width="4" class="anim-line"/>
+            </svg>
+            <div class="puzzle-grid">
+                <div class="node start anim-pulse">1</div>
+                <div class="node visited">2</div>
+                <div class="node visited">3</div>
+                <div class="node">4</div>
+                <div class="node">5</div>
+                <div class="node visited">6</div>
+                <div class="node visited">7</div>
+                <div class="node visited">8</div>
+                <div class="node visited">9</div>
+                <div class="node">10</div>
+                <div class="node visited">11</div>
+                <div class="node visited">12</div>
+                <div class="node visited">13</div>
+                <div class="node visited">14</div>
+                <div class="node visited">15</div>
+                <div class="node visited">16</div>
+                <div class="node visited">17</div>
+                <div class="node visited">18</div>
+                <div class="node visited">19</div>
+                <div class="node visited">20</div>
+                <div class="node visited">21</div>
+                <div class="node visited">22</div>
+                <div class="node visited">23</div>
+                <div class="node visited">24</div>
+                <div class="node visited">25</div>
+            </div>
+        </div>
+        <p style="text-align:center;color:#888;font-size:0.85em;">从绿色起点开始，一笔连接所有节点形成完整图形</p>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">动画说明</h2>
+        <ul style="color:#888;line-height:2;list-style:none;">
+            <li>• <strong style="color:#fff">路径绘制</strong>：线段从起点到终点动画延伸，200ms每段</li>
+            <li>• <strong style="color:#fff">节点访问</strong>：节点放大 + 颜色变化，150ms</li>
+            <li>• <strong style="color:#fff">错误回退</strong>：红色闪烁 + 路径消失，300ms</li>
+            <li>• <strong style="color:#fff">完成动画</strong>：全路径金色高亮 + 粒子庆祝</li>
+        </ul>
+    </div>
+</body>
+</html>
