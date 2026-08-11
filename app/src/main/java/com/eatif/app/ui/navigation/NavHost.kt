@@ -169,6 +169,7 @@ fun EatIfNavHost(
                         popUpTo(Screen.Home.route)
                     }
                     GameEndResultHolder.unlockedAchievements = result.unlockedAchievements
+                    GameEndResultHolder.finalRecommendations = result.finalRecommendations
                 },
                 onBackClick = {
                     navController.popBackStack()

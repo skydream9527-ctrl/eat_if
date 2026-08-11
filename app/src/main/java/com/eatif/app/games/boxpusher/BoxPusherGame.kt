@@ -38,6 +38,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.eatif.app.domain.model.Food
+import com.eatif.app.ui.components.FoodChoiceSection
+import com.eatif.app.ui.components.GameHeader
 import com.eatif.app.ui.theme.Gray
 import com.eatif.app.ui.theme.GrayMedium
 import com.eatif.app.ui.theme.Green
@@ -137,17 +139,10 @@ fun BoxPusherGame(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(
-            text = "📦 推箱子",
-            style = MaterialTheme.typography.headlineMedium
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = "移动次数: $moveCount / $maxMoves",
-            style = MaterialTheme.typography.titleMedium,
-            color = GrayMedium
+        GameHeader(
+            title = "📦 推箱子",
+            scoreText = "移动次数: $moveCount / $maxMoves",
+            scoreColor = GrayMedium
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -270,30 +265,13 @@ fun BoxPusherGame(
                 color = Green
             )
             Spacer(modifier = Modifier.height(8.dp))
-            if (foods.isNotEmpty()) {
-                Text(
-                    text = "选择一顿美食奖励自己吧:",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                foods.take(3).forEach { food ->
-                    Button(
-                        onClick = { onResult(food.name, 100) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = OrangePrimary,
-                            contentColor = White
-                        )
-                    ) {
-                        Text(text = food.name, style = MaterialTheme.typography.titleMedium)
-                    }
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-            }
+            FoodChoiceSection(
+                foods = foods,
+                scorePercent = 100,
+                prompt = "选择一顿美食奖励自己吧:",
+                accentColor = OrangePrimary,
+                onResult = onResult
+            )
         } else if (gameState == GameState.LOST) {
             Text(
                 text = "😵 超过移动次数限制!",
@@ -301,30 +279,13 @@ fun BoxPusherGame(
                 color = Red
             )
             Spacer(modifier = Modifier.height(8.dp))
-            if (foods.isNotEmpty()) {
-                Text(
-                    text = "选择一顿美食安慰自己吧:",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                foods.take(3).forEach { food ->
-                    Button(
-                        onClick = { onResult(food.name, 0) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = OrangePrimary,
-                            contentColor = White
-                        )
-                    ) {
-                        Text(text = food.name, style = MaterialTheme.typography.titleMedium)
-                    }
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-            }
+            FoodChoiceSection(
+                foods = foods,
+                scorePercent = 0,
+                prompt = "选择一顿美食安慰自己吧:",
+                accentColor = OrangePrimary,
+                onResult = onResult
+            )
         }
 
         Row(

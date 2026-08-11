@@ -1,6 +1,7 @@
 package com.eatif.app.data.repository
 
 import com.eatif.app.domain.model.Food
+import com.eatif.app.domain.model.FoodAdoption
 import com.eatif.app.domain.model.FoodFrequency
 import com.eatif.app.domain.repository.FoodRepository
 import com.eatif.app.domain.repository.HistoryRepository
@@ -23,5 +24,9 @@ class RecommendRepositoryImpl @Inject constructor(
 
     override fun getAllFoods(): Flow<List<Food>> {
         return foodRepository.getAllFoods()
+    }
+
+    override fun getFoodAdoptionStats(): Flow<List<FoodAdoption>> {
+        return historyRepository.getFoodAdoptionStats()
     }
 }

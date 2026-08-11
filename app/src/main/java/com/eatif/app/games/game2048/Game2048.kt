@@ -38,6 +38,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.eatif.app.domain.model.Food
+import com.eatif.app.ui.components.FoodChoiceSection
+import com.eatif.app.ui.components.GameHeader
 import com.eatif.app.ui.theme.GrayLight
 import com.eatif.app.ui.theme.GrayMedium
 import com.eatif.app.ui.theme.Green
@@ -210,18 +212,10 @@ fun Game2048(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(
-            text = "🧩 2048",
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = "分数: $score",
-            style = MaterialTheme.typography.titleLarge,
-            color = OrangePrimary
+        GameHeader(
+            title = "🧩 2048",
+            scoreText = "分数: $score",
+            scoreColor = OrangePrimary
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -342,29 +336,13 @@ fun Game2048(
                     color = Green
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                if (foods.isNotEmpty()) {
-                    Text(
-                        text = "选择美食庆祝吧:",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    foods.take(3).forEach { food ->
-                        Button(
-                            onClick = { onResult(food.name, (score * 100 / 2048).coerceIn(0, 100)) },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 4.dp),
-                            shape = RoundedCornerShape(16.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = OrangePrimary,
-                                contentColor = White
-                            )
-                        ) {
-                            Text(text = food.name, style = MaterialTheme.typography.titleMedium)
-                        }
-                    }
-                }
+                FoodChoiceSection(
+                    foods = foods,
+                    scorePercent = (score * 100 / 2048).coerceIn(0, 100),
+                    prompt = "选择美食庆祝吧:",
+                    accentColor = OrangePrimary,
+                    onResult = onResult
+                )
             }
             !canMove() -> {
                 Text(
@@ -373,30 +351,13 @@ fun Game2048(
                     color = Color.Red
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                if (foods.isNotEmpty()) {
-                    Text(
-                        text = "选择一顿美食安慰自己吧:",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    foods.take(3).forEach { food ->
-                        Button(
-                            onClick = { onResult(food.name, (score * 100 / 2048).coerceIn(0, 100)) },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 4.dp),
-                            shape = RoundedCornerShape(16.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = OrangePrimary,
-                                contentColor = White
-                            )
-                        ) {
-                            Text(text = food.name, style = MaterialTheme.typography.titleMedium)
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
+                FoodChoiceSection(
+                    foods = foods,
+                    scorePercent = (score * 100 / 2048).coerceIn(0, 100),
+                    prompt = "选择一顿美食安慰自己吧:",
+                    accentColor = OrangePrimary,
+                    onResult = onResult
+                )
             }
         }
 

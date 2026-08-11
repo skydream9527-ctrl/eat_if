@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -40,6 +39,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.unit.dp
 import com.eatif.app.domain.model.Food
+import com.eatif.app.ui.components.FoodChoiceSection
 import com.eatif.app.ui.theme.GrayMedium
 import com.eatif.app.ui.theme.OrangeDark
 import com.eatif.app.ui.theme.OrangeLight
@@ -205,27 +205,13 @@ fun SpinWheelGame(
                 )
             }
             Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "选择美食吧:",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onBackground
+            FoodChoiceSection(
+                foods = foods,
+                scorePercent = 50,
+                prompt = "选择美食吧:",
+                accentColor = OrangePrimary,
+                onResult = onResult
             )
-            Spacer(modifier = Modifier.height(8.dp))
-            foods.take(3).forEach { food ->
-                Button(
-                    onClick = { onResult(food.name, 50) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 32.dp, vertical = 4.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = OrangePrimary,
-                        contentColor = White
-                    )
-                ) {
-                    Text(text = food.name, style = MaterialTheme.typography.titleMedium)
-                }
-            }
             Spacer(modifier = Modifier.height(8.dp))
             Button(
                 onClick = {

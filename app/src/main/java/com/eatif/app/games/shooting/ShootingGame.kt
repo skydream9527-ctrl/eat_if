@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import com.eatif.app.domain.model.Food
+import com.eatif.app.ui.components.FoodChoiceSection
 import com.eatif.app.ui.theme.Green
 import com.eatif.app.ui.theme.OrangePrimary
 import com.eatif.app.ui.theme.Red
@@ -237,39 +238,13 @@ fun ShootingGame(
 
             if (foods.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(16.dp))
-                if (passed) {
-                    Text(
-                        text = "🎉 恭喜通关! 选择美食庆祝吧:",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                } else {
-                    Text(
-                        text = "选择一顿美食安慰自己吧:",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                foods.take(3).forEach { food ->
-                    Button(
-                        onClick = {
-                            val selectedFood = food.name
-                            val scorePercent = if (passed) (totalScore * 100 / 800).coerceIn(0, 100) else 0
-                            onResult(selectedFood, scorePercent)
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (passed) Green else OrangePrimary,
-                            contentColor = White
-                        )
-                    ) {
-                        Text(text = food.name, style = MaterialTheme.typography.titleMedium)
-                    }
-                }
+                FoodChoiceSection(
+                    foods = foods,
+                    scorePercent = if (passed) (totalScore * 100 / 800).coerceIn(0, 100) else 0,
+                    prompt = if (passed) "🎉 恭喜通关! 选择美食庆祝吧:" else "选择一顿美食安慰自己吧:",
+                    accentColor = if (passed) Green else OrangePrimary,
+                    onResult = onResult
+                )
             }
         } else {
             Text(

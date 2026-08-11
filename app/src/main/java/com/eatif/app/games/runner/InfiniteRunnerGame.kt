@@ -35,6 +35,8 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.eatif.app.domain.model.Food
+import com.eatif.app.ui.components.FoodChoiceSection
+import com.eatif.app.ui.components.GameHeader
 import com.eatif.app.ui.theme.Green
 import com.eatif.app.ui.theme.OrangePrimary
 import com.eatif.app.ui.theme.Red
@@ -186,18 +188,10 @@ fun InfiniteRunnerGame(
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = "🏃 无限跑酷",
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = "距离: ${elapsedSeconds}s | 障碍: $obstaclesPassed/15",
-            style = MaterialTheme.typography.titleLarge,
-            color = OrangePrimary
+        GameHeader(
+            title = "🏃 无限跑酷",
+            scoreText = "距离: ${elapsedSeconds}s | 障碍: $obstaclesPassed/15",
+            scoreColor = OrangePrimary
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -260,27 +254,13 @@ fun InfiniteRunnerGame(
                         )
                         if (foods.isNotEmpty()) {
                             Spacer(modifier = Modifier.height(16.dp))
-                            Text(
-                                text = "选择一顿美食安慰自己吧:",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = White
+                            FoodChoiceSection(
+                                foods = foods,
+                                scorePercent = (obstaclesPassed * 100 / 15).coerceIn(0, 100),
+                                prompt = "选择一顿美食安慰自己吧:",
+                                accentColor = OrangePrimary,
+                                onResult = onResult
                             )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            foods.take(3).forEach { food ->
-                                Button(
-                                    onClick = { onResult(food.name, (obstaclesPassed * 100 / 15).coerceIn(0, 100)) },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 4.dp),
-                                    shape = RoundedCornerShape(16.dp),
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = OrangePrimary,
-                                        contentColor = White
-                                    )
-                                ) {
-                                    Text(text = food.name, style = MaterialTheme.typography.titleMedium)
-                                }
-                            }
                         }
                     }
                 }
@@ -307,27 +287,13 @@ fun InfiniteRunnerGame(
                         )
                         if (foods.isNotEmpty()) {
                             Spacer(modifier = Modifier.height(16.dp))
-                            Text(
-                                text = "选择一顿美食奖励自己吧:",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = White
+                            FoodChoiceSection(
+                                foods = foods,
+                                scorePercent = (obstaclesPassed * 100 / 15).coerceIn(0, 100),
+                                prompt = "选择一顿美食奖励自己吧:",
+                                accentColor = Green,
+                                onResult = onResult
                             )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            foods.take(3).forEach { food ->
-                                Button(
-                                    onClick = { onResult(food.name, (obstaclesPassed * 100 / 15).coerceIn(0, 100)) },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 4.dp),
-                                    shape = RoundedCornerShape(16.dp),
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = Green,
-                                        contentColor = White
-                                    )
-                                ) {
-                                    Text(text = food.name, style = MaterialTheme.typography.titleMedium)
-                                }
-                            }
                         }
                     }
                 }

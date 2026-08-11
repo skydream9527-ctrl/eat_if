@@ -41,6 +41,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.eatif.app.domain.model.Food
+import com.eatif.app.ui.components.FoodChoiceSection
+import com.eatif.app.ui.components.GameHeader
 import com.eatif.app.ui.theme.Gray
 import com.eatif.app.ui.theme.GrayLight
 import com.eatif.app.ui.theme.GrayMedium
@@ -79,18 +81,10 @@ fun MinesweeperGame(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(
-            text = "🔍 扫雷",
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = "剩余雷数: $mineDisplayCount | 安全格子: $cellsRemaining",
-            style = MaterialTheme.typography.titleMedium,
-            color = GrayMedium
+        GameHeader(
+            title = "🔍 扫雷",
+            scoreText = "剩余雷数: $mineDisplayCount | 安全格子: $cellsRemaining",
+            scoreColor = GrayMedium
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -169,30 +163,13 @@ fun MinesweeperGame(
                 color = Red
             )
             Spacer(modifier = Modifier.height(8.dp))
-            if (foods.isNotEmpty()) {
-                Text(
-                    text = "选择一顿美食安慰自己吧:",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                foods.take(3).forEach { food ->
-                    Button(
-                        onClick = { onResult(food.name, 0) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = OrangePrimary,
-                            contentColor = White
-                        )
-                    ) {
-                        Text(text = food.name, style = MaterialTheme.typography.titleMedium)
-                    }
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-            }
+            FoodChoiceSection(
+                foods = foods,
+                scorePercent = 0,
+                prompt = "选择一顿美食安慰自己吧:",
+                accentColor = OrangePrimary,
+                onResult = onResult
+            )
         } else if (gameState == GameState.WON) {
             Text(
                 text = "🎉 恭喜通关!",
@@ -200,30 +177,13 @@ fun MinesweeperGame(
                 color = Green
             )
             Spacer(modifier = Modifier.height(8.dp))
-            if (foods.isNotEmpty()) {
-                Text(
-                    text = "选择一顿美食奖励自己吧:",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                foods.take(3).forEach { food ->
-                    Button(
-                        onClick = { onResult(food.name, 100) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Green,
-                            contentColor = White
-                        )
-                    ) {
-                        Text(text = food.name, style = MaterialTheme.typography.titleMedium)
-                    }
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-            }
+            FoodChoiceSection(
+                foods = foods,
+                scorePercent = 100,
+                prompt = "选择一顿美食奖励自己吧:",
+                accentColor = Green,
+                onResult = onResult
+            )
         }
 
         Row(

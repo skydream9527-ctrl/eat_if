@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -32,6 +31,8 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import com.eatif.app.domain.model.Food
+import com.eatif.app.ui.components.FoodChoiceSection
+import com.eatif.app.ui.components.GameHeader
 import com.eatif.app.ui.theme.GrayLight
 import com.eatif.app.ui.theme.GrayMedium
 import com.eatif.app.ui.theme.Green
@@ -140,18 +141,10 @@ fun SnakeGame(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(
-            text = "🐍 贪吃蛇",
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = "得分: $score / 10",
-            style = MaterialTheme.typography.titleLarge,
-            color = OrangePrimary
+        GameHeader(
+            title = "🐍 贪吃蛇",
+            scoreText = "得分: $score / 10",
+            scoreColor = OrangePrimary
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -216,27 +209,13 @@ fun SnakeGame(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     if (foods.isNotEmpty()) {
-                        Text(
-                            text = "选择一顿美食安慰自己吧:",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onBackground
+                        FoodChoiceSection(
+                            foods = foods,
+                            scorePercent = (score * 100 / 10).coerceIn(0, 100),
+                            prompt = "选择一顿美食安慰自己吧:",
+                            accentColor = OrangePrimary,
+                            onResult = onResult
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        foods.take(3).forEach { food ->
-                            Button(
-                                onClick = { onResult(food.name, (score * 100 / 10).coerceIn(0, 100)) },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 4.dp),
-                                shape = RoundedCornerShape(16.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = OrangePrimary,
-                                    contentColor = White
-                                )
-                            ) {
-                                Text(text = food.name, style = MaterialTheme.typography.titleMedium)
-                            }
-                        }
                         Spacer(modifier = Modifier.height(8.dp))
                     }
                 }
@@ -249,27 +228,13 @@ fun SnakeGame(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     if (foods.isNotEmpty()) {
-                        Text(
-                            text = "选择一顿美食奖励自己吧:",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onBackground
+                        FoodChoiceSection(
+                            foods = foods,
+                            scorePercent = 100,
+                            prompt = "选择一顿美食奖励自己吧:",
+                            accentColor = Green,
+                            onResult = onResult
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        foods.take(3).forEach { food ->
-                            Button(
-                                onClick = { onResult(food.name, 100) },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 4.dp),
-                                shape = RoundedCornerShape(16.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Green,
-                                    contentColor = White
-                                )
-                            ) {
-                                Text(text = food.name, style = MaterialTheme.typography.titleMedium)
-                            }
-                        }
                         Spacer(modifier = Modifier.height(8.dp))
                     }
                 }

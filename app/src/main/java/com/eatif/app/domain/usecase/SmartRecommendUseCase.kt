@@ -1,6 +1,7 @@
 package com.eatif.app.domain.usecase
 
 import com.eatif.app.domain.model.Food
+import com.eatif.app.domain.model.FoodAdoption
 import com.eatif.app.domain.model.FoodFrequency
 import com.eatif.app.domain.model.FoodTag
 import com.eatif.app.domain.model.Recommendation
@@ -23,6 +24,7 @@ import kotlin.random.Random
  * 5. 用户权重 - food.weight 加分
  * 6. 冷启动 - 无历史时按标签多样化推荐
  * 7. 随机扰动 - 小幅随机避免结果固化
+ * 8. 采纳率反哺 - 历史采纳率高的美食加分（用户偏好反馈）
  */
 class SmartRecommendUseCase @Inject constructor(
     private val repository: RecommendRepository
@@ -40,8 +42,9 @@ class SmartRecommendUseCase @Inject constructor(
             repository.getFoodFrequencyBetween(timeRange.first, timeRange.second),
             repository.getFoodFrequencySince(threeDaysAgo),
             repository.getFoodFrequencySince(sevenDaysAgo),
-            repository.getAllFoods()
-        ) { slotFrequencies, recentFrequencies, weekFrequencies, foods ->
+            repository.getAllFoods(),
+            repository.getFoodAdoptionStats()
+        ) { slotFrequencies, recentFrequencies, weekFrequencies, foods, adoptionStats ->
             if (foods.isEmpty()) {
                 Result.failure(IllegalStateException("美食库为空"))
             } else {
@@ -50,7 +53,8 @@ class SmartRecommendUseCase @Inject constructor(
                     slotFrequencies = slotFrequencies,
                     recentFrequencies = recentFrequencies,
                     weekFrequencies = weekFrequencies,
-                    currentTimeSlot = currentTimeSlot
+                    currentTimeSlot = currentTimeSlot,
+                    adoptionStats = adoptionStats
                 )
                 Result.success(scored.sortedByDescending { it.score }.take(count))
             }
@@ -65,11 +69,13 @@ class SmartRecommendUseCase @Inject constructor(
         slotFrequencies: List<FoodFrequency>,
         recentFrequencies: List<FoodFrequency>,
         weekFrequencies: List<FoodFrequency>,
-        currentTimeSlot: TimeSlot
+        currentTimeSlot: TimeSlot,
+        adoptionStats: List<FoodAdoption> = emptyList()
     ): List<Recommendation> {
         val recentNames = recentFrequencies.map { it.foodName }.toSet()
         val slotFreqMap = slotFrequencies.associate { it.foodName to it.count }
         val weekTagFreq = computeTagFrequencies(weekFrequencies, foods)
+        val adoptionMap = adoptionStats.associate { it.foodName to it }
         val isColdStart = recentFrequencies.isEmpty()
 
         return foods.map { food ->
@@ -79,11 +85,35 @@ class SmartRecommendUseCase @Inject constructor(
             val weightBonus = food.weight * WEIGHT_MULTIPLIER
             val nutritionBonus = calculateNutritionBonus(food, weekTagFreq, isColdStart)
             val coldStartBonus = if (isColdStart) calculateColdStartBonus(food, foods, currentTimeSlot) else 0.0
+            val adoptionBonus = calculateAdoptionBonus(food, adoptionMap, isColdStart)
             val randomFactor = random.nextDouble(RANDOM_MIN, RANDOM_MAX)
             val totalScore = slotScore + tagBonus + recentPenalty + weightBonus +
-                    nutritionBonus + coldStartBonus + randomFactor
-            val reason = buildReason(food, currentTimeSlot, slotFreqMap, isColdStart)
+                    nutritionBonus + coldStartBonus + adoptionBonus + randomFactor
+            val reason = buildReason(food, currentTimeSlot, slotFreqMap, isColdStart, adoptionMap)
             Recommendation(food = food, reason = reason, score = totalScore)
+        }
+    }
+
+    /**
+     * 采纳率反哺：用户历史采纳率高的美食加分。
+     * - 冷启动时无采纳数据，不加不减
+     * - 采纳率 >= 50% 且至少 2 次推荐：按 rate * ADOPTION_BONUS 加分
+     * - 采纳率 < 20% 且至少 3 次推荐：轻微降权（用户多次未采纳）
+     * - 样本不足（< 2 次）不加不减，避免噪声
+     */
+    private fun calculateAdoptionBonus(
+        food: Food,
+        adoptionMap: Map<String, FoodAdoption>,
+        isColdStart: Boolean
+    ): Double {
+        if (isColdStart) return 0.0
+        val stats = adoptionMap[food.name] ?: return 0.0
+        if (stats.totalCount < MIN_ADOPTION_SAMPLE) return 0.0
+        return when {
+            stats.rate >= HIGH_ADOPTION_THRESHOLD -> stats.rate * ADOPTION_BONUS_MULTIPLIER
+            stats.rate < LOW_ADOPTION_THRESHOLD && stats.totalCount >= MIN_REJECT_SAMPLE ->
+                stats.rate * ADOPTION_PENALTY_MULTIPLIER  // rate 低 → 负分
+            else -> 0.0
         }
     }
 
@@ -157,9 +187,17 @@ class SmartRecommendUseCase @Inject constructor(
         food: Food,
         timeSlot: TimeSlot,
         slotFreqMap: Map<String, Int>,
-        isColdStart: Boolean
+        isColdStart: Boolean,
+        adoptionMap: Map<String, FoodAdoption> = emptyMap()
     ): String {
         val freq = slotFreqMap[food.name] ?: 0
+        val adoption = adoptionMap[food.name]
+        // 高采纳率优先展示
+        if (adoption != null && adoption.totalCount >= MIN_ADOPTION_SAMPLE &&
+            adoption.rate >= HIGH_ADOPTION_THRESHOLD
+        ) {
+            return "❤️ 你的偏好（采纳率 ${(adoption.rate * 100).toInt()}%）"
+        }
         return when {
             isColdStart && food.tags.isNotEmpty() ->
                 "${timeSlot.emoji} ${timeSlot.label}推荐·${food.tags.first().label}类"
@@ -191,5 +229,12 @@ class SmartRecommendUseCase @Inject constructor(
         private const val COLD_START_TAG_MATCH_BONUS = 1.5
         private const val RANDOM_MIN = 0.0
         private const val RANDOM_MAX = 2.0
+        // 采纳率反哺相关
+        private const val MIN_ADOPTION_SAMPLE = 2     // 至少 2 次推荐才纳入加分
+        private const val MIN_REJECT_SAMPLE = 3       // 至少 3 次才纳入降权
+        private const val HIGH_ADOPTION_THRESHOLD = 0.5f
+        private const val LOW_ADOPTION_THRESHOLD = 0.2f
+        private const val ADOPTION_BONUS_MULTIPLIER = 3.0
+        private const val ADOPTION_PENALTY_MULTIPLIER = -2.0
     }
 }

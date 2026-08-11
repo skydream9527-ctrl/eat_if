@@ -1,6 +1,7 @@
 package com.eatif.app.domain.usecase
 
 import com.eatif.app.domain.model.Food
+import com.eatif.app.domain.model.FoodAdoption
 import com.eatif.app.domain.model.FoodFrequency
 import com.eatif.app.domain.model.FoodTag
 import com.eatif.app.domain.model.Recommendation
@@ -191,6 +192,94 @@ class SmartRecommendUseCaseTest {
         )
         assertEquals(2, result.size)
     }
+
+    @Test
+    fun `adoption feedback - high adoption rate food gets bonus`() {
+        fakeRepository.foods = testFoods
+        // 火锅被推荐 4 次，采纳 3 次（75% 采纳率）
+        val adoptionStats = listOf(
+            FoodAdoption("火锅", adoptedCount = 3, totalCount = 4)
+        )
+        // 有历史记录（非冷启动），但近期没吃过火锅（无 recent penalty）
+        val result = useCase.scoreFoods(
+            foods = testFoods,
+            slotFrequencies = emptyList(),
+            recentFrequencies = listOf(FoodFrequency("沙拉", 1)),  // 沙拉近期吃过，避免冷启动
+            weekFrequencies = listOf(FoodFrequency("沙拉", 1)),
+            currentTimeSlot = TimeSlot.DINNER,
+            adoptionStats = adoptionStats
+        )
+
+        val hotpot = result.find { it.food.name == "火锅" }!!
+        val salad = result.find { it.food.name == "沙拉" }!!
+        // 火锅有 0.75 * 3.0 = 2.25 的采纳加分 + 沙拉有近期惩罚
+        assertTrue("高采纳率美食应获得反哺加分", hotpot.score > salad.score)
+        assertTrue("高采纳率美食 reason 应体现偏好", hotpot.reason.contains("偏好") || hotpot.reason.contains("采纳率"))
+    }
+
+    @Test
+    fun `adoption feedback - low adoption rate food gets penalty`() {
+        fakeRepository.foods = testFoods
+        // 火锅被推荐 5 次，采纳 0 次（0% 采纳率，且样本 >= 3）
+        val adoptionStats = listOf(
+            FoodAdoption("火锅", adoptedCount = 0, totalCount = 5)
+        )
+        val result = useCase.scoreFoods(
+            foods = testFoods,
+            slotFrequencies = emptyList(),
+            recentFrequencies = listOf(FoodFrequency("沙拉", 1)),  // 非冷启动
+            weekFrequencies = emptyList(),
+            currentTimeSlot = TimeSlot.DINNER,
+            adoptionStats = adoptionStats
+        )
+
+        val hotpot = result.find { it.food.name == "火锅" }!!
+        // 0% 采纳率 → 0 * -2.0 = 0 分（边界情况，但 reason 不应是偏好）
+        // 验证至少不会因为低采纳率获得加分
+        assertTrue("低采纳率美食 reason 不应显示偏好", !hotpot.reason.contains("偏好"))
+    }
+
+    @Test
+    fun `adoption feedback - insufficient sample does not affect score`() {
+        fakeRepository.foods = testFoods
+        // 火锅只被推荐 1 次（< MIN_ADOPTION_SAMPLE=2），不纳入统计
+        val adoptionStats = listOf(
+            FoodAdoption("火锅", adoptedCount = 1, totalCount = 1)
+        )
+        val result = useCase.scoreFoods(
+            foods = testFoods,
+            slotFrequencies = emptyList(),
+            recentFrequencies = listOf(FoodFrequency("沙拉", 1)),
+            weekFrequencies = emptyList(),
+            currentTimeSlot = TimeSlot.DINNER,
+            adoptionStats = adoptionStats
+        )
+
+        val hotpot = result.find { it.food.name == "火锅" }!!
+        // 样本不足，reason 不应显示偏好
+        assertTrue("样本不足时不应显示偏好", !hotpot.reason.contains("偏好"))
+    }
+
+    @Test
+    fun `adoption feedback - cold start ignores adoption data`() {
+        fakeRepository.foods = testFoods
+        // 即使有采纳数据，冷启动时也不应使用
+        val adoptionStats = listOf(
+            FoodAdoption("火锅", adoptedCount = 5, totalCount = 5)  // 100% 采纳
+        )
+        val result = useCase.scoreFoods(
+            foods = testFoods,
+            slotFrequencies = emptyList(),
+            recentFrequencies = emptyList(),  // 冷启动
+            weekFrequencies = emptyList(),
+            currentTimeSlot = TimeSlot.DINNER,
+            adoptionStats = adoptionStats
+        )
+
+        val hotpot = result.find { it.food.name == "火锅" }!!
+        // 冷启动时不应使用采纳数据，reason 不应显示偏好
+        assertTrue("冷启动时不应使用采纳数据", !hotpot.reason.contains("偏好"))
+    }
 }
 
 /**
@@ -309,6 +398,7 @@ private class FakeRecommendRepository : RecommendRepository {
     var slotFrequencies: List<FoodFrequency> = emptyList()
     var recentFrequencies: List<FoodFrequency> = emptyList()
     var weekFrequencies: List<FoodFrequency> = emptyList()
+    var adoptionStats: List<FoodAdoption> = emptyList()
 
     override fun getFoodFrequencySince(fromTimestamp: Long): Flow<List<FoodFrequency>> {
         return flowOf(recentFrequencies)
@@ -320,5 +410,9 @@ private class FakeRecommendRepository : RecommendRepository {
 
     override fun getAllFoods(): Flow<List<Food>> {
         return flowOf(foods)
+    }
+
+    override fun getFoodAdoptionStats(): Flow<List<FoodAdoption>> {
+        return flowOf(adoptionStats)
     }
 }

@@ -37,6 +37,8 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import com.eatif.app.domain.model.Food
+import com.eatif.app.ui.components.FoodChoiceSection
+import com.eatif.app.ui.components.GameHeader
 import com.eatif.app.ui.theme.Gray
 import com.eatif.app.ui.theme.GrayLight
 import com.eatif.app.ui.theme.GrayMedium
@@ -98,18 +100,10 @@ fun OneStrokeGame(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(
-            text = "✏️ 一笔画",
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = "已连接: ${pathDots.size} / $dotCount",
-            style = MaterialTheme.typography.titleMedium,
-            color = GrayMedium
+        GameHeader(
+            title = "✏️ 一笔画",
+            scoreText = "已连接: ${pathDots.size} / $dotCount",
+            scoreColor = GrayMedium
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -258,30 +252,13 @@ fun OneStrokeGame(
                     color = Red
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                if (foods.isNotEmpty()) {
-                    Text(
-                        text = "选择一顿美食安慰自己吧:",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    foods.take(3).forEach { food ->
-                        Button(
-                            onClick = { onResult(food.name, 0) },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 4.dp),
-                            shape = RoundedCornerShape(16.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = OrangePrimary,
-                                contentColor = White
-                            )
-                        ) {
-                            Text(text = food.name, style = MaterialTheme.typography.titleMedium)
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
+                FoodChoiceSection(
+                    foods = foods,
+                    scorePercent = 0,
+                    prompt = "选择一顿美食安慰自己吧:",
+                    accentColor = OrangePrimary,
+                    onResult = onResult
+                )
             }
             else -> {}
         }

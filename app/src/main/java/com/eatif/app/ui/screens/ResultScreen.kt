@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -47,6 +48,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.eatif.app.data.session.SessionManager
+import com.eatif.app.domain.model.Recommendation
 import com.eatif.app.ui.components.AchievementUnlockDialog
 import com.eatif.app.ui.GameEndResultHolder
 import com.eatif.app.ui.theme.OrangePrimary
@@ -254,6 +256,13 @@ fun ResultScreen(
 
                 Spacer(modifier = Modifier.height(40.dp))
 
+                // 游戏驱动的推荐：基于本局真实分数生成，强化"游戏→决策"闭环
+                val finalRecommendations = remember { GameEndResultHolder.finalRecommendations }
+                if (finalRecommendations.isNotEmpty()) {
+                    GameDrivenRecommendationsBlock(recommendations = finalRecommendations)
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+
                 if (xpEarned > 0) {
                     Spacer(modifier = Modifier.height(16.dp))
                     Card(
@@ -305,6 +314,62 @@ fun ResultScreen(
             achievement = unlockedAchievements[currentAchievementIndex],
             onDismiss = { currentAchievementIndex++ }
         )
+    }
+}
+
+/**
+ * 游戏驱动的推荐区块 - 基于本局游戏分数生成的 Top3 候选
+ * 高分(≥70)→奖励型、低分(<30)→安慰型、中分→中性
+ */
+@Composable
+private fun GameDrivenRecommendationsBlock(recommendations: List<Recommendation>) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Text(
+                text = "🎯 基于本局分数推荐",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            recommendations.forEachIndexed { index, rec ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = if (index == 0) "🏆" else "${index + 1}",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = if (index == 0) OrangePrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.width(32.dp)
+                    )
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = rec.food.name,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = rec.reason,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 

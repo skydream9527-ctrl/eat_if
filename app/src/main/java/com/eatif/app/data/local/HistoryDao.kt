@@ -37,4 +37,17 @@ interface HistoryDao {
 
     @Query("SELECT COUNT(*) FROM history WHERE scorePercent >= 0")
     fun getTotalRecommendationCount(): Flow<Int>
+
+    /** 按美食分组的采纳统计 - 用于推荐算法反哺 */
+    data class FoodAdoptionEntity(val foodName: String, val adoptedCount: Int, val totalCount: Int)
+
+    @Query("""
+        SELECT foodName,
+            SUM(CASE WHEN wasRecommended = 1 THEN 1 ELSE 0 END) as adoptedCount,
+            COUNT(*) as totalCount
+        FROM history
+        WHERE scorePercent >= 0
+        GROUP BY foodName
+    """)
+    fun getFoodAdoptionStats(): Flow<List<FoodAdoptionEntity>>
 }

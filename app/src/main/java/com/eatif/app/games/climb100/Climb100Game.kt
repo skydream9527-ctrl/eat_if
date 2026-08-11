@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -42,6 +41,8 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import com.eatif.app.domain.model.Food
+import com.eatif.app.ui.components.FoodChoiceSection
+import com.eatif.app.ui.components.GameHeader
 import com.eatif.app.ui.theme.GrayMedium
 import com.eatif.app.ui.theme.Green
 import com.eatif.app.ui.theme.OrangeDark
@@ -98,18 +99,10 @@ fun Climb100Game(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(
-            text = "🧗 勇闯100层",
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = "当前楼层: ${currentFloor.value} / $TARGET_FLOOR",
-            style = MaterialTheme.typography.titleLarge,
-            color = OrangePrimary
+        GameHeader(
+            title = "🧗 勇闯100层",
+            scoreText = "当前楼层: ${currentFloor.value} / $TARGET_FLOOR",
+            scoreColor = OrangePrimary
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -223,27 +216,13 @@ fun Climb100Game(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     if (foods.isNotEmpty()) {
-                        Text(
-                            text = "选择一顿美食奖励自己吧:",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onBackground
+                        FoodChoiceSection(
+                            foods = foods,
+                            scorePercent = 100,
+                            prompt = "选择一顿美食奖励自己吧:",
+                            accentColor = OrangePrimary,
+                            onResult = onResult
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        foods.take(3).forEach { food ->
-                            Button(
-                                onClick = { onResult(food.name, 100) },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 32.dp, vertical = 4.dp),
-                                shape = RoundedCornerShape(16.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = OrangePrimary,
-                                    contentColor = White
-                                )
-                            ) {
-                                Text(text = food.name, style = MaterialTheme.typography.titleMedium)
-                            }
-                        }
                     }
                 }
             } else if (gameState.value == GameState.LOST) {
@@ -257,27 +236,13 @@ fun Climb100Game(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     if (foods.isNotEmpty()) {
-                        Text(
-                            text = "选择一顿美食安慰自己吧:",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onBackground
+                        FoodChoiceSection(
+                            foods = foods,
+                            scorePercent = (currentFloor.value * 100 / TARGET_FLOOR).coerceIn(0, 100),
+                            prompt = "选择一顿美食安慰自己吧:",
+                            accentColor = OrangePrimary,
+                            onResult = onResult
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        foods.take(3).forEach { food ->
-                            Button(
-                                onClick = { onResult(food.name, (currentFloor.value * 100 / TARGET_FLOOR).coerceIn(0, 100)) },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 32.dp, vertical = 4.dp),
-                                shape = RoundedCornerShape(16.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = OrangePrimary,
-                                    contentColor = White
-                                )
-                            ) {
-                                Text(text = food.name, style = MaterialTheme.typography.titleMedium)
-                            }
-                        }
                     }
                 }
             }

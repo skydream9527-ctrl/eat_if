@@ -1,6 +1,7 @@
 package com.eatif.app.domain.usecase
 
 import com.eatif.app.domain.model.Food
+import com.eatif.app.domain.model.FoodAdoption
 import com.eatif.app.domain.model.FoodFrequency
 import com.eatif.app.domain.model.FoodTag
 import com.eatif.app.domain.model.Recommendation
@@ -39,8 +40,9 @@ class GameDrivenRecommendUseCase @Inject constructor(
             repository.getFoodFrequencyBetween(timeRange.first, timeRange.second),
             repository.getFoodFrequencySince(threeDaysAgo),
             repository.getFoodFrequencySince(sevenDaysAgo),
-            repository.getAllFoods()
-        ) { slotFrequencies, recentFrequencies, weekFrequencies, foods ->
+            repository.getAllFoods(),
+            repository.getFoodAdoptionStats()
+        ) { slotFrequencies, recentFrequencies, weekFrequencies, foods, adoptionStats ->
             if (foods.isEmpty()) {
                 Result.failure(IllegalStateException("美食库为空"))
             } else {
@@ -49,7 +51,8 @@ class GameDrivenRecommendUseCase @Inject constructor(
                     slotFrequencies = slotFrequencies,
                     recentFrequencies = recentFrequencies,
                     weekFrequencies = weekFrequencies,
-                    currentTimeSlot = currentTimeSlot
+                    currentTimeSlot = currentTimeSlot,
+                    adoptionStats = adoptionStats
                 )
                 val gameAdjusted = applyGameScoreDimension(baseScored, scorePercent)
                 val diversified = ensureCategoryDiversity(gameAdjusted, count)

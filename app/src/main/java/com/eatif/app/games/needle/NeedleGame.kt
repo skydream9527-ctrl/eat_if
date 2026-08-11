@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -39,6 +38,8 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.unit.dp
 import com.eatif.app.domain.model.Food
+import com.eatif.app.ui.components.FoodChoiceSection
+import com.eatif.app.ui.components.GameHeader
 import com.eatif.app.ui.theme.Gray
 import com.eatif.app.ui.theme.Green
 import com.eatif.app.ui.theme.OrangePrimary
@@ -103,18 +104,10 @@ fun NeedleGame(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(
-            text = "🎯 见缝插针",
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
-            text = "分数: ${score.value} / $targetScore",
-            style = MaterialTheme.typography.titleLarge,
-            color = when (gameResult) {
+        GameHeader(
+            title = "🎯 见缝插针",
+            scoreText = "分数: ${score.value} / $targetScore",
+            scoreColor = when (gameResult) {
                 NeedleGameState.LOST -> Red
                 NeedleGameState.WON -> Green
                 else -> Green
@@ -131,27 +124,13 @@ fun NeedleGame(
                 )
                 if (foods.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "选择一顿美食奖励自己吧:",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onBackground
+                    FoodChoiceSection(
+                        foods = foods,
+                        scorePercent = (score.value * 100 / targetScore).coerceIn(0, 100),
+                        prompt = "选择一顿美食奖励自己吧:",
+                        accentColor = OrangePrimary,
+                        onResult = onResult
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    foods.take(3).forEach { food ->
-                        Button(
-                            onClick = { onResult(food.name, (score.value * 100 / targetScore).coerceIn(0, 100)) },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 4.dp),
-                            shape = RoundedCornerShape(16.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = OrangePrimary,
-                                contentColor = White
-                            )
-                        ) {
-                            Text(text = food.name, style = MaterialTheme.typography.titleMedium)
-                        }
-                    }
                 }
             }
             NeedleGameState.LOST -> {
@@ -163,27 +142,13 @@ fun NeedleGame(
                 )
                 if (foods.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "选择一顿美食安慰自己吧:",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onBackground
+                    FoodChoiceSection(
+                        foods = foods,
+                        scorePercent = (score.value * 100 / targetScore).coerceIn(0, 100),
+                        prompt = "选择一顿美食安慰自己吧:",
+                        accentColor = OrangePrimary,
+                        onResult = onResult
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    foods.take(3).forEach { food ->
-                        Button(
-                            onClick = { onResult(food.name, (score.value * 100 / targetScore).coerceIn(0, 100)) },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 4.dp),
-                            shape = RoundedCornerShape(16.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = OrangePrimary,
-                                contentColor = White
-                            )
-                        ) {
-                            Text(text = food.name, style = MaterialTheme.typography.titleMedium)
-                        }
-                    }
                 }
             }
             else -> {}

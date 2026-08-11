@@ -118,8 +118,10 @@ class PlayViewModel @Inject constructor(
             )
 
             // 生成基于真实分数的最终推荐（供 ResultScreen 展示）
+            var finalRecs: List<Recommendation> = emptyList()
             gameDrivenRecommendUseCase(scorePercent, count = TOP_N).collect { result ->
                 result.onSuccess { recommendations ->
+                    finalRecs = recommendations
                     _finalRecommendations.value = recommendations
                 }
             }
@@ -143,7 +145,8 @@ class PlayViewModel @Inject constructor(
                 GameEndResult(
                     xpEarned = xpEarned,
                     playerLevel = profile.playerLevel,
-                    unlockedAchievements = unlockedAchievements
+                    unlockedAchievements = unlockedAchievements,
+                    finalRecommendations = finalRecs
                 )
             )
         }
@@ -152,7 +155,8 @@ class PlayViewModel @Inject constructor(
     data class GameEndResult(
         val xpEarned: Int,
         val playerLevel: Int,
-        val unlockedAchievements: List<Achievement>
+        val unlockedAchievements: List<Achievement>,
+        val finalRecommendations: List<Recommendation> = emptyList()
     )
 
     companion object {

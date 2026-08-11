@@ -32,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.eatif.app.domain.model.Food
+import com.eatif.app.ui.components.FoodChoiceSection
 import com.eatif.app.ui.theme.Green
 import com.eatif.app.ui.theme.OrangePrimary
 import com.eatif.app.ui.theme.OrangeLight
@@ -201,27 +202,13 @@ private fun SingleRPSMode(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     if (foods.isNotEmpty()) {
-                        Text(
-                            text = if (playerWon) "\u9009\u62E9\u7F8E\u98DF\u5E86\u795D\u5427:" else "\u9009\u62E9\u4E00\u987F\u7F8E\u98DF\u5B89\u6177\u81EA\u5DF1\u5427:",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onBackground
+                        FoodChoiceSection(
+                            foods = foods,
+                            scorePercent = if (playerWon) 80 else 20,
+                            prompt = if (playerWon) "\u9009\u62E9\u7F8E\u98DF\u5E86\u795D\u5427:" else "\u9009\u62E9\u4E00\u987F\u7F8E\u98DF\u5B89\u6170\u81EA\u5DF1\u5427:",
+                            accentColor = if (playerWon) Green else OrangePrimary,
+                            onResult = onResult
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        foods.take(3).forEach { food ->
-                            Button(
-                                onClick = { onResult(food.name, if (playerWon) 80 else 20) },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 4.dp),
-                                shape = RoundedCornerShape(16.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = if (playerWon) Green else OrangePrimary,
-                                    contentColor = White
-                                )
-                            ) {
-                                Text(text = food.name, style = MaterialTheme.typography.titleMedium)
-                            }
-                        }
                     }
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(
@@ -521,27 +508,13 @@ private fun DoubleRPSMode(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     if (foods.isNotEmpty()) {
-                        Text(
-                            text = "\u8D62\u5BB6\u9009\u62E9\u7F8E\u98DF\u5427:",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onBackground
+                        FoodChoiceSection(
+                            foods = foods,
+                            scorePercent = if (p1Won) 80 else 20,
+                            prompt = "\u8D62\u5BB6\u9009\u62E9\u7F8E\u98DF\u5427:",
+                            accentColor = Green,
+                            onResult = onResult
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        foods.take(3).forEach { food ->
-                            Button(
-                                onClick = { onResult(food.name, if (p1Won) 80 else 20) },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 4.dp),
-                                shape = RoundedCornerShape(16.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Green,
-                                    contentColor = White
-                                )
-                            ) {
-                                Text(text = food.name, style = MaterialTheme.typography.titleMedium)
-                            }
-                        }
                     }
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(

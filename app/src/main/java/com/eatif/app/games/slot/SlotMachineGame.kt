@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -35,6 +34,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.eatif.app.domain.model.Food
+import com.eatif.app.ui.components.FoodChoiceSection
 import com.eatif.app.ui.theme.Gold
 import com.eatif.app.ui.theme.Green
 import com.eatif.app.ui.theme.OrangePrimary
@@ -260,52 +260,24 @@ fun SlotMachineGame(
 
         if (isWin && winFood != null && foods.isNotEmpty()) {
             Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = "选择一顿美食奖励自己吧:",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onBackground
+            FoodChoiceSection(
+                foods = foods,
+                scorePercent = winScore,
+                prompt = "选择一顿美食奖励自己吧:",
+                accentColor = Green,
+                onResult = onResult
             )
-            Spacer(modifier = Modifier.height(8.dp))
-            foods.take(3).forEach { food ->
-                Button(
-                    onClick = { onResult(food.name, winScore) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 32.dp, vertical = 4.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Green,
-                        contentColor = White
-                    )
-                ) {
-                    Text(text = food.name, style = MaterialTheme.typography.titleMedium)
-                }
-            }
         }
 
         if (isFailure && foods.isNotEmpty()) {
             Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = "选择一顿美食安慰自己吧:",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onBackground
+            FoodChoiceSection(
+                foods = foods,
+                scorePercent = 20,
+                prompt = "选择一顿美食安慰自己吧:",
+                accentColor = OrangePrimary,
+                onResult = onResult
             )
-            Spacer(modifier = Modifier.height(8.dp))
-            foods.take(3).forEach { food ->
-                Button(
-                    onClick = { onResult(food.name, 20) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 32.dp, vertical = 4.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = OrangePrimary,
-                        contentColor = White
-                    )
-                ) {
-                    Text(text = food.name, style = MaterialTheme.typography.titleMedium)
-                }
-            }
         }
     }
 }

@@ -35,6 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.eatif.app.domain.model.Food
+import com.eatif.app.ui.components.FoodChoiceSection
 import com.eatif.app.ui.theme.GrayLight
 import com.eatif.app.ui.theme.GrayMedium
 import com.eatif.app.ui.theme.Green
@@ -229,24 +230,13 @@ fun Match3Game(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         if (foods.isNotEmpty()) {
-                            Text(
-                                text = "选择美食奖励自己:",
-                                style = MaterialTheme.typography.bodyMedium
+                            FoodChoiceSection(
+                                foods = foods,
+                                scorePercent = 100,
+                                prompt = "选择美食奖励自己:",
+                                accentColor = Green,
+                                onResult = onResult
                             )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            foods.take(3).forEach { food ->
-                                Button(
-                                    onClick = { onResult(food.name, 100) },
-                                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                                    shape = RoundedCornerShape(16.dp),
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = Green,
-                                        contentColor = White
-                                    )
-                                ) {
-                                    Text(food.name)
-                                }
-                            }
                         }
                     }
                     GameState.GAME_OVER -> {
@@ -257,24 +247,13 @@ fun Match3Game(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         if (foods.isNotEmpty()) {
-                            Text(
-                                text = "选择美食安慰自己:",
-                                style = MaterialTheme.typography.bodyMedium
+                            FoodChoiceSection(
+                                foods = foods,
+                                scorePercent = (score * 100 / targetScore).coerceIn(0, 100),
+                                prompt = "选择美食安慰自己:",
+                                accentColor = OrangePrimary,
+                                onResult = onResult
                             )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            foods.take(3).forEach { food ->
-                                Button(
-                                    onClick = { onResult(food.name, (score * 100 / targetScore).coerceIn(0, 100)) },
-                                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                                    shape = RoundedCornerShape(16.dp),
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = OrangePrimary,
-                                        contentColor = White
-                                    )
-                                ) {
-                                    Text(food.name)
-                                }
-                            }
                         }
                     }
                     else -> {}

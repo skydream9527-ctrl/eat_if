@@ -2,6 +2,7 @@ package com.eatif.app.data.repository
 
 import com.eatif.app.data.local.HistoryDao
 import com.eatif.app.data.local.HistoryEntity
+import com.eatif.app.domain.model.FoodAdoption
 import com.eatif.app.domain.model.FoodFrequency
 import com.eatif.app.domain.model.History
 import com.eatif.app.domain.repository.HistoryRepository
@@ -50,6 +51,11 @@ class HistoryRepositoryImpl @Inject constructor(
     override fun getAdoptedRecommendationCount(): Flow<Int> = historyDao.getAdoptedRecommendationCount()
 
     override fun getTotalRecommendationCount(): Flow<Int> = historyDao.getTotalRecommendationCount()
+
+    override fun getFoodAdoptionStats(): Flow<List<FoodAdoption>> =
+        historyDao.getFoodAdoptionStats().map { list ->
+            list.map { FoodAdoption(it.foodName, it.adoptedCount, it.totalCount) }
+        }
 
     private fun HistoryEntity.toDomain(): History {
         return History(

@@ -42,6 +42,7 @@ fun StatsScreen(
     val statsOverview by viewModel.statsOverview.collectAsState()
     val topScores by viewModel.topScores.collectAsState()
     val profile by viewModel.profile.collectAsState()
+    val adoptionStats by viewModel.adoptionStats.collectAsState()
 
     Scaffold(
         topBar = {
@@ -100,6 +101,43 @@ fun StatsScreen(
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         StatCard("最高分", "${stats.bestScore}%", Modifier.weight(1f))
                         StatCard("成就", "${stats.achievementsUnlocked}/${stats.totalAchievements}", Modifier.weight(1f))
+                    }
+                }
+            }
+            // 推荐采纳率 - 反映推荐算法的有效性
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+                ) {
+                    Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "🎯 推荐采纳率",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = if (adoptionStats.total > 0)
+                                    "${(adoptionStats.rate * 100).toInt()}%"
+                                else "—",
+                                style = MaterialTheme.typography.headlineSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = if (adoptionStats.total > 0)
+                                "共 ${adoptionStats.total} 次推荐，采纳 ${adoptionStats.adopted} 次"
+                            else "玩完游戏后，推荐采纳率会显示在这里",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
             }

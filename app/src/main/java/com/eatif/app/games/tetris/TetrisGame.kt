@@ -31,6 +31,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.eatif.app.domain.model.Food
+import com.eatif.app.ui.components.FoodChoiceSection
 import com.eatif.app.ui.theme.Green
 import com.eatif.app.ui.theme.OrangePrimary
 import com.eatif.app.ui.theme.Red
@@ -355,21 +356,13 @@ fun TetrisGame(
                             )
                             if (foods.isNotEmpty()) {
                                 Spacer(modifier = Modifier.height(8.dp))
-                                foods.take(3).forEach { food ->
-                                    Button(
-                                        onClick = { onResult(food.name, (gameState.linesCleared * 100 / 10).coerceIn(0, 100)) },
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(vertical = 2.dp),
-                                        shape = RoundedCornerShape(8.dp),
-                                        colors = ButtonDefaults.buttonColors(
-                                            containerColor = OrangePrimary,
-                                            contentColor = White
-                                        )
-                                    ) {
-                                        Text(text = food.name, style = MaterialTheme.typography.bodyMedium)
-                                    }
-                                }
+                                FoodChoiceSection(
+                                    foods = foods,
+                                    scorePercent = (gameState.linesCleared * 100 / 10).coerceIn(0, 100),
+                                    prompt = "选择一顿美食安慰自己吧:",
+                                    accentColor = OrangePrimary,
+                                    onResult = onResult
+                                )
                             }
                         }
                     }
@@ -397,21 +390,13 @@ fun TetrisGame(
                             )
                             if (foods.isNotEmpty()) {
                                 Spacer(modifier = Modifier.height(8.dp))
-                                foods.take(3).forEach { food ->
-                                    Button(
-                                        onClick = { onResult(food.name, 100) },
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(vertical = 2.dp),
-                                        shape = RoundedCornerShape(8.dp),
-                                        colors = ButtonDefaults.buttonColors(
-                                            containerColor = OrangePrimary,
-                                            contentColor = White
-                                        )
-                                    ) {
-                                        Text(text = food.name, style = MaterialTheme.typography.bodyMedium)
-                                    }
-                                }
+                                FoodChoiceSection(
+                                    foods = foods,
+                                    scorePercent = 100,
+                                    prompt = "选择一顿美食奖励自己吧:",
+                                    accentColor = OrangePrimary,
+                                    onResult = onResult
+                                )
                             }
                         }
                     }
