@@ -67,6 +67,28 @@ class PlayerProfileUseCase @Inject constructor(
         return profileDao.getOrCreate().toDomain()
     }
 
+    /** 独立添加 XP（用于每日任务奖励等非游戏场景） */
+    suspend fun addXP(xp: Int) {
+        if (xp <= 0) return
+        val profile = profileDao.getOrCreate().toDomain()
+        val newXP = profile.playerXP + xp
+        var newLevel = profile.playerLevel
+        var remainingXP = newXP
+        var levelUpXP = xpForLevel(newLevel)
+
+        while (remainingXP >= levelUpXP && newLevel < 50) {
+            remainingXP -= levelUpXP
+            newLevel++
+            levelUpXP = xpForLevel(newLevel)
+        }
+
+        val updated = profile.copy(
+            playerLevel = newLevel,
+            playerXP = remainingXP
+        )
+        profileDao.update(updated.toEntity())
+    }
+
     fun xpNeededForNextLevel(profile: PlayerProfile): Int {
         return xpForLevel(profile.playerLevel) - profile.playerXP
     }

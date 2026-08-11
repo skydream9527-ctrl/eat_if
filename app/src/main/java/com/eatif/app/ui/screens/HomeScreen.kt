@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Home
@@ -37,9 +39,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.eatif.app.domain.model.Recommendation
+import com.eatif.app.ui.components.DailyTaskCard
 import com.eatif.app.ui.components.ModeCard
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -55,6 +59,8 @@ fun HomeScreen(
 ) {
     val foodCount by viewModel.foodCount.collectAsState()
     val recommendations by viewModel.recommendations.collectAsState()
+    val dailyTasks by viewModel.dailyTasks.collectAsState()
+    val profile by viewModel.profile.collectAsState()
 
     Scaffold(
         topBar = {
@@ -112,9 +118,9 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp, vertical = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
                 text = "🎰",
@@ -138,8 +144,72 @@ fun HomeScreen(
                 color = MaterialTheme.colorScheme.primary
             )
 
+            // 连续打卡信息
+            profile?.let { p ->
+                if (p.currentStreak > 0) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Card(
+                        shape = RoundedCornerShape(12.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text("🔥", style = MaterialTheme.typography.titleMedium)
+                            Text(
+                                text = "连续打卡 ${p.currentStreak} 天",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onTertiaryContainer
+                            )
+                            if (p.maxStreak > p.currentStreak) {
+                                Text(
+                                    text = "· 最高 ${p.maxStreak} 天",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.7f)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 每日任务区块
+            if (dailyTasks.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "📋 每日任务",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    val completed = dailyTasks.count { it.isCompleted }
+                    Text(
+                        text = "$completed/${dailyTasks.size}",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                dailyTasks.forEach { task ->
+                    DailyTaskCard(
+                        task = task,
+                        onClaimReward = { viewModel.claimTaskReward(it) }
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+            }
+
             if (recommendations.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -163,7 +233,7 @@ fun HomeScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
             ModeCard(
                 title = "单人模式",
                 emoji = "👤",

@@ -11,6 +11,7 @@ import com.eatif.app.domain.model.Recommendation
 import com.eatif.app.domain.repository.GameStatsRepository
 import com.eatif.app.domain.usecase.AchievementEngine
 import com.eatif.app.domain.usecase.AddHistoryUseCase
+import com.eatif.app.domain.usecase.DailyTaskUseCase
 import com.eatif.app.domain.usecase.GameDrivenRecommendUseCase
 import com.eatif.app.domain.usecase.GetAllFoodsUseCase
 import com.eatif.app.domain.usecase.PlayerProfileUseCase
@@ -32,7 +33,8 @@ class PlayViewModel @Inject constructor(
     private val playerProfileUseCase: PlayerProfileUseCase,
     private val gameStatsRepository: GameStatsRepository,
     private val smartRecommendUseCase: SmartRecommendUseCase,
-    private val gameDrivenRecommendUseCase: GameDrivenRecommendUseCase
+    private val gameDrivenRecommendUseCase: GameDrivenRecommendUseCase,
+    private val dailyTaskUseCase: DailyTaskUseCase
 ) : ViewModel() {
 
     private val defaultFoods = DefaultFoods.list
@@ -107,6 +109,9 @@ class PlayViewModel @Inject constructor(
             // 决策闭环：检查用户是否采纳了推荐
             val wasRecommended = foodName in lastRecommendedNames
             addHistoryUseCase(foodName, gameName, scorePercent, wasRecommended)
+
+            // 更新每日任务进度
+            dailyTaskUseCase.updateProgressOnGameEnd(gameId, scorePercent, wasRecommended)
 
             val difficulty = GameSettingsManager.difficulty
             gameStatsRepository.insert(

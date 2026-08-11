@@ -5,6 +5,7 @@ import androidx.room.Room
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.eatif.app.data.local.AchievementProgressDao
+import com.eatif.app.data.local.DailyTaskDao
 import com.eatif.app.data.local.FoodDao
 import com.eatif.app.data.local.FoodDatabase
 import com.eatif.app.data.local.FoodDataSeeder
@@ -105,6 +106,23 @@ object DatabaseModule {
         }
     }
 
+    private val MIGRATION_4_5 = object : Migration(4, 5) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                "CREATE TABLE daily_tasks (" +
+                        "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                        "taskType TEXT NOT NULL, " +
+                        "description TEXT NOT NULL, " +
+                        "targetProgress INTEGER NOT NULL, " +
+                        "currentProgress INTEGER NOT NULL DEFAULT 0, " +
+                        "isCompleted INTEGER NOT NULL DEFAULT 0, " +
+                        "isRewardClaimed INTEGER NOT NULL DEFAULT 0, " +
+                        "xpReward INTEGER NOT NULL, " +
+                        "date TEXT NOT NULL)"
+            )
+        }
+    }
+
     @Provides
     @Singleton
     fun provideFoodDatabase(
@@ -116,7 +134,7 @@ object DatabaseModule {
             "food_database"
         )
             .addCallback(FoodDataSeeder.getCallback())
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
             .fallbackToDestructiveMigration()
             .build()
     }
@@ -152,6 +170,10 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideSkinCollectionDao(database: FoodDatabase): SkinCollectionDao = database.skinCollectionDao()
+
+    @Provides
+    @Singleton
+    fun provideDailyTaskDao(database: FoodDatabase): DailyTaskDao = database.dailyTaskDao()
 
     @Provides
     @Singleton

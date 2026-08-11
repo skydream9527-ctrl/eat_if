@@ -43,6 +43,7 @@ fun StatsScreen(
     val topScores by viewModel.topScores.collectAsState()
     val profile by viewModel.profile.collectAsState()
     val adoptionStats by viewModel.adoptionStats.collectAsState()
+    val weeklyReport by viewModel.weeklyReport.collectAsState()
 
     Scaffold(
         topBar = {
@@ -141,6 +142,53 @@ fun StatsScreen(
                     }
                 }
             }
+            // 每周美食周报
+            weeklyReport?.let { report ->
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer
+                        )
+                    ) {
+                        Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                            Text(
+                                text = "📅 本周周报",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "${report.weekStart} ~ ${report.weekEnd}",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                            if (report.totalGames == 0) {
+                                Text(
+                                    text = "本周还没玩过游戏，去玩一局吧！",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            } else {
+                                Text(
+                                    text = report.summary(),
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                                Spacer(modifier = Modifier.height(12.dp))
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceEvenly
+                                ) {
+                                    ReportStat("游戏次数", "${report.totalGames}")
+                                    ReportStat("美食种类", "${report.totalFoods}")
+                                    ReportStat("均衡度", "${report.nutritionBalanceScore}")
+                                }
+                            }
+                        }
+                    }
+                }
+            }
             item {
                 Text(
                     text = "🏆 排行榜",
@@ -154,6 +202,22 @@ fun StatsScreen(
 }
 
 @Composable
+private fun ReportStat(label: String, value: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = value,
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSecondaryContainer
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
+        )
+    }
+}
+
 private fun StatCard(label: String, value: String, modifier: Modifier = Modifier) {
     Card(
         modifier = modifier,

@@ -9,9 +9,9 @@ import androidx.room.TypeConverters
         FoodEntity::class, HistoryEntity::class,
         PlayerProfileEntity::class, GameStatsEntity::class,
         AchievementProgressEntity::class, LevelProgressEntity::class,
-        SkinCollectionEntity::class
+        SkinCollectionEntity::class, DailyTaskEntity::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = true
 )
 @TypeConverters(FoodTagTypeConverter::class, ProgressTypeConverters::class)
@@ -23,4 +23,5 @@ abstract class FoodDatabase : RoomDatabase() {
     abstract fun achievementProgressDao(): AchievementProgressDao
     abstract fun levelProgressDao(): LevelProgressDao
     abstract fun skinCollectionDao(): SkinCollectionDao
+    abstract fun dailyTaskDao(): DailyTaskDao
 }

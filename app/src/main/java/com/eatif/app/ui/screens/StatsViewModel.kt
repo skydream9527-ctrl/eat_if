@@ -19,7 +19,8 @@ import javax.inject.Inject
 class StatsViewModel @Inject constructor(
     private val statsUseCase: StatsUseCase,
     val playerProfileUseCase: PlayerProfileUseCase,
-    private val adoptionUseCase: RecommendationAdoptionUseCase
+    private val adoptionUseCase: RecommendationAdoptionUseCase,
+    private val weeklyReportUseCase: WeeklyReportUseCase
 ) : ViewModel() {
     private val _statsOverview = MutableStateFlow<StatsOverview?>(null)
     val statsOverview: StateFlow<StatsOverview?> = _statsOverview.asStateFlow()
@@ -47,6 +48,9 @@ class StatsViewModel @Inject constructor(
         }
         viewModelScope.launch {
             adoptionUseCase().collect { _adoptionStats.value = it }
+        }
+        viewModelScope.launch {
+            weeklyReportUseCase().collect { _weeklyReport.value = it }
         }
     }
 }
