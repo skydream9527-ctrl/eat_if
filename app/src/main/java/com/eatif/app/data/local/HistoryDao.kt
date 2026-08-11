@@ -30,4 +30,11 @@ interface HistoryDao {
 
     @Query("SELECT foodName, COUNT(*) as count FROM history WHERE timestamp >= :fromTimestamp AND timestamp <= :toTimestamp GROUP BY foodName ORDER BY count DESC")
     fun getFoodFrequencyBetweenRaw(fromTimestamp: Long, toTimestamp: Long): Flow<List<FoodFrequencyEntity>>
+
+    /** 推荐采纳统计：被推荐且采纳的次数 / 被推荐的总次数 */
+    @Query("SELECT COUNT(*) FROM history WHERE wasRecommended = 1")
+    fun getAdoptedRecommendationCount(): Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM history WHERE scorePercent >= 0")
+    fun getTotalRecommendationCount(): Flow<Int>
 }

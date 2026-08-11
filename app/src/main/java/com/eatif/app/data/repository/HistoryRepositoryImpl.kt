@@ -47,13 +47,18 @@ class HistoryRepositoryImpl @Inject constructor(
         }
     }
 
+    override fun getAdoptedRecommendationCount(): Flow<Int> = historyDao.getAdoptedRecommendationCount()
+
+    override fun getTotalRecommendationCount(): Flow<Int> = historyDao.getTotalRecommendationCount()
+
     private fun HistoryEntity.toDomain(): History {
         return History(
             id = id,
             foodName = foodName,
             gameName = gameName,
             scorePercent = scorePercent,
-            timestamp = timestamp
+            timestamp = timestamp,
+            wasRecommended = wasRecommended
         )
     }
 
@@ -63,7 +68,8 @@ class HistoryRepositoryImpl @Inject constructor(
             foodName = foodName,
             gameName = gameName,
             scorePercent = scorePercent,
-            timestamp = timestamp
+            timestamp = timestamp,
+            wasRecommended = wasRecommended
         )
     }
 }

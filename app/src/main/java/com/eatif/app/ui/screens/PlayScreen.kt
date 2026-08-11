@@ -64,6 +64,9 @@ fun PlayScreen(
     viewModel: PlayViewModel = hiltViewModel()
 ) {
     val foods by viewModel.foods.collectAsState()
+    val recommendedFoods by viewModel.recommendedFoods.collectAsState()
+    // 决策闭环：优先使用推荐排序后的美食，让游戏内 take(3) 自然展示推荐候选
+    val foodsForGame = if (recommendedFoods.isNotEmpty()) recommendedFoods else foods
     val gameName = viewModel.getGameName(gameId)
     var isPaused by remember { mutableStateOf(false) }
     var showExitDialog by remember { mutableStateOf(false) }
@@ -208,7 +211,7 @@ fun PlayScreen(
                 val onPauseToggle: ((Boolean) -> Unit)? = if (gameConfig.supportsSelfPause) {
                     { isPaused = it }
                 } else null
-                gameConfig.content(foods, isPaused, onPauseToggle, handleGameEnd, mode)
+                gameConfig.content(foodsForGame, isPaused, onPauseToggle, handleGameEnd, mode)
             } else {
                 Text(
                     text = "游戏 $gameName 开发中...",

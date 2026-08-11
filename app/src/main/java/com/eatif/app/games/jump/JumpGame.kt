@@ -38,6 +38,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import com.eatif.app.domain.model.Food
+import com.eatif.app.ui.components.GameEndWithFoodChoice
+import com.eatif.app.ui.components.GameHeader
 import com.eatif.app.ui.theme.Green
 import com.eatif.app.ui.theme.OrangePrimary
 import com.eatif.app.ui.theme.Red
@@ -165,18 +167,10 @@ fun JumpGame(
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = "🏃 跳一跳",
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = "分数: $score / 3",
-            style = MaterialTheme.typography.titleLarge,
-            color = OrangePrimary
+        GameHeader(
+            title = "🏃 跳一跳",
+            scoreText = "分数: $score / 3",
+            scoreColor = OrangePrimary
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -251,45 +245,15 @@ fun JumpGame(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.padding(16.dp)
-                    ) {
-                        Text(
-                            text = "游戏结束",
-                            style = MaterialTheme.typography.headlineLarge,
-                            color = Red
-                        )
-                        Text(
-                            text = "得分: $score / 3",
-                            style = MaterialTheme.typography.titleLarge,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
-                        if (foods.isNotEmpty()) {
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text(
-                                text = "选择一顿美食安慰自己吧:",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onBackground
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            foods.take(3).forEach { food ->
-                                Button(
-                                    onClick = { onResult(food.name, (score * 100 / 3).coerceIn(0, 100)) },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 4.dp),
-                                    shape = RoundedCornerShape(16.dp),
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = OrangePrimary,
-                                        contentColor = White
-                                    )
-                                ) {
-                                    Text(text = food.name, style = MaterialTheme.typography.titleMedium)
-                                }
-                            }
-                        }
-                    }
+                    GameEndWithFoodChoice(
+                        title = "游戏结束",
+                        titleColor = Red,
+                        foods = foods,
+                        scorePercent = (score * 100 / 3).coerceIn(0, 100),
+                        prompt = "选择一顿美食安慰自己吧:",
+                        accentColor = OrangePrimary,
+                        onResult = onResult
+                    )
                 }
             }
 
@@ -298,45 +262,15 @@ fun JumpGame(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.padding(16.dp)
-                    ) {
-                        Text(
-                            text = "🎉 恭喜通关！",
-                            style = MaterialTheme.typography.headlineLarge,
-                            color = Green
-                        )
-                        Text(
-                            text = "得分: $score / 3",
-                            style = MaterialTheme.typography.titleLarge,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
-                        if (foods.isNotEmpty()) {
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text(
-                                text = "选择一顿美食奖励自己吧:",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onBackground
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            foods.take(3).forEach { food ->
-                                Button(
-                                    onClick = { onResult(food.name, (score * 100 / 3).coerceIn(0, 100)) },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 4.dp),
-                                    shape = RoundedCornerShape(16.dp),
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = OrangePrimary,
-                                        contentColor = White
-                                    )
-                                ) {
-                                    Text(text = food.name, style = MaterialTheme.typography.titleMedium)
-                                }
-                            }
-                        }
-                    }
+                    GameEndWithFoodChoice(
+                        title = "🎉 恭喜通关！",
+                        titleColor = Green,
+                        foods = foods,
+                        scorePercent = (score * 100 / 3).coerceIn(0, 100),
+                        prompt = "选择一顿美食奖励自己吧:",
+                        accentColor = OrangePrimary,
+                        onResult = onResult
+                    )
                 }
             }
         }

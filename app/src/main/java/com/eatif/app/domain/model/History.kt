@@ -5,5 +5,6 @@ data class History(
     val foodName: String,
     val gameName: String,
     val scorePercent: Int,
-    val timestamp: Long
+    val timestamp: Long,
+    val wasRecommended: Boolean = false
 )

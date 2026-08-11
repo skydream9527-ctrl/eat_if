@@ -11,7 +11,7 @@ import androidx.room.TypeConverters
         AchievementProgressEntity::class, LevelProgressEntity::class,
         SkinCollectionEntity::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = true
 )
 @TypeConverters(FoodTagTypeConverter::class, ProgressTypeConverters::class)
