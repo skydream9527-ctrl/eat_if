@@ -56,10 +56,23 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun OnboardingScreen(
-    onComplete: () -> Unit
+    onComplete: () -> Unit,
+    onImportFoods: (List<com.eatif.app.domain.model.Food>) -> Unit = { _ -> onComplete() }
 ) {
     val pagerState = rememberPagerState(pageCount = { OnboardingPages.pages.size })
     val coroutineScope = rememberCoroutineScope()
+    var showFoodImport by remember { mutableStateOf(false) }
+
+    // 进入美食导入页
+    if (showFoodImport) {
+        OnboardingFoodImportScreen(
+            onImportComplete = { foods ->
+                onImportFoods(foods)
+            },
+            onSkip = onComplete
+        )
+        return
+    }
 
     Column(
         modifier = Modifier
@@ -152,7 +165,8 @@ fun OnboardingScreen(
                             pagerState.animateScrollToPage(pagerState.currentPage + 1)
                         }
                     } else {
-                        onComplete()
+                        // 进入美食导入页
+                        showFoodImport = true
                     }
                 },
                 modifier = Modifier

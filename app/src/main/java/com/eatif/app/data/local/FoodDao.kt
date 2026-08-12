@@ -22,6 +22,9 @@ interface FoodDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertFood(food: FoodEntity): Long
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(foods: List<FoodEntity>): List<Long>
+
     @Update
     suspend fun updateFood(food: FoodEntity)
 

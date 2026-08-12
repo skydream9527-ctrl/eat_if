@@ -11,9 +11,11 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.navArgument
 import com.eatif.app.ui.onboarding.OnboardingManager
 import com.eatif.app.ui.onboarding.OnboardingScreen
+import com.eatif.app.ui.onboarding.OnboardingViewModel
 import com.eatif.app.ui.onboarding.WhatsNewDialog
 import com.eatif.app.ui.screens.HomeScreen
 import com.eatif.app.ui.screens.SetupScreen
@@ -47,15 +49,21 @@ fun EatIfNavHost(
     var followSystem by remember { mutableStateOf(ThemeManager.followSystem) }
     var showOnboarding by remember { mutableStateOf(!OnboardingManager.hasSeenOnboarding) }
     var showWhatsNew by remember { mutableStateOf(OnboardingManager.shouldShowWhatsNew()) }
+    val onboardingViewModel: OnboardingViewModel = hiltViewModel()
 
     if (showOnboarding) {
+        val finishOnboarding: () -> Unit = {
+            OnboardingManager.setOnboardingComplete()
+            showOnboarding = false
+            if (OnboardingManager.shouldShowWhatsNew()) {
+                showWhatsNew = true
+            }
+        }
         OnboardingScreen(
-            onComplete = {
-                OnboardingManager.setOnboardingComplete()
-                showOnboarding = false
-                if (OnboardingManager.shouldShowWhatsNew()) {
-                    showWhatsNew = true
-                }
+            onComplete = finishOnboarding,
+            onImportFoods = { foods ->
+                // 持久化用户勾选的美食，完成后再结束 onboarding
+                onboardingViewModel.importFoods(foods, onDone = finishOnboarding)
             }
         )
         return
@@ -98,7 +106,8 @@ fun EatIfNavHost(
                 },
                 onStatsClick = { navController.navigate(Screen.Stats.route) },
                 onAchievementsClick = { navController.navigate(Screen.Achievements.route) },
-                onProfileClick = { navController.navigate(Screen.Profile.route) }
+                onProfileClick = { navController.navigate(Screen.Profile.route) },
+                onFriendPKClick = { navController.navigate(Screen.FriendPK.route) }
             )
         }
 
@@ -307,6 +316,12 @@ fun EatIfNavHost(
 
         composable(Screen.Stats.route) {
             StatsScreen(onBackClick = { navController.popBackStack() })
+        }
+
+        composable(Screen.FriendPK.route) {
+            com.eatif.app.ui.screens.friendpk.FriendPKScreen(
+                onBackClick = { navController.popBackStack() }
+            )
         }
 
         composable(

@@ -1,6 +1,7 @@
 package com.eatif.app
 
 import android.app.Application
+import com.eatif.app.data.local.FriendScoreStore
 import com.eatif.app.data.session.SessionManager
 import com.eatif.app.games.initGameRegistry
 import com.eatif.app.ui.onboarding.OnboardingManager
@@ -24,6 +25,7 @@ class EatIfApplication : Application() {
         SoundManager.init(this)
         OnboardingManager.init(this)
         SessionManager.init(this)
+        FriendScoreStore.init(this)
         initGameRegistry()
         SoundManager.setEnabled(GameSettingsManager.isSoundEnabled)
     }

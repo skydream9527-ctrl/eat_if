@@ -49,8 +49,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.eatif.app.data.session.SessionManager
 import com.eatif.app.domain.model.Recommendation
+import com.eatif.app.domain.model.GameList
 import com.eatif.app.ui.components.AchievementUnlockDialog
 import com.eatif.app.ui.GameEndResultHolder
+import com.eatif.app.ui.LastGameContextHolder
+import com.eatif.app.ui.share.ShareCardRenderer
+import com.eatif.app.ui.share.ShareUtils
 import com.eatif.app.ui.theme.OrangePrimary
 import kotlinx.coroutines.delay
 
@@ -105,7 +109,12 @@ fun ResultScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(
-                        onClick = { shareResult(context, recommendation, foodName, scorePercent) }
+                        onClick = {
+                            val gameName = GameList.games.find {
+                                it.id == LastGameContextHolder.lastGame?.gameId
+                            }?.name ?: "小游戏"
+                            shareResult(context, recommendation, foodName, scorePercent, gameName)
+                        }
                     ) {
                         Icon(
                             imageVector = Icons.Default.Share,
@@ -377,36 +386,30 @@ private fun shareResult(
     context: Context,
     recommendation: com.eatif.app.domain.model.RecommendationResult?,
     foodName: String,
-    scorePercent: Int
+    scorePercent: Int,
+    gameName: String
 ) {
-    val shareText = if (recommendation != null) {
-        buildString {
-            appendLine("🎉 今天吃什么？")
-            appendLine()
-            appendLine("${recommendation.emoji} ${recommendation.reason}")
-            appendLine()
-            appendLine("🏠 决定去吃：${recommendation.shopName}")
-            if (scorePercent >= 0) {
-                appendLine()
-                appendLine("🎮 游戏得分：$scorePercent%")
-            }
-            appendLine()
-            appendLine("—— 来自「今天吃什么？」App")
-        }
-    } else {
-        buildString {
-            appendLine("🎉 今天吃什么？")
-            appendLine()
-            appendLine("🍽️ 决定吃：$foodName")
-            appendLine()
-            appendLine("—— 来自「今天吃什么？」App")
-        }
-    }
+    val emoji = recommendation?.emoji ?: "🍽️"
+    val reason = recommendation?.reason ?: ""
+    val displayFoodName = recommendation?.shopName ?: foodName
 
-    val intent = Intent(Intent.ACTION_SEND).apply {
-        type = "text/plain"
-        putExtra(Intent.EXTRA_TEXT, shareText)
-    }
-    context.startActivity(Intent.createChooser(intent, "分享结果"))
+    // 生成图形化分享卡
+    val bitmap = ShareCardRenderer.render(
+        foodName = displayFoodName,
+        emoji = emoji,
+        scorePercent = scorePercent,
+        reason = reason,
+        gameName = gameName
+    )
+
+    val shareText = ShareUtils.buildShareText(
+        foodName = displayFoodName,
+        scorePercent = scorePercent,
+        gameName = gameName,
+        reason = reason,
+        emoji = emoji
+    )
+
+    ShareUtils.shareImage(context, bitmap, shareText)
 }
 

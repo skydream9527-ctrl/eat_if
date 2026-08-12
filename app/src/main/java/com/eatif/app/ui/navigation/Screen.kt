@@ -39,6 +39,7 @@ sealed class Screen(val route: String) {
         fun createRoute(gameId: String) = "level_select/$gameId"
     }
     data object Stats : Screen("stats")
+    data object FriendPK : Screen("friend_pk")
     data object SkinSelector : Screen("skin_selector/{gameId}") {
         fun createRoute(gameId: String) = "skin_selector/$gameId"
     }

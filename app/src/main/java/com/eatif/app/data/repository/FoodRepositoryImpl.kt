@@ -34,6 +34,10 @@ class FoodRepositoryImpl @Inject constructor(
         return foodDao.insertFood(food.toEntity())
     }
 
+    override suspend fun addFoods(foods: List<Food>): List<Long> {
+        return foodDao.insertAll(foods.map { it.toEntity() })
+    }
+
     override suspend fun updateFood(food: Food) {
         foodDao.updateFood(food.toEntity())
     }

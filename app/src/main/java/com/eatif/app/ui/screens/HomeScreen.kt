@@ -55,6 +55,7 @@ fun HomeScreen(
     onStatsClick: () -> Unit = {},
     onAchievementsClick: () -> Unit = {},
     onProfileClick: () -> Unit = {},
+    onFriendPKClick: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val foodCount by viewModel.foodCount.collectAsState()
@@ -247,6 +248,14 @@ fun HomeScreen(
                 emoji = "👥",
                 description = "和朋友一起决定吃啥",
                 onClick = onTwoPlayerClick,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            ModeCard(
+                title = "好友 PK",
+                emoji = "🏆",
+                description = "比拼成绩，发起挑战",
+                onClick = onFriendPKClick,
                 modifier = Modifier.fillMaxWidth()
             )
         }

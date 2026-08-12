@@ -9,6 +9,7 @@ interface FoodRepository {
     fun getFoodsByTag(tag: FoodTag): Flow<List<Food>>
     fun getFoodCount(): Flow<Int>
     suspend fun addFood(food: Food): Long
+    suspend fun addFoods(foods: List<Food>): List<Long>
     suspend fun updateFood(food: Food)
     suspend fun deleteFood(id: Long)
 }
